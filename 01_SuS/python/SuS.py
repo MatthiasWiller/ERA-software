@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.stats
 from ERANataf import ERANataf
 from ERADist import ERADist
 from aCS import aCS
@@ -55,8 +56,8 @@ def SuS(N,p0,g_fun,distr):
 
     else:   # use distribution information for the transformation (independence)
         n   = len(distr)                    # number of random variables (dimension)
-        u2x = lambda u: distr[0].icdf(normcdf(u))   # from u to x
-        g   = lambda u: g_fun(u2x(u))               # LSF in standard space
+        u2x = lambda u: distr[0].icdf(scipy.stats.norm.cdf(u))   # from u to x
+        g   = lambda u: g_fun(u2x(u))                            # LSF in standard space
         
         # if the samples are standard normal do not make any transform
         if distr[0].Name.lower() =='standardnormal':
