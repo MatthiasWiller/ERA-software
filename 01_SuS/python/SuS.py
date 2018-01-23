@@ -72,7 +72,7 @@ def SuS(N,p0,g_fun,distr):
     samplesU = {'seeds': list(),
                 'order': list()}
     #
-    geval = np.zeros((N))        # space for the LSF evaluations
+    geval = np.zeros((N))          # space for the LSF evaluations
     gsort = np.zeros((max_it,N))   # space for the sorted LSF evaluations
     delta = np.zeros((max_it,1))   # space for the coefficient of variation
     Nf    = np.zeros((max_it,1))   # space for the number of failure point per level
@@ -87,7 +87,7 @@ def SuS(N,p0,g_fun,distr):
         geval[i] = g(u_j[:,i])
         if geval[i] <= 0:
             Nf[j] = Nf[j]+1    # number of failure points
-    print('OK! ')
+    print('OK!')
 
     # SuS stage
     while True:
@@ -137,7 +137,7 @@ def SuS(N,p0,g_fun,distr):
         # next level
         j = j+1   
         
-        if b[j-1] <= 0 or j-1 == max_it:
+        if b[j-1] <= 0 or j == max_it:
             break
         
     m = j
