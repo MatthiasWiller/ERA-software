@@ -1,8 +1,10 @@
 import numpy as np
+import scipy
 import matplotlib.pylab as plt
 from ERANataf import ERANataf
 from ERADist import ERADist
 from BUS_SuS import BUS_SuS
+from shear_building_2DOF import shear_building_2DOF
 """
 ---------------------------------------------------------------------------
 BUS+SuS: Ex. 1 Ref. 1 - Parameter identification two-DOF shear building
@@ -37,16 +39,16 @@ mod_log_X2 = 0.8   # mode of the lognormal 2
 std_log_X2 = 1.0   # std of the lognormal 2
 
 # find lognormal X1 parameters
-var_fun = lambda mu: std_log_X1^2 - (np.exp(mu-np.log(mod_log_X1))-1) \
-                                    *np.exp(2*mu+(mu-np.log(mod_log_X1)))
-mu_X1  = np.fzero(var_fun,0)                # mean of the associated Gaussian
+var_fun = lambda mu: std_log_X1**2 - (np.exp(mu-np.log(mod_log_X1))-1) \
+                                     *np.exp(2*mu+(mu-np.log(mod_log_X1)))
+mu_X1  = scipy.optimize.fsolve(var_fun,1)   # mean of the associated Gaussian
 std_X1 = np.sqrt(mu_X1-np.log(mod_log_X1))  # std of the associated Gaussian
 
 # find lognormal X2 parameters
-var_X2 = lambda mu: std_log_X2^2 - (np.exp(mu-np.log(mod_log_X2))-1) \
-                                   *np.exp(2*mu+(mu-np.log(mod_log_X2)))
-mu_X2  = np.fzero(var_X2,0)                 # mean of the associated Gaussian
-std_X2 = np.sqrt(mu_X2-np.log(mod_log_X2))  # std of the associated Gaussian
+var_X2 = lambda mu: std_log_X2**2 - (np.exp(mu-np.log(mod_log_X2))-1) \
+                                    *np.exp(2*mu+(mu-np.log(mod_log_X2)))
+mu_X2  = scipy.optimize.fsolve(var_X2,0)     # mean of the associated Gaussian
+std_X2 = np.sqrt(mu_X2-np.log(mod_log_X2))   # std of the associated Gaussian
 
 ## definition of the random variables
 n = 2   # number of random variables (dimensions)
@@ -64,13 +66,13 @@ R = np.eye(n)   # independent case
 T_nataf = ERANataf(dist_X,R)
 
 ## likelihood function
-lam     = [1, 1]             # means of the prediction error
+lam     = np.array([1, 1])   # means of the prediction error
 i       = 9                  # simulation level
 var_eps = 0.5**(i-1)         # variance of the prediction error
-f_tilde = [3.13, 9.83]       # measured eigenfrequencies [Hz]
+f_tilde = np.array([3.13, 9.83])       # measured eigenfrequencies [Hz]
 
 # shear building model 
-f = lambda x: shear_building_2DOF(m1, m2, kn*x(1), kn*x(2))
+f = lambda x: shear_building_2DOF(m1, m2, kn*x[0], kn*x[1])
 
 # modal measure-of-fit function
 J = lambda x: sum((lam**2)*(((f(x)**2)/f_tilde**2) - 1)**2)   
@@ -93,7 +95,7 @@ if method == 1:
       
 # some likelihood evaluations to find c
 elif method == 2:
-    K  = 5e3                            # number of samples      
+    K  = int(5e3)                       # number of samples      
     u  = np.random.normal(size=(n,K))   # samples in standard space
     x  = T_nataf.U2X(u)                 # samples in physical space
     # likelihood function evaluation
@@ -111,7 +113,7 @@ elif method == 3:
     c = 1/np.exp(-0.5*chi2inv(p,m))    # Ref. 1 Eq. 38
     
 else:
-    error('Finding the scale constant c requires -method- 1, 2 or 3')
+    raise RuntimeError('Finding the scale constant c requires -method- 1, 2 or 3')
 
 ## BUS-SuS
 N  = 2000       # number of samples per level
@@ -122,17 +124,22 @@ p0 = 0.1        # probability of each subset
 
 ## organize samples and show results
 nsub = len(b)+1   # number of levels + final posterior
-u1p  = cell(nsub,1)   u2p  = cell(nsub,1)   u0p = cell(nsub,1)
-x1p  = cell(nsub,1)   x2p  = cell(nsub,1)   pp  = cell(nsub,1)
+u1p = list()
+u2p = list()
+u0p = list()
+x1p = list()  
+x2p = list()  
+pp  = list()
+
 for i in range(nsub):
    # samples in standard
-   u1p{i} = samplesU.total{i}(1,:)             
-   u2p{i} = samplesU.total{i}(2,:)  
-   u0p{i} = samplesU.total{i}(3,:) 
+   u1p.append(samplesU['total'][i][1,:])  
+   u2p.append(samplesU['total'][i][2,:])
+   u0p.append(samplesU['total'][i][3,:])
    # samples in physical
-   x1p{i} = samplesX.total{i}(1,:)   
-   x2p{i} = samplesX.total{i}(2,:) 
-   pp{i}  = samplesX.total{i}(3,:)
+   x1p.append(samplesX['total'][i][1,:])
+   x2p.append(samplesX['total'][i][2,:])
+   pp.append( samplesX['total'][i][3,:])
 
 # reference solutions
 mu_exact    = 1.12     # for x_1
@@ -140,33 +147,35 @@ sigma_exact = 0.66     # for x_1
 cE_exact    = 1.52e-3
 
 # show results
-fprintf('\nExact model evidence =', cE_exact)
-fprintf('\nModel evidence BUS-SuS =', cE, '\n')
-fprintf('\nExact posterior mean x_1 =', mu_exact)
-fprintf('\nMean value of x_1 =', np.mean(x1p{end}), '\n')
-fprintf('\nExact posterior std x_1 =', sigma_exact)
-fprintf('\nStd of x_1 =', std(x1p{end}), '\n\n')
+print('\nExact model evidence =', cE_exact)
+print('\nModel evidence BUS-SuS =', cE, '\n')
+print('\nExact posterior mean x_1 =', mu_exact)
+print('\nMean value of x_1 =', np.mean(x1p[-1]), '\n')
+print('\nExact posterior std x_1 =', sigma_exact)
+print('\nStd of x_1 =', np.std(x1p[-1]), '\n\n')
 
 ## plot samples
 plt.figure()
 for i in range(nsub):
-   subplot(2,2,i) plot(u1p{i},u2p{i},'r.') 
-   xlabel('$u_1$','Interpreter','Latex','FontSize', 18)   
-   ylabel('$u_2$','Interpreter','Latex','FontSize', 18)
-   set(gca,'FontSize',15) axis equal xlim([-3 1]) ylim([-3 0])
+   plt.subplot(2,2,i) 
+   plt.plot(u1p[i],u2p[i],'r.') 
+   plt.xlabel('$u_1$') # ,'Interpreter','Latex','FontSize', 18)   
+   plt.ylabel('$u_2$') # ,'Interpreter','Latex','FontSize', 18)
+#    set(gca,'FontSize',15) axis equal xlim([-3 1]) ylim([-3 0])
 
-annotation('textbox', [0 0.9 1 0.1],'String', '\bf Standard space', ...
-           'EdgeColor', 'none', 'HorizontalAlignment', 'center')
+# annotation('textbox', [0 0.9 1 0.1],'String', '\bf Standard space', \
+#            'EdgeColor', 'none', 'HorizontalAlignment', 'center')
 
 plt.figure()
 for i in range(nsub):
-   subplot(2,2,i) plot(x1p{i},x2p{i},'b.') 
-   xlabel('$x_1$','Interpreter','Latex','FontSize', 18)
-   ylabel('$x_2$','Interpreter','Latex','FontSize', 18)
-   set(gca,'FontSize',15) axis equal xlim([0 3]) ylim([0 1.5])
+   plt.subplot(2,2,i) 
+   plt.plot(x1p[i],x2p[i],'b.') 
+   plt.xlabel('$x_1$') # ,'Interpreter','Latex','FontSize', 18)
+   plt.ylabel('$x_2$') # ,'Interpreter','Latex','FontSize', 18)
+#    set(gca,'FontSize',15) axis equal xlim([0 3]) ylim([0 1.5])
 
-annotation('textbox', [0 0.9 1 0.1],'String', '\bf Original space', ...
-           'EdgeColor', 'none', 'HorizontalAlignment', 'center')
+# annotation('textbox', [0 0.9 1 0.1],'String', '\bf Original space', \
+#            'EdgeColor', 'none', 'HorizontalAlignment', 'center')
 
 plt.show()
 ##END
