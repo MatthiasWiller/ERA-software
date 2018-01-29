@@ -51,7 +51,7 @@ def aBUS_SUS(N,p0,log_likelihood,T_nataf):
         #print geval < h[-1]
         # number of failure points
         Nf = np.append(Nf, np.sum(geval <= np.max([h[-1],0])))
-        print Nf[-1]
+        #print Nf[-1]
         # assign conditional probability to the level
         if (h[-1] < 0):
             h[-1] = 0
@@ -126,7 +126,7 @@ def aCS(N, lamb, b, u, log_likelihood, lsf, log_c):
     geval_2 = np.zeros(Ns)
     for j in range(Ns):
         geval_2[j] = lsf(np.reshape(uj[:, j], [dim, 1]), log_c)
-    print geval_2 < b
+    # print geval_2 < b
     
     leval = np.zeros(N)  # store likelihood evaluations
     acc = np.zeros(N)  # store acceptance
@@ -191,8 +191,8 @@ def aCS(N, lamb, b, u, log_likelihood, lsf, log_c):
 
             # update counter
             i = i+1
-    for ii in range(N):
-        print lsf(np.reshape(ujk[:, ii], [dim, 1]), log_c) < b
+    # for ii in range(N):
+    #     print lsf(np.reshape(ujk[:, ii], [dim, 1]), log_c) < b
 
         
     # next level lambda
