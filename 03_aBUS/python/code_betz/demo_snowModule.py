@@ -6,9 +6,9 @@
 
 import matplotlib.pyplot as plt
 import pickle
-from snowModules import snowModule 
+from snowModules import snowModule
 
-data = pickle.load(open('ZugspitzBlatt1415.pkl', 'rb'))
+data = pickle.load(open('03_aBUS/python/code_betz/ZugspitzBlatt1415.pkl', 'rb'), encoding='latin1')
 tempThreshM = 4
 tempThreshA = 4
 tempTrans = 2
@@ -18,3 +18,4 @@ data = snowModule(data, [tempThreshM, tempThreshA, tempTrans, c_0], 'TIndex')
 plt.figure()
 plt.plot(data['swe_sim'])
 plt.plot(data['swe'])
+plt.show()
