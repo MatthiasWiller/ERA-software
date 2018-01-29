@@ -159,9 +159,10 @@ plt.figure()
 for i in range(nsub):
    plt.subplot(2,2,i) 
    plt.plot(u1p[i],u2p[i],'r.') 
-   plt.xlabel('$u_1$') # ,'Interpreter','Latex','FontSize', 18)   
-   plt.ylabel('$u_2$') # ,'Interpreter','Latex','FontSize', 18)
-#    set(gca,'FontSize',15) axis equal xlim([-3 1]) ylim([-3 0])
+   plt.xlabel('$u_1$') 
+   plt.ylabel('$u_2$')
+   plt.xlim([-3, 1])
+   plt.ylim([-3, 0])
 
 # annotation('textbox', [0 0.9 1 0.1],'String', '\bf Standard space', \
 #            'EdgeColor', 'none', 'HorizontalAlignment', 'center')
@@ -170,9 +171,10 @@ plt.figure()
 for i in range(nsub):
    plt.subplot(2,2,i) 
    plt.plot(x1p[i],x2p[i],'b.') 
-   plt.xlabel('$x_1$') # ,'Interpreter','Latex','FontSize', 18)
-   plt.ylabel('$x_2$') # ,'Interpreter','Latex','FontSize', 18)
-#    set(gca,'FontSize',15) axis equal xlim([0 3]) ylim([0 1.5])
+   plt.xlabel('$x_1$')
+   plt.ylabel('$x_2$')
+   plt.xlim([0, 3])
+   plt.ylim([0, 1.5])
 
 # annotation('textbox', [0 0.9 1 0.1],'String', '\bf Original space', \
 #            'EdgeColor', 'none', 'HorizontalAlignment', 'center')
