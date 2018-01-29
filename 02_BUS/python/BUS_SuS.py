@@ -2,6 +2,7 @@ import numpy as np
 import scipy.stats
 from ERANataf import ERANataf
 from ERADist import ERADist
+from aCS import aCS
 """
 ---------------------------------------------------------------------------
 Subset simulation function adapted for BUS (likelihood input)
@@ -49,7 +50,14 @@ def BUS_SuS(N,p0,c,likelihood,T_nataf):
     #dist_p  = ERADist('uniform','PAR',[0,1])     # uniform variable in BUS
 
     ## limit state function in the standard space
-    H = lambda u: u[-1] - scipy.stats.invnorm(c*likelihood(T_nataf.U2X(u[1:-2])))
+    # H = lambda u: u[-1] - scipy.stats.norm.ppf(c*likelihood(T_nataf.U2X(u[0:-2])))
+    def H(u):
+        tmp1 = T_nataf.U2X(u[0:-1].reshape((-1,1))).flatten()
+        tmp2 = likelihood(tmp1)
+        tmp3 = c*tmp2
+        tmp4 = scipy.stats.norm.ppf(tmp3)
+        tmp5 = u[-1] - tmp4
+        return tmp5
 
     ## Initialization of variables
     j      = 0                         # number of conditional level
@@ -61,7 +69,7 @@ def BUS_SuS(N,p0,c,likelihood,T_nataf):
     #
     geval = np.zeros((N))              # space for the LSF evaluations
     gsort = np.zeros((max_it,N))       # space for the sorted LSF evaluations
-    Nf    = np.zeros((max_it,1))       # space for the number of failure point per level
+    Nf    = np.zeros((max_it,1))       # space for the number of failure points per level
     b     = np.zeros((max_it,1))       # space for the intermediate leveles
     prob  = np.zeros((max_it,1))       # space for the failure probability at each level
 
@@ -108,7 +116,7 @@ def BUS_SuS(N,p0,c,likelihood,T_nataf):
         rnd_seeds = samplesU['seeds'][j][:,idx_rnd]     # non-ordered seeds
            
         # sampling process using adaptive conditional sampling
-        [u_j,geval,lam,] = aCS(N,lam,b[j],rnd_seeds,H)
+        [u_j,geval,lam,_] = aCS(N,lam,b[j],rnd_seeds,H)
         
         # next level
         j = j+1   
@@ -132,8 +140,8 @@ def BUS_SuS(N,p0,c,likelihood,T_nataf):
     ## transform the samples to the physical (original) space
     for i in range(m+1):
         #p = dist_p.icdf(scipy.stats.normal.cdf(samplesU['total'][i][-1,:])) is the same as:
-        p = scipy.stats.normal.cdf(samplesU['total'][i][-1,:])
-        samplesX['total'][i] = [T_nataf.U2X(samplesU['total'][i][:-2,:]), p]
+        p = scipy.stats.norm.cdf(samplesU['total'][i][-1,:])
+        samplesX['total'].append([T_nataf.U2X(samplesU['total'][i][:-1,:]), p])
     
-    return b,samplesU,samplesX,cE
+    return [b,samplesU,samplesX,cE]
 ##END

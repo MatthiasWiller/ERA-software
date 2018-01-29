@@ -127,5 +127,5 @@ def aCS(N,l,b,u_j,H):
     # compute mean acceptance rate of all chains
     accrate = np.mean(hat_a)
 
-    return u_jk, geval, new_lambda, accrate
+    return [u_jk, geval, new_lambda, accrate]
 ##END

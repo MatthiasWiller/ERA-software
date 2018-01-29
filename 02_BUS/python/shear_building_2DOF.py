@@ -46,5 +46,5 @@ def shear_building_2DOF(m1,m2,k1,k2):
     q   = np. multiply(np.multiply(Phi.T,M),Phi)                 # orthogonality property
     Phi = Phi/np.tile(np.sqrt(np.diag(q)).T,(2,1))
 
-    return w,Phi
+    return [w,Phi]
 ##END
