@@ -118,3 +118,5 @@ if(n == 3):
     fig_SamplesAx2.set_xlabel(r'$U_{1}$')
     fig_SamplesAx2.set_ylabel(r'$U_{2}$')
     fig_SamplesAx2.set_zlabel(r'$U_{3}$')
+
+plt.show()
