@@ -36,8 +36,8 @@ def shear_building_2DOF(m1,m2,k1,k2):
                    [-k2    ,  k2]])   # stiffness matrix
 
     ## Free response - Modal analysis 
-    [V,L]   = np.linalg.eig(np.linalg.solve(M,K))   # eigenvalue solution
-    w       = np.sqrt(np.diag(L))/(2*np.pi)   # natural frequencies [Hz]
+    [L,V]   = np.linalg.eig(np.linalg.solve(M,K))   # eigenvalue solution
+    w       = np.sqrt(L)/(2*np.pi)   # natural frequencies [Hz]
     idx     = np.argsort(w)                   # ordering (ascendent)
     w       = w[idx]
     Phi     = V[idx]                          # vibration modes

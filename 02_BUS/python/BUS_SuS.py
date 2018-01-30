@@ -86,9 +86,11 @@ def BUS_SuS(N,p0,c,likelihood,T_nataf):
     # SuS stage
     while True:
         # sort values in ascending order
-        g_prime = np.sort(geval)
-        gsort[j,:] = g_prime
-        idx = sorted(range(len(geval)), key=lambda x: geval[x])
+        idx        = np.argsort(geval)
+        gsort[j,:] = geval[idx]
+        # g_prime = np.sort(geval)
+        # gsort[j,:] = g_prime
+        # idx = sorted(range(len(geval)), key=lambda x: geval[x])
         
         # order the samples according to idx
         u_j_sort = u_j[:,idx]
