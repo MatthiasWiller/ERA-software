@@ -1,8 +1,4 @@
 import numpy as np
-import matplotlib.pylab as plt
-from ERANataf import ERANataf
-from ERADist import ERADist
-from BUS_SuS import BUS_SuS
 """
 ---------------------------------------------------------------------------
 two-degree-of-freedom shear building model
@@ -36,8 +32,8 @@ def shear_building_2DOF(m1,m2,k1,k2):
                    [-k2    ,  k2]])   # stiffness matrix
 
     ## Free response - Modal analysis 
-    [V,L]   = np.linalg.eig(np.linalg.solve(M,K))   # eigenvalue solution
-    w       = np.sqrt(np.diag(L))/(2*np.pi)   # natural frequencies [Hz]
+    [L,V]   = np.linalg.eig(np.linalg.solve(M,K))   # eigenvalue solution
+    w       = np.sqrt(L)/(2*np.pi)   # natural frequencies [Hz]
     idx     = np.argsort(w)                   # ordering (ascendent)
     w       = w[idx]
     Phi     = V[idx]                          # vibration modes
@@ -46,5 +42,5 @@ def shear_building_2DOF(m1,m2,k1,k2):
     q   = np. multiply(np.multiply(Phi.T,M),Phi)                 # orthogonality property
     Phi = Phi/np.tile(np.sqrt(np.diag(q)).T,(2,1))
 
-    return w,Phi
+    return [w,Phi]
 ##END

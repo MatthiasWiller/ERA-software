@@ -1,8 +1,4 @@
 import numpy as np
-import matplotlib.pylab as plt
-from ERANataf import ERANataf
-from ERADist import ERADist
-from BUS_SuS import BUS_SuS
 """
 ---------------------------------------------------------------------------
 two-degree-of-freedom shear building model

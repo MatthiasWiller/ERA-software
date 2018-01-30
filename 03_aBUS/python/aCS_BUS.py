@@ -35,7 +35,7 @@ Based on:
    Probabilistic Engineering Mechanics 41 (2015) 83-103.
 ---------------------------------------------------------------------------
 """
-def aCS(N, lam_prev, h, u_j, log_L_fun, l, gl):
+def aCS_BUS(N, lam_prev, h, u_j, log_L_fun, l, gl):
     ## Initialize variables
     #pa = 0.1
     n  = np.size(u_j,axis=0)     # number of uncertain parameters
@@ -129,5 +129,5 @@ def aCS(N, lam_prev, h, u_j, log_L_fun, l, gl):
     # compute mean acceptance rate of all chains
     accrate = np.mean(hat_a)
 
-    return u_jk, geval, new_lambda, accrate
+    return [u_jk, geval, new_lambda, accrate]
 ##END

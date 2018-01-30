@@ -51,12 +51,18 @@ def aBUS_SuS(N,p0,log_likelihood,T_nataf):
     #dist_p  = ERADist('uniform','PAR',[0,1])     # uniform variable in BUS
 
     ## limit state function in the standard space
-    H = lambda u: u[-1] - scipy.stats.invnorm(c*likelihood(T_nataf.U2X(u[1:-2])))
+    # H = lambda u: u[-1] - scipy.stats.invnorm(c*likelihood(T_nataf.U2X(u[1:-2])))
     
+    ## limit state funtion for the observation event (Ref.1 Eq.12)
+    gl = lambda u, l, log_L: np.log(scipy.stats.norm.cdf(u[-1])) + l - log_L
+    # note that gl = log(p) + l(i) - leval
+    # where p = normcdf(u_j(end,:)) is the standard uniform variable of BUS
+
     ## Likelihood Function in standard normal space
-    log_L_fun = lambda u: log_likelihood(T_nataf.U2X(u[:-1]))
+    log_L_fun = lambda u: log_likelihood(T_nataf.U2X(u[:-1]).flatten())
     def lsf(u, log_c):
         geval = np.log(scipy.stats.norm.cdf([u[-1, :]])) - loc_c - log_L(u)
+        return geval.flatten()
     #lsf = lambda u, log_c: np.log(stats.norm.cdf([u[-1, :]])) - log_c - log_L(u)
 
     ## Initialization of variables
@@ -76,11 +82,11 @@ def aBUS_SuS(N,p0,log_likelihood,T_nataf):
     ## SuS procedure
     # initial MCS step
     print('Evaluating performance function:\t', end='')
-    u_j = np.random.normal(size=(n,N))     # samples in the standard space
+    u_j = np.random.normal(size=(n,N))  # samples in the standard space
     for j in range(N):
-        leval[j] = log_L_fun(u_j[:,j])  # limit state function in standard (Ref. 2 Eq. 21)
+        leval[j] = log_L_fun(u_j[:,j].reshape(-1,1))  # limit state function in standard (Ref. 2 Eq. 21)
         if leval[j] <= 0:
-            Nf[j] = Nf[j]+1
+            nF[i] = nF[i]+1
     l = np.max(leval)           # =-log(c) (Ref.1 Alg.5 Part.3)
     print('OK!')
 
@@ -94,18 +100,17 @@ def aBUS_SuS(N,p0,log_likelihood,T_nataf):
         geval = gl(u_j[-1,:], l, leval)   # evaluate LSF (Ref.1 Eq.12)
 
         # sort values in ascending order
-        g_prime = np.sort(geval)
-        gsort[j,:] = g_prime
-        idx = sorted(range(len(geval)), key=lambda x: geval[x])
+        idx        = np.argsort(geval)
+        # gsort[j,:] = geval[idx]
         
         # order the samples according to idx
         u_j_sort = u_j[:,idx]
         samplesU['total'].append(u_j_sort)   # store the ordered samples
 
         # intermediate level
-        h[i] = np.percentile(gsort[j,:],p0*100)
-        fprintf('\n\n-Constant c level ', i, ' = ', np.exp(-l))
-        fprintf('\n-Threshold level ', i, ' = ', h[i])
+        h[i] = np.percentile(geval,p0*100)
+        print('\n\n-Constant c level ', i, ' = ', np.exp(-l))
+        print('\n-Threshold level ', i, ' = ', h[i])
 
         # number of failure points in the next level
         nF[i] = sum(geval <= max(h[i],0))
@@ -118,15 +123,15 @@ def aBUS_SuS(N,p0,log_likelihood,T_nataf):
             prob[i] = p0      
         
         # select seeds
-        samplesU['seeds'].append(u_j_sort[:,:nF])       # store ordered level seeds
+        samplesU['seeds'].append(u_j_sort[:,:nF[i]])       # store ordered level seeds
         
         # randomize the ordering of the samples (to avoid bias)
-        idx_rnd   = np.random.permutation(nF)
+        idx_rnd   = np.random.permutation(nF[i])
         rnd_seeds = samplesU['seeds'][i][:,idx_rnd]     # non-ordered seeds
            
         # sampling process using adaptive conditional sampling
         print('MCMC sampling ... \t', end='')
-        [u_j,leval,lam,] = aCS_BUS(N, lam, h[i], rnd_seeds, log_L_fun, l, gl)
+        [u_j,leval,lam,_] = aCS_BUS(N, lam, h[i], rnd_seeds, log_L_fun, l, gl)
         print('Ok!')
 
         # update the value of the scaling constant (Ref.1 Alg.5 Part.4d)
@@ -161,7 +166,7 @@ def aBUS_SuS(N,p0,log_likelihood,T_nataf):
     for i in range(m+1):
         #p = dist_p.icdf(scipy.stats.normal.cdf(samplesU['total'][i][-1,:])) is the same as:
         p = scipy.stats.normal.cdf(samplesU['total'][i][-1,:])
-        samplesX['total'][i] = [T_nataf.U2X(samplesU['total'][i][:-2,:]), p]
+        samplesX['total'][i] = [T_nataf.U2X(samplesU['total'][i][:-1,:]), p]
     
-    return h,samplesU,samplesX,cE,c,lam
+    return [h,samplesU,samplesX,cE,c,lam]
 ##END
