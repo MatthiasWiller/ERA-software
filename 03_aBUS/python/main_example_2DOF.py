@@ -90,7 +90,7 @@ p0 = 0.1        # probability of each subset
 [h,samplesU,samplesX,cE,c,lam_new] = aBUS_SuS(N,p0,log_likelihood,T_nataf)
 
 ## organize samples and show results
-nsub = len(h)+1   # number of levels + final posterior
+nsub = len(h.flatten())+1   # number of levels + final posterior
 u1p = list()
 u2p = list()
 u0p = list()
@@ -115,11 +115,11 @@ cE_exact    = 1.52e-3
 
 # show results
 print('\nExact model evidence =', cE_exact)
-print('\nModel evidence BUS-SuS =', cE, '\n')
-print('\nExact posterior mean x_1 =', mu_exact)
-print('\nMean value of x_1 =', np.mean(x1p[-1]), '\n')
-print('\nExact posterior std x_1 =', sigma_exact)
-print('\nStd of x_1 =', np.std(x1p[-1]))
+print('Model evidence BUS-SuS =', cE, '\n')
+print('Exact posterior mean x_1 =', mu_exact)
+print('Mean value of x_1 =', np.mean(x1p[-1]), '\n')
+print('Exact posterior std x_1 =', sigma_exact)
+print('Std of x_1 =', np.std(x1p[-1]))
 
 ## Plots
 # Options for font-family and font-size

@@ -94,8 +94,8 @@ def aCS_BUS(N, lam_prev, h, u_j, log_L_fun, l, gl):
             
             # accept or reject sample
             log_L = log_L_fun(v)          # evaluate loglikelihood function
-            ge    = gl(v[-1], l, log_L)   # evaluate limit state function    
-            He = H(v)
+            ge    = gl(v[-1].reshape(-1), l, log_L)   # evaluate limit state function    
+            # He = H(v)
             if ge <= h:
                 u_jk[:,idx+t] = v         # accept the candidate in observation region           
                 leval[idx+t]  = log_L     # store the loglikelihood evaluation
@@ -129,5 +129,5 @@ def aCS_BUS(N, lam_prev, h, u_j, log_L_fun, l, gl):
     # compute mean acceptance rate of all chains
     accrate = np.mean(hat_a)
 
-    return [u_jk, geval, new_lambda, accrate]
+    return [u_jk, leval, new_lambda, accrate]
 ##END
