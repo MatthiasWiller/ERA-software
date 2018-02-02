@@ -3,11 +3,11 @@ import scipy
 import matplotlib.pylab as plt
 from ERANataf import ERANataf
 from ERADist import ERADist
-from aBUS_SuS import aBUS_SuS
+from iTMCMC import iTMCMC
 from shear_building_2DOF import shear_building_2DOF
 """
 ---------------------------------------------------------------------------
-aBUS+SuS: Ex. 1 Ref. 1 - Parameter identification two-DOF shear building
+iTMCMC: Ex. 1 Ref. 1 - Parameter identification two-DOF shear building
 ---------------------------------------------------------------------------
 Created by:
 Felipe Uribe (felipe.uribe@tum.de)
@@ -20,9 +20,13 @@ www.era.bgu.tum.de
 Version 2018-01
 ---------------------------------------------------------------------------
 References:
-1."Bayesian updating with structural reliability methods"
-   Daniel Straub & Iason Papaioannou.
-   Journal of Engineering Mechanics 141.3 (2015) 1-13.
+1."Transitional Markov Chain Monte Carlo: Observations and improvements". 
+   Wolfgang Betz et al.
+   Journal of Engineering Mechanics. 142.5 (2016) 04016016.1-10
+2."Transitional Markov Chain Monte Carlo method for Bayesian model updating, 
+   model class selection and model averaging". 
+   Jianye Ching & Yi-Chun Chen
+   Journal of Engineering Mechanics. 133.7 (2007) 816-832
 ---------------------------------------------------------------------------
 """
 
@@ -75,82 +79,58 @@ f_tilde = np.array([3.13, 9.83])       # measured eigenfrequencies [Hz]
 f = lambda x: shear_building_2DOF(m1, m2, kn*x[0], kn*x[1])
 
 # modal measure-of-fit function
-J = lambda x: sum((lam**2)*(((f(x)[0]**2)/f_tilde**2) - 1)**2)   
+J = lambda x: np.sum((lam**2)*(((f(x)[0]**2)/f_tilde**2) - 1)**2)   
 
 # likelihood function
 likelihood     = lambda x: np.exp(-J(x)/(2*var_eps))
 realmin        = np.finfo(np.double).tiny # realmin to avoid Inf values in log(0)
 log_likelihood = lambda x: np.log(np.exp(-J(x)/(2*var_eps)) + realmin)
 
-## aBUS-SuS
-N  = 2000       # number of samples per level
-p0 = 0.1        # probability of each subset
 
-# run the BUS_SuS.m function
-[h,samplesU,samplesX,cE,c,lam_new] = aBUS_SuS(N,p0,log_likelihood,T_nataf)
+## TMCMC
+Ns = 1e3        # number of samples per level
+Nb = 0.1*Ns     # burn-in period
 
-## organize samples and show results
-nsub = len(h.flatten())+1   # number of levels + final posterior
-u1p = list()
-u2p = list()
-u0p = list()
-x1p = list()
-x2p = list()
-pp  = list()
+# run the iTMCMC.py function
+[Theta,p,S] = iTMCMC(Ns, Nb, log_likelihood, T_nataf)
 
-for i in range(nsub):
-   # samples in standard
-   u1p.append(samplesU['total'][i][0,:])  
-   u2p.append(samplesU['total'][i][1,:])
-   u0p.append(samplesU['total'][i][2,:])
-   # samples in physical
-   x1p.append(samplesX['total'][i][0][0,:])
-   x2p.append(samplesX['total'][i][0][1,:])
-   pp.append( samplesX['total'][i][1])
-
+## show results
 # reference solutions
-mu_exact    = 1.12     # for x_1
-sigma_exact = 0.66     # for x_1
+mu_exact    = 1.12   # for x_1
+sigma_exact = 0.66   # for x_1
 cE_exact    = 1.52e-3
 
-# show results
-print('\nExact model evidence =', cE_exact)
-print('Model evidence BUS-SuS =', cE, '\n')
+print('Exact model evidence =', cE_exact)
+print('Model evidence TMCMC =', S, '\n')
 print('Exact posterior mean x_1 =', mu_exact)
-print('Mean value of x_1 =', np.mean(x1p[-1]), '\n')
-print('Exact posterior std x_1 =', sigma_exact)
-print('Std of x_1 =', np.std(x1p[-1]))
+print('Mean value of x_1 =', np.mean(Theta.original[-1][:,0]), '\n')
+print('Exact posterior std x_1 = ', sigma_exact)
+print('Std of x_1 =',np.std(Theta.original[-1][:,0]),'\n\n')
 
 ## Plots
-# Options for font-family and font-size
-plt.rc('text', usetex=True)
-plt.rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
-plt.rc('font', size=12)
-plt.rc('axes', titlesize=20)    # fontsize of the axes title
-plt.rc('axes', labelsize=18)    # fontsize of the x and y labels
-plt.rc('figure', titlesize=20)  # fontsize of the figure title
-
-# plot samples standard space
+# Options
+# ...
+m = len(p)   # number of stages (intermediate levels)
+# plot p values
 plt.figure()
-plt.suptitle('Standard space')
-for i in range(nsub):
-   plt.subplot(2,2,i+1) 
-   plt.plot(u1p[i],u2p[i],'r.') 
-   plt.xlabel('$u_1$') 
-   plt.ylabel('$u_2$')
-   plt.xlim([-3, 1])
-   plt.ylim([-3, 0])
-
-# plot samples original space
+plt.plot(np.range(1,m),p,'ro-')
+plt.xlabel('Intermediate levels $j$') # ,'Interpreter','Latex','FontSize', 18)
+plt.ylabel('$p_j$') #,'Interpreter','Latex','FontSize', 18)
+# set(gca,'FontSize',15) axis tight
+   
+# plot samples increasing p
+idx = np.array([0, np.round((m-1)/3), np.round(2*(m-1)/3), m-1])
 plt.figure()
-plt.suptitle('Original space')
-for i in range(nsub):
+for i in range(4):
    plt.subplot(2,2,i+1) 
-   plt.plot(x1p[i],x2p[i],'b.') 
-   plt.xlabel('$x_1$') 
-   plt.ylabel('$x_2$')
+   plt.plot(Theta.original[idx[i]][:,0],Theta.original[idx[i]][:,1],'b.')
+   plt.title('$p_j=',p[idx[i]],'$') #,'Interpreter','Latex','FontSize', 18)
+   plt.xlabel('$\theta_1$') # ,'Interpreter','Latex','FontSize', 18)
+   plt.ylabel('$\theta_2$') # ,'Interpreter','Latex','FontSize', 18)
    plt.xlim([0, 3])
-   plt.ylim([0, 1.5])
+   plt.ylim([0, 2])
+   #set(gca,'FontSize',15)  axis equal 
+
 
 plt.show()
 ##END
