@@ -92,9 +92,8 @@ def SuS(N,p0,g_fun,distr):
     # SuS stage
     while True:
         # sort values in ascending order
-        g_prime = np.sort(geval)
-        gsort[j,:] = g_prime
-        idx = sorted(range(len(geval)), key=lambda x: geval[x])
+        idx        = np.argsort(geval)
+        gsort[j,:] = geval[idx]
         
         # order the samples according to idx
         u_j_sort = u_j[:,idx]
@@ -172,5 +171,5 @@ def SuS(N,p0,g_fun,distr):
     Pf_line = np.sort(Pf_line.reshape(-1))
     b_line  = np.sort(b_line.reshape(-1))
 
-    return Pf_SuS,delta_SuS,b,Pf,b_line,Pf_line,samplesU
+    return [Pf_SuS,delta_SuS,b,Pf,b_line,Pf_line,samplesU]
 ##END
