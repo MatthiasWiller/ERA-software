@@ -3,6 +3,8 @@ import scipy.stats
 from ERANataf import ERANataf
 from ERADist import ERADist
 from h_calc import h_calc
+from GM_sample import GM_sample
+from EMGM import EMGM
 """
 ---------------------------------------------------------------------------
 Cross entropy-based importance sampling
@@ -15,12 +17,8 @@ www.era.bgu.tum.de
 ---------------------------------------------------------------------------
 Version 2018-02
 ---------------------------------------------------------------------------
-Input
-* N         : Number of samples per level
-* rho       : 
-* g_fun     : limit state function
-* distr     : Nataf distribution object or
-              marginal distribution object of the input variables
+Input:
+
 ---------------------------------------------------------------------------
 Output:
 
@@ -58,7 +56,7 @@ def CEIS_SG(N, rho, g_fun, distr):
     # Definition of parameters of the random variables (uncorrelated standard normal)
     mu_init = np.zeros(dim)   # ...
     Si_init = np.eye(dim)     # ...
-    Pi_init = [1]             # ...
+    Pi_init = [1]   # ...
     #
     gamma_hat = np.zeros((max_it+1)) # space for ...
     samplesU = {'total': list()}
@@ -66,20 +64,20 @@ def CEIS_SG(N, rho, g_fun, distr):
     ## CE Procedure
     # Initializing parameters
     gamma_hat[j] = 1
-    mu_hat       = mu_init
-    Si_hat       = Si_init
-    Pi_hat       = Pi_init
+    mu_hat = mu_init
+    Si_hat = Si_init
+    Pi_hat = Pi_init
 
     # Iteration
     for j in range(max_it):
-        # Generate samples and save them
-        X = scipy.stats.multivariate_normal.rvs(mean=mu_hat, cov=Si_hat, size=N)
-        samplesU['total'].append(X.T)
+        # Generate samples
+        X = GM_sample(mu_hat, Si_hat, Pi_hat, N)
+        # X = scipy.stats.multivariate_normal.rvs(mean=mu_hat, cov=Si_hat, size=N)
 
         # Count generated samples
         N_tot += N
 
-        # Evaluation of the limit state function
+        # Evatluation of the limit state function
         geval = g(X.T)
 
         # Calculating h for the likelihood ratio
@@ -87,6 +85,7 @@ def CEIS_SG(N, rho, g_fun, distr):
 
         # check convergence
         if gamma_hat[j] == 0:
+            k_fin = k
             break
         
         # obtaining estimator gamma
@@ -98,15 +97,14 @@ def CEIS_SG(N, rho, g_fun, distr):
         # Likelihood ratio
         W = scipy.stats.multivariate_normal.pdf(X, mean=np.zeros((dim)), cov=np.eye((dim)))/h
 
-        # Parameter update: Closed-form update
-        prod   = np.matmul(W[I], X[I,:])
-        summ   = np.sum(W[I])
-        mu_hat = (prod)/summ
-        Xtmp = X[I,:]-mu_hat
-        Xo = (Xtmp)*np.tile(np.sqrt(W[I]),(dim,1)).T
-        Si_hat = np.matmul(Xo.T,Xo)/np.sum(W[I]) + 1e-6*np.eye(dim)
+        # Parameter update: EM algorithm
+        nGM = 1
+        # algtype = 'RAND'
+        algtype = 'KMEANS'
 
-    # needed steps
+        [mu_hat, Si_hat, Pi_hat, k] = EMGM(X[I,:].T, 1/W[I], nGM, algtype)
+
+    # store the needed steps
     l = j
     
     ## Calculation of the Probability of failure
@@ -114,5 +112,5 @@ def CEIS_SG(N, rho, g_fun, distr):
     I_final = (geval<=0)
     Pr = 1/N*sum(I_final*W_final)
 
-    return [Pr, l, N_tot, gamma_hat, samplesU, 1]
+    return [Pr, l, N_tot, gamma_hat, k_fin]
 ##END

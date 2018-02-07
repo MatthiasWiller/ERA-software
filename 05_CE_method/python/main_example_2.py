@@ -3,6 +3,7 @@ import scipy.stats
 import matplotlib.pylab as plt
 from ERANataf import ERANataf
 from ERADist import ERADist
+from CEIS_SG import CEIS_SG
 """
 ---------------------------------------------------------------------------
 Cross entropy method: Ex. 2 Ref. 2 - linear function of independent exponential

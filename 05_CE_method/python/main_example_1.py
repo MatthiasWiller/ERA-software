@@ -44,7 +44,11 @@ N   = 1000        # Total number of samples for each level
 rho = 0.1         # ...
 
 print('CE-based IS stage: ')
-[Pr, l, N_tot, gamma_hat, k_fin] = CEIS_SG(N, rho, g) # single gaussian
+[Pr, l, N_tot, gamma_hat, u_samples, k_fin] = CEIS_SG(N, rho, g, pi_pdf)       # single gaussian
+# [Pr, l, N_tot, gamma_hat, k_fin] = CEIS_GM(N, rho, g, pi_pdf)       # gaussian mixture
+# [Pr, l, N_tot, gamma_hat, k_fin] = CEIS_vMFNM(N, rho, g, pi_pdf)    # adaptive vMFN mixture
+
+
 
 # exact solution
 pf_ex    = scipy.stats.norm.cdf(-beta)
@@ -55,29 +59,29 @@ gg       = np.linspace(0,7,140)
 print('\n***Exact Pf: ', pf_ex, ' ***')
 print('\n***CEIS Pf: ', Pr, ' ***\n\n')
 
-# ## Plots
-# # Options for font-family and font-size
-# plt.rc('text', usetex=True)
-# plt.rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
-# plt.rc('font', size=12)
-# plt.rc('axes', titlesize=20)    # fontsize of the axes title
-# plt.rc('axes', labelsize=18)    # fontsize of the x and y labels
-# plt.rc('figure', titlesize=20)  # fontsize of the figure title
-# # Plot samples
-# if d == 2:
-#     m = len(Pr)
-#     plt.figure() 
-#     xx = np.linspace(0,5,100)
-#     nnp = len(xx) 
-#     [X,Y] = np.meshgrid(xx,xx)
-#     xnod = np.array([X,Y])
-#     Z    = g(xnod) 
-#     plt.contour(X,Y,Z,[0],colors='r')  # LSF
-#     for j in range(m+1):
-#         u_j_samples = u_samples['order'][j]
-#         plt.scatter(u_j_samples[0,:],u_j_samples[1,:],marker='.')
+## Plots
+# Options for font-family and font-size
+plt.rc('text', usetex=True)
+plt.rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+plt.rc('font', size=12)
+plt.rc('axes', titlesize=20)    # fontsize of the axes title
+plt.rc('axes', labelsize=18)    # fontsize of the x and y labels
+plt.rc('figure', titlesize=20)  # fontsize of the figure title
+# Plot samples
+if d == 2:
+    m = l
+    plt.figure() 
+    xx = np.linspace(0,5,100)
+    nnp = len(xx) 
+    [X,Y] = np.meshgrid(xx,xx)
+    xnod = np.array([X,Y])
+    Z    = g(xnod) 
+    plt.contour(X,Y,Z,[0],colors='r')  # LSF
+    for j in range(m+1):
+        u_j_samples = u_samples['total'][j]
+        plt.scatter(u_j_samples[0,:],u_j_samples[1,:],marker='.')
     
-#     plt.tight_layout()
+    plt.tight_layout()
 
 
 # # Plot failure probability: Exact
@@ -101,5 +105,5 @@ print('\n***CEIS Pf: ', Pr, ' ***\n\n')
 #                        markerfacecolor='none')
 # plt.tight_layout()
 
-# plt.show()
+plt.show()
 ##END
