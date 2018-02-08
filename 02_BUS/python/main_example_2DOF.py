@@ -75,7 +75,7 @@ f_tilde = np.array([3.13, 9.83])       # measured eigenfrequencies [Hz]
 f = lambda x: shear_building_2DOF(m1, m2, kn*x[0], kn*x[1])
 
 # modal measure-of-fit function
-J = lambda x: np.sum((lam**2)*(((f(x)[0]**2)/f_tilde**2) - 1)**2)   
+J = lambda x: np.sum((lam**2)*(((f(x)**2)/f_tilde**2) - 1)**2)   
 
 # likelihood function
 likelihood = lambda x: np.exp(-J(x)/(2*var_eps))

@@ -36,11 +36,11 @@ def shear_building_2DOF(m1,m2,k1,k2):
     w       = np.sqrt(L)/(2*np.pi)   # natural frequencies [Hz]
     idx     = np.argsort(w)                   # ordering (ascendent)
     w       = w[idx]
-    Phi     = V[idx]                          # vibration modes
+    # Phi     = V[idx]                          # vibration modes
 
     # Normalizing modes
-    q   = np. multiply(np.multiply(Phi.T,M),Phi)                 # orthogonality property
-    Phi = Phi/np.tile(np.sqrt(np.diag(q)).T,(2,1))
+    # q   = np. multiply(np.multiply(Phi.T,M),Phi)                 # orthogonality property
+    # Phi = Phi/np.tile(np.sqrt(np.diag(q)).T,(2,1))
 
-    return [w,Phi]
+    return w
 ##END
