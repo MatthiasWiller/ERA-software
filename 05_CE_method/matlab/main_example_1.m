@@ -52,13 +52,12 @@ fprintf('\n***CEIS Pf: %g ***\n\n', Pr);
 %% Plots
 % plot samples
 if d == 2
-   m = l;
    figure; hold on;
    xx = 0:0.05:5; nnp = length(xx); [X,Y] = meshgrid(xx);
    xnod = cat(2,reshape(X',nnp^2,1),reshape(Y',nnp^2,1));
    Z    = g(xnod'); Z = reshape(Z,nnp,nnp);
    contour(X,Y,Z,[0,0],'r','LineWidth',3);  % LSF
-   for j = 1:m+1
+   for j = 1:l
       u_j_samples= u_samples.total{j};
       plot(u_j_samples(1,:),u_j_samples(2,:),'.');
    end

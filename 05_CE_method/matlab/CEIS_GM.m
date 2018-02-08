@@ -52,6 +52,7 @@ g = g_fun;
 j      = 0;                % initial level
 max_it = 100;              % estimated number of iterations
 N_tot  = 0;                % total number of samples
+k      = 1;                % number of Gaussians in mixture
 
 % Definition of parameters of the random variables (uncorrelated standard normal)
 mu_init = zeros(1,dim);   % ...
@@ -70,7 +71,7 @@ Pi_hat       = Pi_init;
 %% Iteration
 for j = 1:max_it
     % Generate samples
-    X = mvnrnd(mu_hat, Si_hat, N);
+    X = GM_sample(mu_hat, Si_hat, Pi_hat, N);
     samplesU.total{j} = X';
 
     % Count generated samples
@@ -84,11 +85,13 @@ for j = 1:max_it
 
     % Check convergence
     if gamma_hat(j) == 0
+        k_fin = k;
         break
     end
 
     % obtaining estimator gamma
     gamma_hat(j+1) = max(0,prctile(geval, rho*100));
+    disp(num2str(gamma_hat(j+1)));
 
     % Indicator function
     I=(geval<=gamma_hat(j+1));
@@ -96,22 +99,27 @@ for j = 1:max_it
     % Likelihood ratio
     W=mvnpdf(X,zeros(1,dim),eye(dim))./h;
 
-    % Parameter update: Closed-form update
-    mu_hat=(W(I)'*X(I,:))./sum(W(I));
-    Xo=bsxfun(@times,X(I,:)-mu_hat,sqrt(W(I)));
-    Si_hat=Xo'*Xo/sum(W(I))+1e-6*eye(dim);
+    % Parameter update
+    init.nGM=1;
+    % init.type='RAND';
+    init.type='KMEANS';
+    dist = EMGM(X(I,:)',1./W(I),init);
+
+    % Assigning the variables with updated parameters
+    mu_hat=dist.mu';
+    Si_hat=dist.si;
+    Pi_hat=dist.pi';
+    k=length(dist.pi);
 
 end
 
 % needed steps
-l = j-1;
+l = j; k_fin = k;
 
 %% Calculation of the Probability of failure
 W_final = mvnpdf(X,zeros(1,dim),eye(dim))./h;
 I_final = (geval<=0);
 Pr      = 1/N*sum(I_final*W_final);
-
-k_fin = 1;
 
 return;
 %%END
