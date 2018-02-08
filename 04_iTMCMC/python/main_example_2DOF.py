@@ -79,7 +79,7 @@ f_tilde = np.array([3.13, 9.83])       # measured eigenfrequencies [Hz]
 f = lambda x: shear_building_2DOF(m1, m2, kn*x[0], kn*x[1])
 
 # modal measure-of-fit function
-J = lambda x: np.sum((lam**2)*(((f(x)[0]**2)/f_tilde**2) - 1)**2)   
+J = lambda x: np.sum((lam**2)*(((f(x)**2)/f_tilde**2) - 1)**2)   
 
 # likelihood function
 likelihood     = lambda x: np.exp(-J(x)/(2*var_eps))
@@ -88,8 +88,8 @@ log_likelihood = lambda x: np.log(np.exp(-J(x)/(2*var_eps)) + realmin)
 
 
 ## TMCMC
-Ns = 1e3        # number of samples per level
-Nb = 0.1*Ns     # burn-in period
+Ns = int(1e3)    # number of samples per level
+Nb = int(0.1*Ns) # burn-in period
 
 # run the iTMCMC.py function
 [Theta,p,S] = iTMCMC(Ns, Nb, log_likelihood, T_nataf)
@@ -103,9 +103,9 @@ cE_exact    = 1.52e-3
 print('Exact model evidence =', cE_exact)
 print('Model evidence TMCMC =', S, '\n')
 print('Exact posterior mean x_1 =', mu_exact)
-print('Mean value of x_1 =', np.mean(Theta.original[-1][:,0]), '\n')
+print('Mean value of x_1 =', np.mean(Theta['original'][-1][:,0]), '\n')
 print('Exact posterior std x_1 = ', sigma_exact)
-print('Std of x_1 =',np.std(Theta.original[-1][:,0]),'\n\n')
+print('Std of x_1 =',np.std(Theta['original'][-1][:,0]),'\n\n')
 
 ## Plots
 # Options
@@ -123,7 +123,7 @@ idx = np.array([0, np.round((m-1)/3), np.round(2*(m-1)/3), m-1])
 plt.figure()
 for i in range(4):
    plt.subplot(2,2,i+1) 
-   plt.plot(Theta.original[idx[i]][:,0],Theta.original[idx[i]][:,1],'b.')
+   plt.plot(Theta['original'][idx[i]][:,0],Theta['original'][idx[i]][:,1],'b.')
    plt.title('$p_j=',p[idx[i]],'$') #,'Interpreter','Latex','FontSize', 18)
    plt.xlabel('$\theta_1$') # ,'Interpreter','Latex','FontSize', 18)
    plt.ylabel('$\theta_2$') # ,'Interpreter','Latex','FontSize', 18)

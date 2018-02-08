@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.stats
 """
 ---------------------------------------------------------------------------
 Basic resampling algorithm
@@ -25,14 +26,14 @@ def resampling_index(w):
     N    = len(w)
     csum = np.cumsum(w)
     ssum = sum(w)
-    lim  = ssum*np.rand.rand()
+    lim  = ssum*scipy.stats.uniform.rvs()
     #
     i = 1
     while csum[i] <= lim:
         i = i+1
         if i > N:
             i   = 1
-            lim = ssum*np.rand.rand()
+            lim = ssum*scipy.stats.uniform.rvs()
     idx = i
 
     return idx
