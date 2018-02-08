@@ -35,8 +35,8 @@ N  = 1000;         % Total number of samples for each level
 rho = 0.1;          % Probability of each subset, chosen adaptively
 
 fprintf('CE-based IS stage: \n');
-[Pr, l, N_tot, gamma_hat, u_samples, k_fin] = CEIS_SG(N,rho,g,pi_pdf);     % single gaussian 
-% [Pr, l, N_tot, gamma_hat, u_samples, k_fin] = CEIS_GM(N,rho,g,pi_pdf);    % gaussian mixture
+% [Pr, l, N_tot, gamma_hat, u_samples, k_fin] = CEIS_SG(N,rho,g,pi_pdf);     % single gaussian 
+[Pr, l, N_tot, gamma_hat, u_samples, k_fin] = CEIS_GM(N,rho,g,pi_pdf);    % gaussian mixture
 % [Pr, l, N_tot, gamma_hat, u_samples, k_fin] = CEIS_vMFNM(N,rho,g,pi_pdf); % adaptive vMFN mixture
 
 
