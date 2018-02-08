@@ -1,8 +1,6 @@
-import numpy as np
-import scipy.stats
-"""
----------------------------------------------------------------------------
-Basic algorithm
+function h = h_calc(X, mu, Si, Pi)
+%% Basic algorithm
+%{
 ---------------------------------------------------------------------------
 Created by:
 Sebastian Geyer (s.geyer@tum.de)
@@ -22,16 +20,17 @@ Input:
 Output:
 * h  : 
 ---------------------------------------------------------------------------
-"""
-def h_calc(X, mu, Si, Pi):
-    N     = len(X)
-    k_tmp = len(Pi)
-    if k_tmp == 1:
-        h = scipy.stats.multivariate_normal.pdf(X,mu,Si)
-    else:
-        h_pre = np.zeros((N, k_tmp))
-        for q in range(k_tmp):
-            h_pre[:,q] = Pi[q] * scipy.stats.multivariate_normal.pdf(X,mu[q,:], Si[:,:,q])
-        h = np.sum(h, axis=1)
-    return h
-## END
+%}
+N=size(X,1);
+if size(Pi,1)==1
+    h=mvnpdf(X,mu,Si);
+else
+    h_pre=zeros(N,size(Pi,1));
+    for q=1:size(Pi,1)
+        
+        h_pre(:,q)=Pi(q)*mvnpdf(X,mu(q,:),Si(:,:,q));
+    end
+    h=sum(h_pre,2);
+end
+return;
+%%END

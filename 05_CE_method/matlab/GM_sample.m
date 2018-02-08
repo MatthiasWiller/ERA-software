@@ -1,8 +1,6 @@
-import numpy as np
-import scipy.stats
-"""
----------------------------------------------------------------------------
-Basic algorithm
+function X = GM_sample(mu,Si,Pi,N)
+%% Basic algorithm
+%{
 ---------------------------------------------------------------------------
 Created by:
 Sebastian Geyer (s.geyer@tum.de)
@@ -14,24 +12,34 @@ www.era.bgu.tum.de
 Version 2018-02
 ---------------------------------------------------------------------------
 Input:
-* X  :
 * mu :
 * Si :
 * Pi :
+* N  :
 ---------------------------------------------------------------------------
 Output:
-* h  : 
+* X  : 
 ---------------------------------------------------------------------------
-"""
-def h_calc(X, mu, Si, Pi):
-    N     = len(X)
-    k_tmp = len(Pi)
-    if k_tmp == 1:
-        h = scipy.stats.multivariate_normal.pdf(X,mu,Si)
-    else:
-        h_pre = np.zeros((N, k_tmp))
-        for q in range(k_tmp):
-            h_pre[:,q] = Pi[q] * scipy.stats.multivariate_normal.pdf(X,mu[q,:], Si[:,:,q])
-        h = np.sum(h, axis=1)
-    return h
-## END
+%}
+if size(mu,1)==1
+    X=mvnrnd(mu,Si,N);
+else
+    % Determine number of samples from each distribution
+    z=round(Pi*N);
+    
+    if sum(z)~=N
+        dif=sum(z)-N;
+        [~,ind]=max(z);
+        z(ind)=z(ind)-dif;
+    end
+    % Generate samples
+    X=zeros(N,size(mu,2));
+    ind=1;
+    for p=1:size(Pi,1)
+        np=z(p);
+        X(ind:ind+np-1,:)=mvnrnd(mu(p,:),Si(:,:,p),np);
+        ind=ind+np;
+    end
+end
+return;
+%%END

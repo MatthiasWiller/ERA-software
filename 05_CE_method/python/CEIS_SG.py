@@ -8,6 +8,7 @@ from h_calc import h_calc
 Cross entropy-based importance sampling
 ---------------------------------------------------------------------------
 Created by:
+Sebastian Geyer (s.geyer@tum.de)
 Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group
 Technische Universitat Munchen
@@ -112,7 +113,7 @@ def CEIS_SG(N, rho, g_fun, distr):
     ## Calculation of the Probability of failure
     W_final = scipy.stats.multivariate_normal.pdf(X, mean=np.zeros(dim), cov=np.eye((dim)))/h
     I_final = (geval<=0)
-    Pr = 1/N*sum(I_final*W_final)
+    Pr      = 1/N*sum(I_final*W_final)
 
     return [Pr, l, N_tot, gamma_hat, samplesU, 1]
 ##END

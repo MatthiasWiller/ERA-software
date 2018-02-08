@@ -9,6 +9,7 @@ from CEIS_SG import CEIS_SG
 Cross entropy method: Ex. 1 Ref. 2 - linear function of independent standard normal
 ---------------------------------------------------------------------------
 Created by:
+Sebastian Geyer (s.geyer@tum.de)
 Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group
 Technische Universitat Munchen
