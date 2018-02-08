@@ -35,10 +35,6 @@ Based on:
 """
 
 def corr_factor(I_Fj, p_j, Ns, Nc):
-    if (len(locals()) != 4): # must be the first statement in function
-        raise RuntimeError('Incorrect number of parameters'
-                           'in function corr_factor')
-
     ## Initialize variables
     gamma = np.zeros(Ns-1)   # correlation factor
     R     = np.zeros(Ns-1)   # autocovariance sequence

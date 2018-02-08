@@ -42,10 +42,6 @@ Based on:
 ---------------------------------------------------------------------------
 """
 def aBUS_SuS(N,p0,log_likelihood,T_nataf):
-    if (len(locals()) != 4): # must be the first statement in function
-        raise RuntimeError('Incorrect number of parameters'
-                           'in function BUS_SuS')
-
     ## add p Uniform variable of BUS
     n = len(T_nataf.Marginals)+1        # number of parameters (dimension)
     #dist_p  = ERADist('uniform','PAR',[0,1])     # uniform variable in BUS
