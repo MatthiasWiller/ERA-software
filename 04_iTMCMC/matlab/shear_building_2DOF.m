@@ -32,7 +32,7 @@ K = [ k1 + k2, -k2;
 %% Free response - Modal analysis 
 [V,L]   = eig(M\K);               % eigenvalue solution
 w       = sqrt(diag(L))/(2*pi);   % natural frequencies [Hz]
-% [w,idx] = sort(w);                % ordering (ascendent)
+[w,idx] = sort(w);                % ordering (ascendent)
 % Phi     = V(idx);                 % vibration modes
 
 % Normalizing modes
