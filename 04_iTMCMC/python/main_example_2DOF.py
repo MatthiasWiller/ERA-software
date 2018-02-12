@@ -92,7 +92,7 @@ Ns = int(1e3)    # number of samples per level
 Nb = int(0.1*Ns) # burn-in period
 
 # run the iTMCMC.py function
-[Theta,p,S] = iTMCMC(Ns, Nb, log_likelihood, T_nataf)
+[Theta,p,cE] = iTMCMC(Ns, Nb, log_likelihood, T_nataf)
 
 ## show results
 # reference solutions
@@ -101,36 +101,41 @@ sigma_exact = 0.66   # for x_1
 cE_exact    = 1.52e-3
 
 print('Exact model evidence =', cE_exact)
-print('Model evidence TMCMC =', S, '\n')
+print('Model evidence TMCMC =', cE, '\n')
 print('Exact posterior mean x_1 =', mu_exact)
 print('Mean value of x_1 =', np.mean(Theta['original'][-1][:,0]), '\n')
 print('Exact posterior std x_1 = ', sigma_exact)
 print('Std of x_1 =',np.std(Theta['original'][-1][:,0]),'\n\n')
 
 ## Plots
-# Options
-# ...
+# Options for font-family and font-size
+plt.rc('text', usetex=True)
+plt.rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+plt.rc('font', size=12)
+plt.rc('axes', titlesize=20)    # fontsize of the axes title
+plt.rc('axes', labelsize=18)    # fontsize of the x and y labels
+plt.rc('figure', titlesize=20)  # fontsize of the figure title
+
 m = len(p)   # number of stages (intermediate levels)
 # plot p values
 plt.figure()
-plt.plot(np.range(1,m),p,'ro-')
-plt.xlabel('Intermediate levels $j$') # ,'Interpreter','Latex','FontSize', 18)
-plt.ylabel('$p_j$') #,'Interpreter','Latex','FontSize', 18)
-# set(gca,'FontSize',15) axis tight
+plt.plot(np.arange(0,m),p,'ro-')
+plt.xlabel(r'Intermediate levels $j$') 
+plt.ylabel(r'$p_j$')
+plt.tight_layout()
    
 # plot samples increasing p
-idx = np.array([0, np.round((m-1)/3), np.round(2*(m-1)/3), m-1])
+idx = np.array([0, int(np.round((m-1)/3)), int(np.round(2*(m-1)/3)), m-1])
 plt.figure()
 for i in range(4):
    plt.subplot(2,2,i+1) 
    plt.plot(Theta['original'][idx[i]][:,0],Theta['original'][idx[i]][:,1],'b.')
-   plt.title('$p_j=',p[idx[i]],'$') #,'Interpreter','Latex','FontSize', 18)
-   plt.xlabel('$\theta_1$') # ,'Interpreter','Latex','FontSize', 18)
-   plt.ylabel('$\theta_2$') # ,'Interpreter','Latex','FontSize', 18)
+   plt.title(r'$p_j=' + str(p[idx[i]]) + r'$')
+   plt.xlabel(r'$\theta_1$')
+   plt.ylabel(r'$\theta_2$')
    plt.xlim([0, 3])
    plt.ylim([0, 2])
-   #set(gca,'FontSize',15)  axis equal 
 
-
+plt.tight_layout()
 plt.show()
 ##END
