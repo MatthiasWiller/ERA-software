@@ -262,7 +262,7 @@ class ERANataf(object):
         phi_n = stats.multivariate_normal.pdf(U.T,
                                               mu,
                                               self.Rho_Z)
-        print(phi_n)
+        #print(phi_n)
         jointpdf = np.zeros(n)
         for i in range(n):
             try:
