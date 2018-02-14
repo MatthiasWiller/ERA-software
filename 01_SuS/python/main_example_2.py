@@ -61,15 +61,13 @@ print('SUBSET SIMULATION stage: ')
 
 # exact solution
 lam      = 1
-# pf_ex    = 1 - gamcdf(Ca,d,lam)
-pf_ex    = 1 - scipy.stats.gamma.cdf(a=Ca, scale=lam, size=d)
-# Pf_exact = lambda gg: 1-gamcdf(Ca-gg,d,lam)
-Pf_exact = lambda gg: 1-scipy.stats.gamma.cdf(a=Ca-gg, scale=lam)
+pf_ex    = 1 - scipy.stats.gamma.cdf(Ca, a=d)
+Pf_exact = lambda gg: 1-scipy.stats.gamma.cdf(Ca-gg, a=d)
 gg       = np.linspace(0,30,300)
 
 # show p_f results
-print('\n***Exact Pf: #g ***', pf_ex)
-print('\n***SuS Pf: #g ***\n\n', Pf_SuS)
+print('\n***Exact Pf: ', pf_ex, ' ***')
+print('\n***SuS Pf: ', Pf_SuS, ' ***\n\n')
 
 ## Plots
 # Plot failure probability: Exact
