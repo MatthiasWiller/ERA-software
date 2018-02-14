@@ -71,9 +71,9 @@ def aBUS_SuS(N,p0,log_likelihood,T_nataf):
     #
     geval = np.zeros((N))              # space for the LSF evaluations
     leval = np.zeros((N))              # space for the LSF evaluations
-    nF    = np.zeros((max_it,1))       # space for the number of failure point per level
-    h     = np.zeros((max_it,1))       # space for the intermediate leveles
-    prob  = np.zeros((max_it,1))       # space for the failure probability at each level
+    nF    = np.zeros(max_it,dtype=int) # space for the number of failure point per level
+    h     = np.zeros(max_it)           # space for the intermediate leveles
+    prob  = np.zeros(max_it)           # space for the failure probability at each level
 
     ## SuS procedure
     # initial MCS step
@@ -119,10 +119,10 @@ def aBUS_SuS(N,p0,log_likelihood,T_nataf):
             prob[i-1] = p0      
         
         # select seeds
-        samplesU['seeds'].append(u_j_sort[:,:int(nF[i,0])])       # store ordered level seeds
+        samplesU['seeds'].append(u_j_sort[:,:int(nF[i])])       # store ordered level seeds
         
         # randomize the ordering of the samples (to avoid bias)
-        idx_rnd   = np.random.permutation(int(nF[i,0]))
+        idx_rnd   = np.random.permutation(int(nF[i]))
         rnd_seeds = samplesU['seeds'][i-1][:,idx_rnd]     # non-ordered seeds
            
         # sampling process using adaptive conditional sampling
@@ -165,7 +165,7 @@ def aBUS_SuS(N,p0,log_likelihood,T_nataf):
     for i in range(m+1):
         #p = dist_p.icdf(scipy.stats.normal.cdf(samplesU['total'][i][-1,:])) is the same as:
         p = scipy.stats.norm.cdf(samplesU['total'][i][-1,:])
-        samplesX['total'].append([T_nataf.U2X(samplesU['total'][i][:-1,:]), p])
+        samplesX['total'].append(np.concatenate((T_nataf.U2X(samplesU['total'][i][:-1,:]), p.reshape(1,-1)), axis=0))
     
     return [h,samplesU,samplesX,cE,c,lam]
 ##END

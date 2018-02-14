@@ -136,8 +136,7 @@ def BUS_SuS(N,p0,c,likelihood,T_nataf):
     for i in range(m+1):
         #p = dist_p.icdf(scipy.stats.normal.cdf(samplesU['total'][i][-1,:])) is the same as:
         p = scipy.stats.norm.cdf(samplesU['total'][i][-1,:])
-        tmp = T_nataf.U2X(samplesU['total'][i][:-1,:])
-        samplesX['total'].append(np.concatenate((tmp, p.reshape(1,-1)), axis=0))
+        samplesX['total'].append(np.concatenate((T_nataf.U2X(samplesU['total'][i][:-1,:]), p.reshape(1,-1)), axis=0))
     
     return [b,samplesU,samplesX,cE]
 ##END
