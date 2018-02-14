@@ -104,9 +104,9 @@ for i in range(nsub):
    u2p.append(samplesU['total'][i][1,:])
    u0p.append(samplesU['total'][i][2,:])
    # samples in physical
-   x1p.append(samplesX['total'][i][0][0,:])
-   x2p.append(samplesX['total'][i][0][1,:])
-   pp.append( samplesX['total'][i][1])
+   x1p.append(samplesX['total'][i][0,:])
+   x2p.append(samplesX['total'][i][1,:])
+   pp.append( samplesX['total'][i][2,:])
 
 # reference solutions
 mu_exact    = 1.12     # for x_1
@@ -134,7 +134,7 @@ plt.rc('figure', titlesize=20)  # fontsize of the figure title
 plt.figure()
 plt.suptitle('Standard space')
 for i in range(nsub):
-   plt.subplot(2,2,i+1) 
+   plt.subplot(2,3,i+1) 
    plt.plot(u1p[i],u2p[i],'r.') 
    plt.xlabel('$u_1$') 
    plt.ylabel('$u_2$')
@@ -145,7 +145,7 @@ for i in range(nsub):
 plt.figure()
 plt.suptitle('Original space')
 for i in range(nsub):
-   plt.subplot(2,2,i+1) 
+   plt.subplot(2,3,i+1) 
    plt.plot(x1p[i],x2p[i],'b.') 
    plt.xlabel('$x_1$') 
    plt.ylabel('$x_2$')
