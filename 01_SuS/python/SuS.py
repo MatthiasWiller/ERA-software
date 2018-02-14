@@ -72,17 +72,17 @@ def SuS(N,p0,g_fun,distr):
     samplesU = {'seeds': list(),
                 'order': list()}
     #
-    geval = np.zeros((N))          # space for the LSF evaluations
+    geval = np.zeros(N  )          # space for the LSF evaluations
     gsort = np.zeros((max_it,N))   # space for the sorted LSF evaluations
-    delta = np.zeros((max_it,1))   # space for the coefficient of variation
-    Nf    = np.zeros((max_it,1))   # space for the number of failure point per level
-    prob  = np.zeros((max_it,1))   # space for the failure probability at each level
-    b     = np.zeros((max_it,1))   # space for the intermediate leveles
+    delta = np.zeros(max_it)   # space for the coefficient of variation
+    Nf    = np.zeros(max_it)   # space for the number of failure point per level
+    prob  = np.zeros(max_it)   # space for the failure probability at each level
+    b     = np.zeros(max_it)   # space for the intermediate leveles
 
     ## SuS procedure
     # initial MCS stage
     print('Evaluating performance function:\t', end='')
-    u_j = np.random.normal(size=(n,N))     # samples in the standard space
+    u_j = scipy.stats.norm.rvs(size=(n,N))     # samples in the standard space
     for i in range(N):
         geval[i] = g(u_j[:,i])
         if geval[i] <= 0:
@@ -100,7 +100,7 @@ def SuS(N,p0,g_fun,distr):
         samplesU['order'].append(u_j_sort)   # store the ordered samples
 
         # intermediate level
-        b[j] = np.percentile(gsort[j,:],p0*100)
+        b[j] = np.percentile(gsort[j,:].flatten(),p0*100)
         
         # number of failure points in the next level
         nF = sum(gsort[j,:] <= max(b[j],0))
