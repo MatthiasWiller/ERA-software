@@ -81,15 +81,14 @@ J = lambda x: np.sum((lam**2)*(((f(x)**2)/f_tilde**2) - 1)**2)
 likelihood = lambda x: np.exp(-J(x)/(2*var_eps))
 
 ## find scale constant c
-method = 2
+method = 3
 
 # use MLE to find c
 if method == 1:
     f_start = np.log([mu_X1, mu_X2])
+    realmin = np.finfo(np.double).tiny
     fun     = lambda lnF: -np.log(likelihood(np.exp(lnF)) + realmin)
-    # TODO: optimset, fminsearch in python !
-    options = optimset('MaxIter',1e7,'MaxFunEvals',1e7)
-    MLE_ln  = fminsearch(fun,f_start,options)
+    MLE_ln  = scipy.optimize.fmin(func=fun, x0=f_start)
     MLE     = np.exp(MLE_ln)   # likelihood(MLE) = 1
     c       = 1/likelihood(MLE)
       
@@ -109,8 +108,7 @@ elif method == 3:
     print('This method requires a large number of measurements')
     m = len(f_tilde)
     p = 0.05
-    # TODO: chi2inv in python !
-    c = 1/np.exp(-0.5*chi2inv(p,m))    # Ref. 1 Eq. 38
+    c = 1/np.exp(-0.5*scipy.stats.chi2.ppf(p,df=m))     # Ref. 1 Eq. 38
     
 else:
     raise RuntimeError('Finding the scale constant c requires -method- 1, 2 or 3')
@@ -137,9 +135,9 @@ for i in range(nsub):
    u2p.append(samplesU['total'][i][1,:])
    u0p.append(samplesU['total'][i][2,:])
    # samples in physical
-   x1p.append(samplesX['total'][i][0][0,:])
-   x2p.append(samplesX['total'][i][0][1,:])
-   pp.append( samplesX['total'][i][1])
+   x1p.append(samplesX['total'][i][0,:])
+   x2p.append(samplesX['total'][i][1,:])
+   pp.append( samplesX['total'][i][2,:])
 
 # reference solutions
 mu_exact    = 1.12     # for x_1

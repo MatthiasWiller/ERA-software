@@ -63,16 +63,16 @@ def BUS_SuS(N,p0,c,likelihood,T_nataf):
                 'total': list()}
     samplesX = {'total': list()}
     #
-    geval = np.zeros((N))              # space for the LSF evaluations
-    gsort = np.zeros((max_it,N))       # space for the sorted LSF evaluations
-    Nf    = np.zeros((max_it,1))       # space for the number of failure points per level
-    b     = np.zeros((max_it,1))       # space for the intermediate leveles
-    prob  = np.zeros((max_it,1))       # space for the failure probability at each level
+    geval = np.zeros(N)            # space for the LSF evaluations
+    gsort = np.zeros((max_it,N))   # space for the sorted LSF evaluations
+    Nf    = np.zeros(max_it)       # space for the number of failure points per level
+    b     = np.zeros(max_it)       # space for the intermediate leveles
+    prob  = np.zeros(max_it)       # space for the failure probability at each level
 
     ## SuS procedure
     # initial MCS step
     print('Evaluating performance function:\t', end='')
-    u_j = np.random.normal(size=(n,N))     # samples in the standard space
+    u_j = scipy.stats.norm.rvs(size=(n,N))     # samples in the standard space
     for i in range(N):
         geval[i] = H(u_j[:,i])    # limit state function in standard (Ref. 2 Eq. 21)
         if geval[i] <= 0:
@@ -84,16 +84,13 @@ def BUS_SuS(N,p0,c,likelihood,T_nataf):
         # sort values in ascending order
         idx        = np.argsort(geval)
         gsort[j,:] = geval[idx]
-        # g_prime = np.sort(geval)
-        # gsort[j,:] = g_prime
-        # idx = sorted(range(len(geval)), key=lambda x: geval[x])
         
         # order the samples according to idx
         u_j_sort = u_j[:,idx]
         samplesU['total'].append(u_j_sort)   # store the ordered samples
 
         # intermediate level
-        b[j] = np.percentile(gsort[j,:],p0*100)
+        b[j] = np.percentile(gsort[j,:].flatten(),p0*100)
         
         # number of failure points in the next level
         nF = sum(gsort[j,:] <= max(b[j],0))
@@ -139,7 +136,8 @@ def BUS_SuS(N,p0,c,likelihood,T_nataf):
     for i in range(m+1):
         #p = dist_p.icdf(scipy.stats.normal.cdf(samplesU['total'][i][-1,:])) is the same as:
         p = scipy.stats.norm.cdf(samplesU['total'][i][-1,:])
-        samplesX['total'].append([T_nataf.U2X(samplesU['total'][i][:-1,:]), p])
+        tmp = T_nataf.U2X(samplesU['total'][i][:-1,:])
+        samplesX['total'].append(np.concatenate((tmp, p.reshape(1,-1)), axis=0))
     
     return [b,samplesU,samplesX,cE]
 ##END
