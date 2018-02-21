@@ -81,7 +81,7 @@ N  = 2000;       % number of samples per level
 p0 = 0.1;        % probability of each subset
 
 % run the aBUS_SuS.m function
-[h,samplesU,samplesX,cE] = aBUS_SuS(N,p0,log_likelihood,T_nataf);
+[h,samplesU,samplesX,cE,c,lamda_new] = aBUS_SuS(N,p0,log_likelihood,T_nataf);
 
 %% take the samples
 nsub = length(h);

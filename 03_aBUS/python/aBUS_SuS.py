@@ -58,7 +58,7 @@ def aBUS_SuS(N,p0,log_likelihood,distr):
             log_L_fun = lambda u: log_likelihood(u[:-1])
     
     ## limit state funtion for the observation event (Ref.1 Eq.12)
-    gl = lambda u, l, log_L: np.log(scipy.stats.norm.cdf(u)) + l - log_L
+    gl = lambda pi_u, l, log_L: np.log(scipy.stats.norm.cdf(pi_u)) + l - log_L
     # note that gl = log(p) + l(i) - leval
     # where p = normcdf(u_j(end,:)) is the standard uniform variable of BUS
 
@@ -157,7 +157,8 @@ def aBUS_SuS(N,p0,log_likelihood,distr):
 
     ## acceptance probability and evidence (Ref.1 Alg.5 Part.6and7)
     p_acc = np.prod(prob)
-    cE    = p_acc*np.exp(l)     # l = -log(c)
+    c     = 1/np.exp(l)         # l = -log(c) = 1/max(likelihood)
+    cE    = p_acc*np.exp(l)     # exp(l) = max(likelihood)
 
     ## transform the samples to the physical (original) space
     if isinstance(distr, ERANataf):
@@ -179,5 +180,5 @@ def aBUS_SuS(N,p0,log_likelihood,distr):
                 p = scipy.stats.norm.cdf(samplesU['total'][i][-1,:])
                 samplesX['total'].append(np.concatenate((u2x(samplesU['total'][i][:-1,:]), p.reshape(1,-1)), axis=0))
     
-    return [h,samplesU,samplesX,cE]
+    return [h,samplesU,samplesX,cE,c,lam]
 ##END

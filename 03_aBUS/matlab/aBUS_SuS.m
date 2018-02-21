@@ -1,4 +1,4 @@
-function [h,samplesU,samplesX,cE] = aBUS_SuS(N,p0,log_likelihood,distr)
+function [h,samplesU,samplesX,cE,c,lambda] = aBUS_SuS(N,p0,log_likelihood,distr)
 %% Subset simulation function for adaptive BUS
 %{
 ---------------------------------------------------------------------------
@@ -79,7 +79,7 @@ prob     = zeros(max_it,1);   % space for the failure probability at each level
 nF       = zeros(max_it,1);   % space for the number of failure point per level
 
 %% limit state funtion for the observation event (Ref.1 Eq.12)
-gl = @(u, l, log_L) log(normcdf(u)) + l - log_L; 
+gl = @(pi_u, l, log_L) log(normcdf(pi_u)) + l - log_L; 
 % note that gl = log(p) + l(i) - leval; 
 % where p = normcdf(u_j(end,:)) is the standard uniform variable of BUS
 
@@ -161,6 +161,7 @@ end
 
 %% acceptance probability and model evidence (Ref.1 Alg.5 Part.6and7)
 p_acc = prod(prob);
+c     = 1/exp(l);       
 cE    = p_acc*exp(l);   % l = -log(c)
 
 %% transform the samples to the physical/original space
