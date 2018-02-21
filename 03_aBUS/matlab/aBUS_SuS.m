@@ -1,4 +1,4 @@
-function [h,samplesU,samplesX,cE,c,lambda] = aBUS_SuS(N,p0,log_likelihood,distr)
+function [h,samplesU,samplesX,cE] = aBUS_SuS(N,p0,log_likelihood,distr)
 %% Subset simulation function for adaptive BUS
 %{
 ---------------------------------------------------------------------------
@@ -9,7 +9,8 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-~~~~New Version 2017-11~~~~
+~~~~New Version 2018-01~~~~
+* Bug fix in the computation of the LSF 
 * Notation of the paper Ref.1
 * Bug fix in the computation of the LSF 
 * aCS_BUS.m function modified for Bayesian updating
@@ -30,13 +31,11 @@ Output:
 * samplesU : object with the samples in the standard normal space
 * samplesX : object with the samples in the original space
 * cE       : model evidence/marginal likelihood
-* c        : 1/max(likelihood)
-* lambda   : scaling of the aCS method
 ---------------------------------------------------------------------------
 Based on:
 1."Bayesian inference with subset simulation: strategies and improvements"
    Betz et al. 
-   Computer Methods in Applied Mechanics and Engineering 331 (2018) 72-93.
+   Computer Methods in Applied Mechanics and Engineering. Accepted (2017)
 2."Bayesian updating with structural reliability methods"
    Daniel Straub & Iason Papaioannou.
    Journal of Engineering Mechanics 141.3 (2015) 1-13.
@@ -80,7 +79,7 @@ prob     = zeros(max_it,1);   % space for the failure probability at each level
 nF       = zeros(max_it,1);   % space for the number of failure point per level
 
 %% limit state funtion for the observation event (Ref.1 Eq.12)
-gl = @(u, l, log_L) log(normcdf(u(end))) + l - log_L; 
+gl = @(u, l, log_L) log(normcdf(u)) + l - log_L; 
 % note that gl = log(p) + l(i) - leval; 
 % where p = normcdf(u_j(end,:)) is the standard uniform variable of BUS
 
@@ -162,8 +161,7 @@ end
 
 %% acceptance probability and model evidence (Ref.1 Alg.5 Part.6and7)
 p_acc = prod(prob);
-c     = 1/exp(l);         % l = log(1/c) = 1/max(likelihood)
-cE    = p_acc*exp(l);     % exp(l) = max(likelihood)
+cE    = p_acc*exp(l);   % l = -log(c)
 
 %% transform the samples to the physical/original space
 samplesX = cell(m,1);

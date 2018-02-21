@@ -16,7 +16,7 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2018-01
+Version 2018-02
 ---------------------------------------------------------------------------
 Input:
 * N              : number of samples per level
@@ -29,8 +29,6 @@ Output:
 * samplesU : object with the samples in the standard normal space
 * samplesX : object with the samples in the original space
 * cE       : model evidence/marginal likelihood
-* c        : 1/max(likelihood)
-* lam      : scaling of the aCS method
 ---------------------------------------------------------------------------
 Based on:
 1."Bayesian inference with subset simulation: strategies and improvements"
@@ -41,25 +39,28 @@ Based on:
    Journal of Engineering Mechanics 141.3 (2015) 1-13.
 ---------------------------------------------------------------------------
 """
-def aBUS_SuS(N,p0,log_likelihood,T_nataf):
-    ## add p Uniform variable of BUS
-    n = len(T_nataf.Marginals)+1        # number of parameters (dimension)
-    #dist_p  = ERADist('uniform','PAR',[0,1])     # uniform variable in BUS
-
-    ## limit state function in the standard space
-    # H = lambda u: u[-1] - scipy.stats.invnorm(c*likelihood(T_nataf.U2X(u[1:-2])))
+def aBUS_SuS(N,p0,log_likelihood,distr):
+    ## log-likelihood function in standard space
+    if isinstance(distr, ERANataf): # use Nataf transform (dependence)
+        n = len(distr.Marginals)+1        # number of parameters (dimension)
+        log_L_fun = lambda u: log_likelihood(distr.U2X(u[:-1].reshape(-1,1)).flatten())
+        # if the samples are standard normal do not make any transform
+        if distr.Marginals[0].Name == 'standardnormal':
+            log_L_fun = lambda u: log_likelihood(u[:-1])
+    
+    else: # use distribution information for the transformation (independence)
+        n = len(distr.Marginals)+1        # number of parameters (dimension)
+        u2x       = lambda u: distr[0].icdf(scipy.stats.norm.cdf(u))   # from u to x
+        log_L_fun = lambda u: log_likelihood(u2x(u[:-1]))
+        
+        # if the samples are standard normal do not make any transform
+        if distr[0].Name == 'standardnormal':
+            log_L_fun = lambda u: log_likelihood(u[:-1])
     
     ## limit state funtion for the observation event (Ref.1 Eq.12)
-    gl = lambda u, l, log_L: np.log(scipy.stats.norm.cdf(u[-1])) + l - log_L
+    gl = lambda u, l, log_L: np.log(scipy.stats.norm.cdf(u)) + l - log_L
     # note that gl = log(p) + l(i) - leval
     # where p = normcdf(u_j(end,:)) is the standard uniform variable of BUS
-
-    ## Likelihood Function in standard normal space
-    log_L_fun = lambda u: log_likelihood(T_nataf.U2X(u[:-1].reshape(-1,1)).flatten())
-    # def lsf(u, log_c):
-    #     geval = np.log(scipy.stats.norm.cdf([u[-1, :]])) - loc_c - log_L(u)
-    #     return geval.flatten()
-    #lsf = lambda u, log_c: np.log(stats.norm.cdf([u[-1, :]])) - log_c - log_L(u)
 
     ## Initialization of variables
     i      = 0                         # number of conditional level
@@ -75,16 +76,15 @@ def aBUS_SuS(N,p0,log_likelihood,T_nataf):
     h     = np.zeros(max_it)           # space for the intermediate leveles
     prob  = np.zeros(max_it)           # space for the failure probability at each level
 
-    ## SuS procedure
+    ## aBUS-SuS procedure
     # initial MCS step
-    print('Evaluating log-likelihood function:\t', end='')
-    u_j = np.random.normal(size=(n,N))  # samples in the standard space
+    print('Evaluating log-likelihood function ...\t', end='')
+    u_j = np.random.normal(size=(n,N))  # N samples from the prior distribution
     for j in range(N):
         leval[j] = log_L_fun(u_j[:,j].reshape(-1,1))  # limit state function in standard (Ref. 2 Eq. 21)
-        # if leval[j] <= 0:
-        #     nF[i] = nF[i]+1
-    l = np.max(leval)           # =-log(c) (Ref.1 Alg.5 Part.3)
-    print('OK!')
+
+    l = np.max(leval)   # =-log(c) (Ref.1 Alg.5 Part.3)
+    print('Done!')
 
     # SuS stage
     h[i] = np.inf
@@ -113,7 +113,7 @@ def aBUS_SuS(N,p0,log_likelihood,T_nataf):
 
         # assign conditional probability to the level
         if h[i] < 0:
-            h[i]    = 0
+            h[i]      = 0
             prob[i-1] = nF[i]/N
         else:
             prob[i-1] = p0      
@@ -137,13 +137,12 @@ def aBUS_SuS(N,p0,log_likelihood,T_nataf):
         print('-New constant c level ', i, ' = ', np.exp(-l))
         print('-Modified threshold level ', i, '= ', h[i]) 
         
-        # decrease the dependence of the samples
-        P = np.random.uniform(low=np.zeros(N),
+        # decrease the dependence of the samples (Ref.1 Alg.5 Part.4e)
+        p = np.random.uniform(low=np.zeros(N),
                               high=np.min([np.ones(N),
                                            np.exp(leval - l + h[i])],
                                           axis=0))
-
-        #uj[-1, :] = stats.norm.ppf(p) # the problem is here!!!! 
+        u_j[-1,:] = scipy.stats.norm.ppf(p) # to the standard space
 
     # number of intermediate levels
     m = i
@@ -156,16 +155,29 @@ def aBUS_SuS(N,p0,log_likelihood,T_nataf):
         prob  = prob[:m]
         h     = h[:m]
 
-    ## acceptance probability and evidence
+    ## acceptance probability and evidence (Ref.1 Alg.5 Part.6and7)
     p_acc = np.prod(prob)
-    c     = 1/np.exp(l)         # l = log(1/c) = 1/max(likelihood)
-    cE    = p_acc*np.exp(l)     # exp(l) = max(likelihood)
+    cE    = p_acc*np.exp(l)     # l = -log(c)
 
     ## transform the samples to the physical (original) space
-    for i in range(m+1):
-        #p = dist_p.icdf(scipy.stats.normal.cdf(samplesU['total'][i][-1,:])) is the same as:
-        p = scipy.stats.norm.cdf(samplesU['total'][i][-1,:])
-        samplesX['total'].append(np.concatenate((T_nataf.U2X(samplesU['total'][i][:-1,:]), p.reshape(1,-1)), axis=0))
+    if isinstance(distr, ERANataf):
+        if distr.Marginals[0].Name == 'standardnormal':
+            for i in range(m+1):
+                p = scipy.stats.norm.cdf(samplesU['total'][i][-1,:])
+                samplesX['total'].append(np.concatenate((samplesU['total'][i][:-1,:], p.reshape(1,-1)), axis=0))
+        else:
+            for i in range(m+1):
+                p = scipy.stats.norm.cdf(samplesU['total'][i][-1,:])
+                samplesX['total'].append(np.concatenate((distr.U2X(samplesU['total'][i][:-1,:]), p.reshape(1,-1)), axis=0))
+    else:
+        if distr[0].Name == 'standardnormal':
+            for i in range(m+1):
+                p = scipy.stats.norm.cdf(samplesU['total'][i][-1,:])
+                samplesX['total'].append(np.concatenate((samplesU['total'][i][:-1,:], p.reshape(1,-1)), axis=0))
+        else:
+            for i in range(m+1):
+                p = scipy.stats.norm.cdf(samplesU['total'][i][-1,:])
+                samplesX['total'].append(np.concatenate((u2x(samplesU['total'][i][:-1,:]), p.reshape(1,-1)), axis=0))
     
-    return [h,samplesU,samplesX,cE,c,lam]
+    return [h,samplesU,samplesX,cE]
 ##END

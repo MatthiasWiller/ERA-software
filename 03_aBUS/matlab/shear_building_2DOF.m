@@ -1,4 +1,4 @@
-function [w] = shear_building_2DOF(m1,m2,k1,k2)
+function [w,Phi] = shear_building_2DOF(m1,m2,k1,k2)
 %% two-degree-of-freedom shear building model
 %{
 ---------------------------------------------------------------------------
@@ -33,11 +33,11 @@ K = [ k1 + k2, -k2;
 [V,L]   = eig(M\K);               % eigenvalue solution
 w       = sqrt(diag(L))/(2*pi);   % natural frequencies [Hz]
 [w,idx] = sort(w);                % ordering (ascendent)
-% Phi     = V(:,idx);               % vibration modes
+Phi     = V(idx);                 % vibration modes
 
 % Normalizing modes
-% q   = Phi'*M*Phi;                 % orthogonality property
-% Phi = Phi./repmat(sqrt(diag(q))',2,1);
+q   = Phi'*M*Phi;                 % orthogonality property
+Phi = Phi./repmat(sqrt(diag(q))',2,1);
 
 return;
 %%END
