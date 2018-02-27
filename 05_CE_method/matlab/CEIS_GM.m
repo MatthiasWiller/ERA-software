@@ -70,46 +70,49 @@ Pi_hat       = Pi_init;
 
 %% Iteration
 for j = 1:max_it
-    % Generate samples
-    X = GM_sample(mu_hat, Si_hat, Pi_hat, N);
-    samplesU.total{j} = X';
+  % Generate samples
+  X = GM_sample(mu_hat, Si_hat, Pi_hat, N);
+  samplesU.total{j} = X';
 
-    % Count generated samples
-    N_tot = N_tot+N;
+  % Count generated samples
+  N_tot = N_tot+N;
 
-    % Evaluation of the limit state function
-    geval=g(X');
+  % Evaluation of the limit state function
+  geval=g(X');
 
-    % Calculating h for the likelihood ratio
-    h=h_calc(X,mu_hat,Si_hat,Pi_hat);
+  % Calculating h for the likelihood ratio
+  h=h_calc(X,mu_hat,Si_hat,Pi_hat);
 
-    % Check convergence
-    if gamma_hat(j) == 0
-        k_fin = k;
-        break
-    end
+  % Check convergence
+  if gamma_hat(j) == 0
+      k_fin = k;
+      break
+  end
 
-    % obtaining estimator gamma
-    gamma_hat(j+1) = max(0,prctile(geval, rho*100));
-    disp(num2str(gamma_hat(j+1)));
+  % obtaining estimator gamma
+  gamma_hat(j+1) = max(0,prctile(geval, rho*100));
+  disp(num2str(gamma_hat(j+1)));
 
-    % Indicator function
-    I=(geval<=gamma_hat(j+1));
+  % Indicator function
+  I=(geval<=gamma_hat(j+1));
 
-    % Likelihood ratio
-    W=mvnpdf(X,zeros(1,dim),eye(dim))./h;
+  % Likelihood ratio
+  W=mvnpdf(X,zeros(1,dim),eye(dim))./h;
 
-    % Parameter update
-    init.nGM=1;
-    % init.type='RAND';
-    init.type='KMEANS';
-    dist = EMGM(X(I,:)',1./W(I),init);
+  % Parameter update
+  init.nGM=3;
+  % init.type='RAND';
+  init.type='KMEANS';
+  dist = EMGM(X(I,:)',W(I),init);
 
-    % Assigning the variables with updated parameters
-    mu_hat=dist.mu';
-    Si_hat=dist.si;
-    Pi_hat=dist.pi';
-    k=length(dist.pi);
+  % Assigning the variables with updated parameters
+  mu_hat=dist.mu';
+  Si_hat=dist.si;
+  Pi_hat=dist.pi';
+  k=length(dist.pi);
+  
+  % plot
+%   plot(X(:,1),X(:,2),'.');
 
 end
 

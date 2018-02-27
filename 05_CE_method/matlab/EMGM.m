@@ -20,15 +20,16 @@ t = 1;
 
 %% soft EM algorithm
 while ~converged && t < maxiter
-    t = t+1;   
     
     [~,label(:)] = max(R,[],2);
     u = unique(label);   % non-empty components
     if size(R,2) ~= size(u,2)
         R = R(:,u);   % remove empty components
-    else
+    elseif t>1
         converged = abs(llh(t)-llh(t-1)) < tol*abs(llh(t));
     end
+    t = t+1;   
+
     
     model = maximization(X,W,R);
     [R, llh(t)] = expectation(X,W,model);
@@ -36,9 +37,9 @@ while ~converged && t < maxiter
 end
 
 if converged
-    %fprintf('Converged in %d steps.\n',t-1);
+    fprintf('Converged in %d steps.\n',t-1);
 else
-    %fprintf('Not converged in %d steps.\n',maxiter);
+    fprintf('Not converged in %d steps.\n',maxiter);
 end
 
 function R = initialization(X,init)

@@ -19,11 +19,6 @@ k_fin=zeros(cykles,1);
 mu_init=zeros(1,dim);
 Si_init=eye(dim);
 Pi_init=1;
-      
-%gp=@(x,y)input.beta-1/sqrt(input.dim)*(x+y);
-%gp=@(x,y)min(0.1*(x-y).^2-(x+y)./sqrt(2)+2.5,input.beta+1/sqrt(input.dim)*(x+y));
-%figure('Position', [100, 100,1000,1000])
-%hold on
 
 gamma_hat = zeros(max_iter+1,cykles);
 

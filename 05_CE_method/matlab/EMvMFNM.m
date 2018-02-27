@@ -33,9 +33,9 @@ while ~converged && t < maxiter
     [M,llh(:,t)] = expectation(X_norm,W,model,R);
 end
 if converged    
-    %fprintf('Converged in %d steps.\n',t-1);
+    fprintf('Converged in %d steps.\n',t-1);
 else
-    %fprintf('Not converged in %d steps.\n',maxiter);
+    fprintf('Not converged in %d steps.\n',maxiter);
 end
 
 function M = initialization(X,init)
@@ -67,28 +67,6 @@ elseif strcmp('KMEANS',init.type) % Initialization with k-means algorithm
     
     idx = kmeans(X',init.k,'MaxIter',10000,'Replicates',10,'Distance','cosine');
     M=dummyvar(idx);
-    
-elseif strcmp('KNOWLEDGE',init.type) % Initialization based on knowledge of design points 
-    
-    % finding design points
-    beta=3.5;
-    p1=beta/sqrt(d)*ones(d,1);
-    p2=-beta/sqrt(d)*ones(d,1);
-    p=[p1 p2];
-    
-    % Normalizing X and design points
-    X_norm=X./sqrt(sum(X.^2));
-    p_norm=p./sqrt(sum(p.^2));
-    
-    % Distance between samples
-    f=@(x,y)acos(y*x')./pi;
-    %D=pdist(X_norm',@(Xi,Xj) f(Xi,Xj));
-    D2=pdist2(X_norm',p_norm',@(Xi,Xj) f(Xi,Xj));
-    
-    % Assign samples to nearest design point
-    [~,idx]=max(D2,[],2);
-
-    M=dummyvar(idx);    
        
 end
 
@@ -119,75 +97,44 @@ M=exp(logM);
 M(M<1e-3)=0;
 M=bsxfun(@times,M,1./sum(M,2));
 
-if isnan(M)
-    a=4;
-end
-
 % loglikelihood as tolerance criterion
 logvMF_weighted=bsxfun(@plus,logvMF,log(alpha));
 lognakagami_weighted=bsxfun(@plus,lognakagami,log(alpha));
 T_vMF=logsumexp(logvMF_weighted,2);
 T_nakagami=logsumexp(lognakagami_weighted,2);
 llh1 = [sum(W.*T_vMF)/sum(W);sum(W.*T_nakagami)/sum(W)];
-if isnan(llh1)
-    a=4;
-end
 llh=llh1;
 
 function model = maximization(X,W,R,M)
 M = repmat(W,1,size(M,2)).*M;
-[d,n] = size(X);
+[d,~] = size(X);
 nk=sum(M,1);
 
 %  distribution weights
 alpha=nk/sum(W);
-
-if isnan(alpha)   
-    a=4
-end
   
 % mean directions
 mu_unnormed=X*M;
 norm_mu=sqrt(sum(mu_unnormed.^2,1));
 mu=bsxfun(@times,mu_unnormed,1./norm_mu);
 
-% concentration parameter approximated
-%norm_mu./nk
+% approximated concentration parameter 
 xi=min(norm_mu./nk,0.95);
-if max(xi)==0.95
-    a=4;
-end
-
 kappa=(xi.*d-xi.^3)./(1-xi.^2);
-%kappa=kappa./2;
 
 % spread parameter 
 omega=(M'*R.^2)'./sum(M);
 
-% shape parameter
-
-% % fix shape parameter
-% m_fix=d/2*ones(1,size(M,2));
-% 
-% % iterative shape parameter
-% opt=optimoptions('fsolve','Display','off');
-% c=log(omega)-1-sum(M.*(2*log(R)-R.^2./omega))./nk;
-% fun_m=@(x)log(x)-psi(x)-c;
-% %fun(d/2*ones(1,length(alpha)));
-% m_it=fsolve(fun_m,d/2*ones(1,length(alpha)),opt);
-
-
 % approximated shape parameter
 mu4=(M'*R.^4)'./sum(M);
-m_app=omega.^2./(mu4-omega.^2);
-
-m_app(m_app<0)=d/2;
-m_app(m_app>20*d)=d/2;
+m=omega.^2./(mu4-omega.^2);
+m(m<0)=d/2;
+m(m>20*d)=d/2;
 
 % assigning model
 model.mu = mu;
 model.kappa= kappa;
-model.m=m_app;
+model.m=m;
 model.omega=omega;
 model.alpha=alpha;
 
@@ -207,10 +154,6 @@ else
 end
 
 function y = lognakagamipdf(X,m,om)
-
-if m<=0
-    a=4
-end
 
 y=log(2)+m*(log(m)-log(om)-X.^2./om)+log(X).*(2*m-1)-gammaln(m);
 
