@@ -1,4 +1,4 @@
-%% Cross entropy method: Ex. 1 Ref. 2 - linear function of independent standard normal
+%% Cross entropy method: ex. 3 - Convex LSF
 %{
 ---------------------------------------------------------------------------
 Created by:
@@ -27,18 +27,18 @@ R = eye(d);   % independent case
 pi_pdf = ERANataf(pi_pdf,R);    % if you want to include dependence
 
 %% limit-state function
-beta = 3.5;
-g    = @(x) -sum(x)/sqrt(d) + beta;
+beta = 2.5;
+g = @(x) 0.1*(x(1,:)-x(2,:)).^2 - (x(1,:)+x(2,:))./sqrt(2) + 2.5;
 
 %% subset simulation
 N  = 1000;         % Total number of samples for each level
-rho = 0.1;         % Probability of each subset, chosen adaptively
+rho = 0.1;          % Probability of each subset, chosen adaptively
 % figure; hold on;
 
 fprintf('CE-based IS stage: \n');
 % [Pr, l, N_tot, gamma_hat, u_samples, k_fin] = CEIS_SG(N,rho,g,pi_pdf);     % single gaussian 
-% [Pr, l, N_tot, gamma_hat, u_samples, k_fin] = CEIS_GM(N,rho,g,pi_pdf);    % gaussian mixture
-[Pr, l, N_tot, gamma_hat, u_samples, k_fin] = CEIS_vMFNM(N,rho,g,pi_pdf); % adaptive vMFN mixture
+[Pr, l, N_tot, gamma_hat, u_samples, k_fin] = CEIS_GM(N,rho,g,pi_pdf);    % gaussian mixture
+% [Pr, l, N_tot, gamma_hat, u_samples, k_fin] = CEIS_vMFNM(N,rho,g,pi_pdf); % adaptive vMFN mixture
 
 
 % exact solution

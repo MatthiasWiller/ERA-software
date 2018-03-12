@@ -1,11 +1,11 @@
-function [model,init] = EMvMFNM(X,W,init)
+function [model] = EMvMFNM(X,W,k)
 % Perform soft EM algorithm for fitting the von Mises-Fisher-Nakagami mixture model.
 %   X: d x N data matrix (dimensions x Number of samples)
 %   W: N x 1 vector of likelihood ratios for weighted samples
-%   init: struct or vector to define initialization of EM algorithm
+%   k: struct or vector to define initialization of EM algorithm
 
 %% initialization
-M = initialization(X,init);
+M = initialization(X,k);
 
 R=sqrt(sum(X.^2))';
 X_norm=(bsxfun(@times,X,1./R'));
@@ -38,37 +38,12 @@ else
     fprintf('Not converged in %d steps.\n',maxiter);
 end
 
-function M = initialization(X,init)
-[d,n] = size(X);
+function M = initialization(X,k)
+% Initialization with k-means algorithm 
+idx = kmeans(X',k,'MaxIter',10000,'Replicates',10,'Distance','cosine');
+M = dummyvar(idx);
+return; 
 
-if strcmp('DBSCAN',init.type) % Initialization with cluster centers
-    
-    m=init.centers';
-    k=size(m,2);
-    [~,label] = max(bsxfun(@minus,m'*X,dot(m,m,1)'/2),[],1);
-    M = full(sparse(1:n,label,1,n,k,n));
-    
-elseif strcmp('RAND',init.type) % Random initialization 
-    
-    idx = randsample(n,init.k);
-    m = X(:,idx);
-    [~,label] = max(bsxfun(@minus,m'*X,dot(m,m,1)'/2),[],1);
-    [u,~,label] = unique(label);
-    while init.k ~= length(u)
-        idx = randsample(n,init.k);
-        m = X(:,idx);
-        [~,label] = max(bsxfun(@minus,m'*X,dot(m,m,1)'/2),[],1);
-        [u,~,label] = unique(label);
-    end
-    
-    M = full(sparse(1:n,label,1,n,init.k,n));
-    
-elseif strcmp('KMEANS',init.type) % Initialization with k-means algorithm 
-    
-    idx = kmeans(X',init.k,'MaxIter',10000,'Replicates',10,'Distance','cosine');
-    M=dummyvar(idx);
-       
-end
 
 function [M,llh] = expectation(X,W,model,R)
 mu = model.mu;
@@ -104,6 +79,7 @@ T_vMF=logsumexp(logvMF_weighted,2);
 T_nakagami=logsumexp(lognakagami_weighted,2);
 llh1 = [sum(W.*T_vMF)/sum(W);sum(W.*T_nakagami)/sum(W)];
 llh=llh1;
+return;
 
 function model = maximization(X,W,R,M)
 M = repmat(W,1,size(M,2)).*M;
@@ -137,6 +113,7 @@ model.kappa= kappa;
 model.m=m;
 model.omega=omega;
 model.alpha=alpha;
+return;
 
 function y = logvMFpdf(X, mu, kappa)
 
@@ -152,10 +129,12 @@ elseif kappa>0
 else
     error('concentration parameter must not be negative')
 end
+return;
 
 function y = lognakagamipdf(X,m,om)
 
 y=log(2)+m*(log(m)-log(om)-X.^2./om)+log(X).*(2*m-1)-gammaln(m);
+return;
 
 function [logb] = logbesseli(nu,x)
 % log of the Bessel function, extended for large nu and x
@@ -173,6 +152,7 @@ else % normal case
     eta = root + log(frac) - log(ones(n,1)+root);
     logb = - log(sqrt(2*pi*nu)) + nu.*eta - 0.25*log(square);
 end
+return;
 
 function s = logsumexp(x, dim)
 % Compute log(sum(exp(x),dim)) while avoiding numerical underflow.
@@ -192,3 +172,4 @@ i = find(~isfinite(y));
 if ~isempty(i)
     s(i) = y(i);
 end
+return;

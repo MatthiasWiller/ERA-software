@@ -75,12 +75,12 @@ mu_init    = hs_sample(1, dim,1); % Initial mean sampled on unit hypersphere
 alpha_init = 1;
 
 %% Initializing parameters
-mu_hat    = mu_init;
-kappa_hat = kappa_init;
-omega_hat = omega_init;
-m_hat     = m_init;
-gamma_hat = 1;
-alpha_hat = alpha_init;
+mu_hat       = mu_init;
+kappa_hat    = kappa_init;
+omega_hat    = omega_init;
+m_hat        = m_init;
+gamma_hat(1) = 1;
+alpha_hat    = alpha_init;
     
 %% Iteration
 for j=1:max_it
@@ -95,7 +95,6 @@ for j=1:max_it
   % Generate samples
   X = vMFNM_sample(mu_cur,kappa_cur,omega_cur,m_cur,alpha_cur,N);
   samplesU.total{j} = X';
-
         
   % Count generated samples
   N_tot = N_tot + N;
@@ -117,41 +116,11 @@ for j=1:max_it
 
   % Indicator function
   I = geval<=gamma_hat(j+1);
-        
-%  % Cluster samples based on logarithmic fractional distance metric       
-%  init.centers=centers_DBSCAN_fractional(X(I,:))
-%  nit.type='DBSCAN';
        
   % EM initialization with kmeans algorithm
-  init.type='KMEANS';
-  init.k=4;
-        
-  % Multidimensional scaling
-  %D=pdist(X(I,:),'cosine');
-%         frac=1/(50);
-%         f=@(XI,XJ)((abs(bsxfun(@minus,XI,XJ)).^(frac) * ones(dim,1)).^(1/frac));
-%         D=(pdist(X(I,:),@(Xi,Xj) f(Xi,Xj)));
-
-%         
-%         % Normalizing X
-%         X_norm=bsxfun(@times,X,1./sqrt(sum(X.^2,2)));
-%         
-%         % Distance between samples
-%         f=@(x,y)acos(y*x')./pi;   
-%         D=(pdist(X_norm(I,:),@(Xi,Xj) f(Xi,Xj)));
-% % 
-% %         % Scaling D
-% %         m=0.98/(max(D)-min(D));
-% %         b=0.01-m*min(D);
-% %         D2=m*D+b;
-% %         
-%         Y = mdscale(D,2);
-%         plot(Y(:,1),Y(:,2),'x')
-%         
-        
-        
+  k=4;
   % EM algorithm
-  dist = EMvMFNM(X(I,:)',exp(W_log(I,:)),init);
+  dist = EMvMFNM(X(I,:)',exp(W_log(I,:)),k);
 
   % remove unnecessary components
   if min(dist.alpha)<=0.01 

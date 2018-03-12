@@ -1,16 +1,12 @@
-function [model] = EMGM_soft(X,W,init)
+function [model] = EMGM(X,W,nGM)
 % Perform soft EM algorithm for fitting the Gaussian mixture model.
 %   X: d x N data matrix (dimensions x Number of samples)
 %   W: N x 1 vector of sample weights
-%   init: struct with fields   - type: DBSCAN or RAND
-%                              - centers, if type = DBSCAN: nGM x d vector
-%                                of cluster centers
-%                              - nGM, if type = RAND: Number of Gaussians 
-%                                in the mixture
+%   nGM: Number of Gaussians in the mixture
                              
 
 %% initialization
-R = initialization(X,init);
+R = initialization(X,nGM);
 
 tol = 1e-5;
 maxiter = 500;
@@ -42,40 +38,12 @@ else
     fprintf('Not converged in %d steps.\n',maxiter);
 end
 
-function R = initialization(X,init)
-
-[~,n] = size(X);
-
-if strcmp('DBSCAN',init.type) % Initialization with cluster centers
-    
-    m=init.centers';
-    k=size(m,2);
-    [~,label] = max(bsxfun(@minus,m'*X,dot(m,m,1)'/2),[],1);
-    R = full(sparse(1:n,label,1,n,k,n));
-    
-elseif strcmp('RAND',init.type) % Random initialization 
-    
-    idx = randsample(n,init.nGM);
-    m = X(:,idx);
-    [~,label] = max(bsxfun(@minus,m'*X,dot(m,m,1)'/2),[],1);
-    [u,~,label] = unique(label);
-    while init.nGM ~= length(u)
-        idx = randsample(n,init.nGM);
-        m = X(:,idx);
-        [~,label] = max(bsxfun(@minus,m'*X,dot(m,m,1)'/2),[],1);
-        [u,~,label] = unique(label);
-    end
-    
-    R = full(sparse(1:n,label,1,n,init.nGM,n));
-    
-elseif strcmp('KMEANS',init.type) % Initialization with k-means algorithm 
-    
-    idx=kmeans(X',init.nGM,'Replicates',10);
-    
-    R=dummyvar(idx);
-
-end
-
+function R = initialization(X,nGM)
+   
+% Initialization with k-means algorithm 
+idx=kmeans(X',nGM,'Replicates',10);
+R=dummyvar(idx);
+return;
 
 function [R, llh] = expectation(X,W, model)
 mu = model.mu;
@@ -95,6 +63,7 @@ T = logsumexp(logpdf,2);
 llh = sum(W.*T)/sum(W);
 logR = bsxfun(@minus,logpdf,T);
 R = exp(logR);
+return;
 
 function model = maximization(X,W,R)
 R = repmat(W,1,size(R,2)).*R;
@@ -117,6 +86,7 @@ end
 model.mu = mu;
 model.si = Sigma;
 model.pi = w;
+return;
 
 function y = loggausspdf(X, mu, Sigma)
 d = size(X,1);
@@ -126,6 +96,7 @@ Q = U'\X;
 q = dot(Q,Q,1);  % quadratic term (M distance)
 c = d*log(2*pi)+2*sum(log(diag(U)));   % normalization constant
 y = -(c+q)/2;
+return;
 
 function s = logsumexp(x, dim)
 % Compute log(sum(exp(x),dim)) while avoiding numerical underflow.
@@ -145,3 +116,4 @@ i = find(~isfinite(y));
 if ~isempty(i)
     s(i) = y(i);
 end
+return;

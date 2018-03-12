@@ -100,19 +100,14 @@ for j = 1:max_it
   W=mvnpdf(X,zeros(1,dim),eye(dim))./h;
 
   % Parameter update
-  init.nGM=3;
-  % init.type='RAND';
-  init.type='KMEANS';
-  dist = EMGM(X(I,:)',W(I),init);
+  nGM=3;
+  dist = EMGM(X(I,:)',W(I),nGM);
 
   % Assigning the variables with updated parameters
   mu_hat=dist.mu';
   Si_hat=dist.si;
   Pi_hat=dist.pi';
   k=length(dist.pi);
-  
-  % plot
-%   plot(X(:,1),X(:,2),'.');
 
 end
 
