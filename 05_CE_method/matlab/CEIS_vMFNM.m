@@ -1,4 +1,4 @@
-function [Pr, l, N_tot, gamma_hat, samplesU, k_fin] = CEIS_vMFNM(N,rho,g_fun,distr)
+function [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_vMFNM(N,rho,g_fun,distr)
 %% Cross entropy-based importance sampling
 %{
 ---------------------------------------------------------------------------
@@ -27,27 +27,25 @@ Based on:
 %}
 
 %% initial check if there exists a Nataf object
-% if any(strcmp('Marginals',fieldnames(distr))) == 1   % use Nataf transform (dependence)
-%    dim = length(distr.Marginals);    % number of random variables (dimension)
-%    g   = @(u) g_fun(distr.U2X(u));   % LSF in standard space
-%    
-%    % if the samples are standard normal do not make any transform
-%    if strcmp(distr.Marginals(1).Name,'standardnormal')
-%       g = g_fun;
-%    end
-% else   % use distribution information for the transformation (independence)
-%    dim = length(distr);                    % number of random variables (dimension)
-%    u2x = @(u) distr(1).icdf(normcdf(u));   % from u to x
-%    g   = @(u) g_fun(u2x(u));               % LSF in standard space
-%    
-%    % if the samples are standard normal do not make any transform
-%    if strcmp(distr(1).Name,'standardnormal')
-%       g = g_fun;
-%    end
-% end
-% shorthand
-dim = 2;
-g = g_fun;
+if any(strcmp('Marginals',fieldnames(distr))) == 1   % use Nataf transform (dependence)
+   dim = length(distr.Marginals);    % number of random variables (dimension)
+   g   = @(u) g_fun(distr.U2X(u));   % LSF in standard space
+   
+   % if the samples are standard normal do not make any transform
+   if strcmp(distr.Marginals(1).Name,'standardnormal')
+      g = g_fun;
+   end
+else   % use distribution information for the transformation (independence)
+   dim = length(distr);                    % number of random variables (dimension)
+   u2x = @(u) distr(1).icdf(normcdf(u));   % from u to x
+   g   = @(u) g_fun(u2x(u));               % LSF in standard space
+   
+   % if the samples are standard normal do not make any transform
+   if strcmp(distr(1).Name,'standardnormal')
+      g = g_fun;
+   end
+end
+
 
 %% Initialization of variables and storage
 j      = 0;                % initial level
@@ -94,7 +92,7 @@ for j=1:max_it
 
   % Generate samples
   X = vMFNM_sample(mu_cur,kappa_cur,omega_cur,m_cur,alpha_cur,N);
-  samplesU.total{j} = X';
+  samplesU{j} = X';
         
   % Count generated samples
   N_tot = N_tot + N;
@@ -146,6 +144,30 @@ l = j;
 %% Calculation of Probability of failure
 I  = geval<=gamma_hat(j);
 Pr = 1/N*sum(exp(W_log(I,:))); 
+
+%% transform the samples to the physical/original space
+samplesX = cell(l,1);
+if any(strcmp('Marginals',fieldnames(distr))) == 1   % use Nataf transform (dependence)
+   if strcmp(distr.Marginals(1).Name,'standardnormal')
+       for i = 1:l
+         samplesX{i} = samplesU{i}(:,:);
+       end
+   else
+      for i = 1:l
+         samplesX{i} = distr.U2X(samplesU{i}(:,:));
+      end
+   end
+else
+   if strcmp(distr(1).Name,'standardnormal')
+       for i = 1:l
+         samplesX{i} = samplesU{i}(:,:);
+      end
+   else
+      for i = 1:l
+         samplesX{i} = u2x(samplesU{i}(1:end-1,:));
+      end
+   end
+end
 
 return;
 

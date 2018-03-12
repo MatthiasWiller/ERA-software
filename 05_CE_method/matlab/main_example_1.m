@@ -36,9 +36,9 @@ rho = 0.1;         % Probability of each subset, chosen adaptively
 % figure; hold on;
 
 fprintf('CE-based IS stage: \n');
-% [Pr, l, N_tot, gamma_hat, u_samples, k_fin] = CEIS_SG(N,rho,g,pi_pdf);     % single gaussian 
-% [Pr, l, N_tot, gamma_hat, u_samples, k_fin] = CEIS_GM(N,rho,g,pi_pdf);    % gaussian mixture
-[Pr, l, N_tot, gamma_hat, u_samples, k_fin] = CEIS_vMFNM(N,rho,g,pi_pdf); % adaptive vMFN mixture
+% [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_SG(N,rho,g,pi_pdf);     % single gaussian 
+% [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_GM(N,rho,g,pi_pdf);    % gaussian mixture
+[Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_vMFNM(N,rho,g,pi_pdf); % adaptive vMFN mixture
 
 
 % exact solution
@@ -51,7 +51,7 @@ fprintf('\n***Exact Pf: %g ***', pf_ex);
 fprintf('\n***CEIS Pf: %g ***\n\n', Pr);
 
 %% Plots
-% plot samples
+% plot samplesU
 if d == 2
    figure; hold on;
    xx = 0:0.05:5; nnp = length(xx); [X,Y] = meshgrid(xx);
@@ -59,11 +59,23 @@ if d == 2
    Z    = g(xnod'); Z = reshape(Z,nnp,nnp);
    contour(X,Y,Z,[0,0],'r','LineWidth',3);  % LSF
    for j = 1:l
-      u_j_samples= u_samples.total{j};
+      u_j_samples= samplesU{j};
       plot(u_j_samples(1,:),u_j_samples(2,:),'.');
    end
 end
 
+% plot samplesX
+if d == 2
+   figure; hold on;
+   xx = 0:0.05:5; nnp = length(xx); [X,Y] = meshgrid(xx);
+   xnod = cat(2,reshape(X',nnp^2,1),reshape(Y',nnp^2,1));
+   Z    = g(xnod'); Z = reshape(Z,nnp,nnp);
+   contour(X,Y,Z,[0,0],'r','LineWidth',3);  % LSF
+   for j = 1:l
+      u_j_samples= samplesX{j};
+      plot(u_j_samples(1,:),u_j_samples(2,:),'.');
+   end
+end
 % % Plot failure probability: Exact
 % figure; 
 % semilogy(gg,Pf_exact(gg),'b-'); axis tight; 
