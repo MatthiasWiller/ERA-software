@@ -72,15 +72,15 @@ i      = 1;                   % number of conditional level
 lambda = 0.6;                 % initial scaling parameter \in (0,1)
 max_it = 30;                  % maximum number of iterations
 %
-samplesU = cell(1,1);         % space for the samples in the standard space
-leval    = zeros(1,N);        % space for the log-likelihood evaluations
-h        = zeros(max_it,1);   % space for the intermediate leveles
-prob     = zeros(max_it,1);   % space for the failure probability at each level
-nF       = zeros(max_it,1);   % space for the number of failure point per level
+samplesU  = cell(1,1);         % space for the samples in the standard space
+log_leval = zeros(1,N);        % space for the log-likelihood evaluations
+h         = zeros(max_it,1);   % space for the intermediate leveles
+prob      = zeros(max_it,1);   % space for the failure probability at each level
+nF        = zeros(max_it,1);   % space for the number of failure point per level
 
 %% limit state funtion for the observation event (Ref.1 Eq.12)
-gl = @(pi_u, l, log_L) log(normcdf(pi_u)) + l - log_L; 
-% note that gl = log(p) + l(i) - leval; 
+gl = @(u, l, log_L) log(normcdf(u)) + l - log_L; 
+% note that gl = log(p) + l(i) - log_leval; 
 % where p = normcdf(u_j(end,:)) is the standard uniform variable of BUS
 
 %% aBUS-SuS procedure
@@ -88,9 +88,9 @@ gl = @(pi_u, l, log_L) log(normcdf(pi_u)) + l - log_L;
 u_j = randn(n,N);   % N samples from the prior distribution
 fprintf('Evaluating log-likelihood function...\t');
 for j = 1:N
-   leval(j) = log_L_fun(u_j(:,j));   % evaluate likelihood
+   log_leval(j) = log_L_fun(u_j(:,j));   % evaluate likelihood
 end
-l = max(leval);   % =-log(c) (Ref.1 Alg.5 Part.3)
+l = max(log_leval);   % =-log(c) (Ref.1 Alg.5 Part.3)
 fprintf('Done!');
 
 % SuS stage
@@ -100,7 +100,7 @@ while h(i) > 0
    i = i+1;   
    
    % compute the limit state function (Ref.1 Eq.12)
-   geval = gl(u_j(end,:), l, leval);   % evaluate LSF (Ref.1 Eq.12)
+   geval = gl(u_j(end,:), l, log_leval);   % evaluate LSF (Ref.1 Eq.12)
       
    % sort values in ascending order
    [~,idx] = sort(geval);
@@ -126,24 +126,24 @@ while h(i) > 0
    end
    
    % randomize the ordering of the samples (to avoid possible bias)
+   seeds    = u_j_sort(:,1:nF(i));
    idx_rnd  = randperm(nF(i));
-   seeds    = u_j_sort(:,1:nF(i));  
    rnd_seed = seeds(:,idx_rnd);      % non-ordered seeds
    
    % sampling process using adaptive conditional sampling (Ref.1 Alg.5 Part.4c)
    fprintf('\tMCMC sampling...\t');
-   [u_j, leval, lambda, ~] = aCS_BUS(N, lambda, h(i), rnd_seed, log_L_fun, l, gl);
+   [u_j, log_leval, lambda, ~] = aCS_BUS(N, lambda, h(i), rnd_seed, log_L_fun, l, gl);
    fprintf('Done!');
    
    % update the value of the scaling constant (Ref.1 Alg.5 Part.4d)
-   l_new = max(l, max(leval));
+   l_new = max(l, max(log_leval));
    h(i)  = h(i) - l + l_new;
    l     = l_new;
    fprintf('\n-New constant c level %g = %g\n', i-1, exp(-l));
    fprintf('-Modified threshold level %g = %g\n', i-1, h(i));
    
    % decrease the dependence of the samples (Ref.1 Alg.5 Part.4e)
-   p          = unifrnd( zeros(1,N), min(ones(1,N),exp(leval -l + h(i))) );
+   p          = unifrnd( zeros(1,N), min(ones(1,N),exp(log_leval -l + h(i))) );
    u_j(end,:) = norminv(p);   % to the standard space
 end
 
