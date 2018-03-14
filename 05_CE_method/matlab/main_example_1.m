@@ -30,10 +30,9 @@ pi_pdf = ERANataf(pi_pdf,R);    % if you want to include dependence
 beta = 3.5;
 g    = @(x) -sum(x)/sqrt(d) + beta;
 
-%% subset simulation
+%% CE-method
 N  = 1000;         % Total number of samples for each level
 rho = 0.1;         % Probability of each subset, chosen adaptively
-% figure; hold on;
 
 fprintf('CE-based IS stage: \n');
 % [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_SG(N,rho,g,pi_pdf);     % single gaussian 

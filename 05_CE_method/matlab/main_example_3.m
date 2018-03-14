@@ -28,17 +28,16 @@ pi_pdf = ERANataf(pi_pdf,R);    % if you want to include dependence
 
 %% limit-state function
 beta = 2.5;
-g = @(x) 0.1*(x(1,:)-x(2,:)).^2 - (x(1,:)+x(2,:))./sqrt(2) + 2.5;
+g = @(x) 0.1*(x(1,:)-x(2,:)).^2 - (x(1,:)+x(2,:))./sqrt(2) + beta;
 
 %% subset simulation
 N  = 1000;         % Total number of samples for each level
 rho = 0.1;          % Probability of each subset, chosen adaptively
-% figure; hold on;
 
 fprintf('CE-based IS stage: \n');
-% [Pr, l, N_tot, gamma_hat, u_samples, k_fin] = CEIS_SG(N,rho,g,pi_pdf);     % single gaussian 
-[Pr, l, N_tot, gamma_hat, u_samples, k_fin] = CEIS_GM(N,rho,g,pi_pdf);    % gaussian mixture
-% [Pr, l, N_tot, gamma_hat, u_samples, k_fin] = CEIS_vMFNM(N,rho,g,pi_pdf); % adaptive vMFN mixture
+% [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_SG(N,rho,g,pi_pdf);     % single gaussian 
+[Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_GM(N,rho,g,pi_pdf);    % gaussian mixture
+% [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_vMFNM(N,rho,g,pi_pdf); % adaptive vMFN mixture
 
 
 % exact solution
@@ -59,7 +58,7 @@ if d == 2
    Z    = g(xnod'); Z = reshape(Z,nnp,nnp);
    contour(X,Y,Z,[0,0],'r','LineWidth',3);  % LSF
    for j = 1:l
-      u_j_samples= u_samples.total{j};
+      u_j_samples= samplesU{j};
       plot(u_j_samples(1,:),u_j_samples(2,:),'.');
    end
 end

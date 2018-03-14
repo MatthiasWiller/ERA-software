@@ -2,7 +2,7 @@ import numpy as np
 import scipy.stats
 """
 ---------------------------------------------------------------------------
-Basic algorithm
+Perform soft EM algorithm for fitting the Gaussian mixture model
 ---------------------------------------------------------------------------
 Created by:
 Sebastian Geyer (s.geyer@tum.de)
@@ -18,36 +18,36 @@ Input:
 * X       :
 * W       :
 * nGM     :
-* algtype :
 ---------------------------------------------------------------------------
 Output:
-* mu : 
-* 
+* mu    : 
+* Sigma :
+* pi    :
 ---------------------------------------------------------------------------
 """
-def EMGM(X, W, nGM, algtype):
+def EMGM(X, W, nGM):
     ## initialization
-    R = initialization(X,init)
+    R = initialization(X, nGM)
 
-    tol = 1e-5
-    maxiter = 500
-    llh = -inf(1,maxiter)
+    tol       = 1e-5
+    maxiter   = 500
+    llh       = -np.inf(maxiter)
     converged = false
-    t = 1
+    t         = 1
 
     ## soft EM algorithm
     while (not converged) and t < maxiter:
         t = t+1   
         
-        [~,label(:)] = max(R,[],2)
-        u = unique(label)   # non-empty components
-        if size(R,2) ~= size(u,2):
-            R = R(:,u)   # remove empty components
-        else:
+        # [~,label(:)] = max(R,[],2)
+        # u = unique(label)   # non-empty components
+        # if size(R,2) ~= size(u,2):
+        #     R = R[:,u]   # remove empty components
+        if t > 1:
             converged = abs(llh(t)-llh(t-1)) < tol*abs(llh(t))
         
-        model = maximization(X,W,R)
-        [R, llh(t)] = expectation(X,W,model)
+        [mu, si, pi] = maximization(X,W,R)
+        [R, llh(t)] = expectation(X, W, mu, si, pi)
     
 
     if converged:
@@ -55,54 +55,30 @@ def EMGM(X, W, nGM, algtype):
     else:
         print('Not converged in ', maxiter, ' steps.')
 
+    return [mu, si, pi]
+## END EMGM ----------------------------------------------------------------
 
-def initialization(X,init):
+# --------------------------------------------------------------------------
+# Initialization with k-means algorithm 
+# --------------------------------------------------------------------------
+def initialization(X, nGM):
 
-    [~,n] = size(X)
-
-    if strcmp('DBSCAN',init.type): # Initialization with cluster centers
-        
-        m=init.centers'
-        k=size(m,2)
-        [~,label] = max(bsxfun(@minus,m'*X,dot(m,m,1)'/2),[],1)
-        R = full(sparse(1:n,label,1,n,k,n))
-        
-    elif strcmp('RAND',init.type): # Random initialization 
-        
-        idx = randsample(n,init.nGM)
-        m = X(:,idx)
-        [~,label] = max(bsxfun(@minus,m'*X,dot(m,m,1)'/2),[],1)
-        [u,~,label] = unique(label)
-        while init.nGM ~= length(u)
-            idx = randsample(n,init.nGM)
-            m = X(:,idx)
-            [~,label] = max(bsxfun(@minus,m'*X,dot(m,m,1)'/2),[],1)
-            [u,~,label] = unique(label)
-        end
-        
-        R = full(sparse(1:n,label,1,n,init.nGM,n))
-        
-    elif strcmp('KMEANS',init.type): # Initialization with k-means algorithm 
-        
-        idx=kmeans(X',init.nGM,'Replicates',10)
-        
-        R=dummyvar(idx)
-
+    idx = kmeans(X.T,nGM,'Replicates',10)
+    R   = dummyvar(idx)
     return R
 
+# --------------------------------------------------------------------------
+# ...
+# --------------------------------------------------------------------------
+def expectation(X, W, mu, si, pi):
 
-def expectation(X, W, model):
-    mu = model.mu
-    si = model.si
-    pi = model.pi
+    n = np.size(X,2)
+    k = np.size(mu,2)
 
-    n = size(X,2)
-    k = size(mu,2)
+    logpdf = np.zeros(n,k)
+    for i in range(k):
+        logpdf[:,i] = loggausspdf(X,mu[:,i],si[:,:,i])
 
-    logpdf = zeros(n,k)
-    for i = 1:k
-        logpdf(:,i) = loggausspdf(X,mu(:,i),si(:,:,i))
-    end
 
     logpdf = bsxfun(@plus,logpdf,log(pi))
     T = logsumexp(logpdf,2)
@@ -111,32 +87,34 @@ def expectation(X, W, model):
     R = exp(logR)
     return [R, llh]
 
-def maximization(X, W, R):
-    R = repmat(W,1,size(R,2)).*R
-    [d,~] = size(X)
-    k = size(R,2)
 
-    nk = sum(R,1)
-    w = nk/sum(W)
+# --------------------------------------------------------------------------
+# ...
+# --------------------------------------------------------------------------
+def maximization(X, W, R):
+    R = repmat(W,1,np.size(R,axis=1)).*R
+    d = np.size(X, axis=0)
+    k = np.size(R, axis=1)
+
+    nk = sum(R,axis=0)
+    w  = nk/sum(W)
     mu = bsxfun(@times, X*R, 1./nk)
 
-    Sigma = zeros(d,d,k)
-    sqrtR = sqrt(R)
-    for i = 1:k
+    Sigma = np.zeros((d,d,k))
+    sqrtR = np.sqrt(R)
+    for i in range(k):
         Xo = bsxfun(@minus,X,mu(:,i))
         Xo = bsxfun(@times,Xo,sqrtR(:,i)')
         Sigma(:,:,i) = Xo*Xo'/nk(i)
         Sigma(:,:,i) = Sigma(:,:,i)+eye(d)*(1e-6) # add a prior for numerical stability
-    end
 
-    model.mu = mu
-    model.si = Sigma
-    model.pi = w
+    return [mu, Sigma, w]
 
-    return model
-
+# --------------------------------------------------------------------------
+# ...
+# --------------------------------------------------------------------------
 def loggausspdf(X, mu, Sigma):
-    d = size(X,1)
+    d = np.size(X, axis=0)
     X = bsxfun(@minus,X,mu)
     [U,~]= chol(Sigma)
     Q = U'\X
@@ -146,24 +124,26 @@ def loggausspdf(X, mu, Sigma):
 
     return y
 
+# --------------------------------------------------------------------------
+# Compute log(sum(exp(x),dim)) while avoiding numerical underflow.
+#   By default dim = 1 (columns).
+# Written by Michael Chen (sth4nth@gmail.com).
+# --------------------------------------------------------------------------
 def logsumexp(x, dim):
-    # Compute log(sum(exp(x),dim)) while avoiding numerical underflow.
-    #   By default dim = 1 (columns).
-    # Written by Michael Chen (sth4nth@gmail.com).
-    if nargin == 1
+    
+    if nargin == 1:
         # Determine which dimension sum will use
         dim = find(size(x)~=1,1)
-        if isempty(dim), dim = 1 end
-    end
+        if isempty(dim):
+            dim = 1
 
     # subtract the largest in each column
     y = max(x,[],dim)
     x = bsxfun(@minus,x,y)
     s = y + log(sum(exp(x),dim))
     i = find(~isfinite(y))
-    if ~isempty(i)
-        s(i) = y(i)
-    end
-
+    if ~isempty(i):
+        s[i] = y[i]
+    
     return s
-## END
+## END FILE

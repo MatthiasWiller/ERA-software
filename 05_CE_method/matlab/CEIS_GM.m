@@ -58,6 +58,7 @@ Si_init = eye(dim);       % ...
 Pi_init = 1;              % ...
 %
 gamma_hat = zeros(max_it+1,1); % space for ...
+samplesU = cell(1,1);
 
 %% CE procedure
 % initializing parameters
@@ -99,13 +100,13 @@ for j = 1:max_it
 
   % Parameter update
   nGM=3;
-  dist = EMGM(X(I,:)',W(I),nGM);
+  [mu, si, Pi] = EMGM(X(I,:)',W(I),nGM);
 
   % Assigning the variables with updated parameters
-  mu_hat=dist.mu';
-  Si_hat=dist.si;
-  Pi_hat=dist.pi';
-  k=length(dist.pi);
+  mu_hat=mu';
+  Si_hat=si;
+  Pi_hat=Pi';
+  k=length(Pi);
 
 end
 
@@ -136,7 +137,7 @@ else
       end
    else
       for i = 1:l
-         samplesX{i} = u2x(samplesU{i}(1:end-1,:));
+         samplesX{i} = u2x(samplesU{i}(:,:));
       end
    end
 end

@@ -131,7 +131,7 @@ else
       end
    else
       for i = 1:l
-         samplesX{i} = u2x(samplesU{i}(1:end-1,:));
+         samplesX{i} = u2x(samplesU{i}(:,:));
       end
    end
 end

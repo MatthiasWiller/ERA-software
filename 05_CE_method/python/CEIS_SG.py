@@ -14,7 +14,7 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2018-02
+Version 2018-03
 ---------------------------------------------------------------------------
 Input
 * N         : Number of samples per level
@@ -62,7 +62,7 @@ def CEIS_SG(N, rho, g_fun, distr):
     Pi_init = [1]             # ...
     #
     gamma_hat = np.zeros((max_it+1)) # space for ...
-    samplesU = {'total': list()}
+    samplesU = list()
 
     ## CE Procedure
     # Initializing parameters
@@ -75,7 +75,7 @@ def CEIS_SG(N, rho, g_fun, distr):
     for j in range(max_it):
         # Generate samples and save them
         X = scipy.stats.multivariate_normal.rvs(mean=mu_hat, cov=Si_hat, size=N)
-        samplesU['total'].append(X.T)
+        samplesU.append(X.T)
 
         # Count generated samples
         N_tot += N
@@ -115,5 +115,26 @@ def CEIS_SG(N, rho, g_fun, distr):
     I_final = (geval<=0)
     Pr      = 1/N*sum(I_final*W_final)
 
-    return [Pr, l, N_tot, gamma_hat, samplesU, 1]
+    k_fin = 1
+
+    ## transform the samples to the physical/original space
+    samplesX = list()
+    if isinstance(distr, ERANataf):   # use Nataf transform (dependence)
+        if distr.Marginals[0].Name.lower() == 'standardnormal':
+            for i in range(l):
+                samplesX.append( samplesU[i][:,:] )
+        
+        else:
+            for i in range(l):
+                samplesX.append( distr.U2X(samplesU[i][:,:]) )
+
+    else:
+        if distr.Name.lower() == 'standardnormal':
+            for i in range(l):
+                samplesX.append( samplesU[i][:,:] )
+        else:
+            for i in range(l):
+                samplesX.append( u2x(samplesU[i][:,:]) )
+
+    return [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin]
 ##END

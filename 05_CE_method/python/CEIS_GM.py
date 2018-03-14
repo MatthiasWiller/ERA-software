@@ -27,7 +27,7 @@ Based on:
 
 ---------------------------------------------------------------------------
 """
-def CEIS_SG(N, rho, g_fun, distr):
+def CEIS_GM(N, rho, g_fun, distr):
     ## initial check if there exists a Nataf object
     if isinstance(distr, ERANataf):   # use Nataf transform (dependence)
         dim = len(distr.Marginals)    # number of random variables (dimension)
@@ -49,9 +49,10 @@ def CEIS_SG(N, rho, g_fun, distr):
         raise RuntimeError('Incorrect distribution. Please create an ERANataf object!')
 
     ## Initialization of variables and storage
-    j      = 0                # initial level
-    max_it = 100              # estimated number of iterations
-    N_tot  = 0                # total number of samples
+    j      = 0         # initial level
+    max_it = 100       # estimated number of iterations
+    N_tot  = 0         # total number of samples
+    k      = 1         # number of Gaussians in mixture
     
     # Definition of parameters of the random variables (uncorrelated standard normal)
     mu_init = np.zeros(dim)   # ...
@@ -59,7 +60,7 @@ def CEIS_SG(N, rho, g_fun, distr):
     Pi_init = [1]   # ...
     #
     gamma_hat = np.zeros((max_it+1)) # space for ...
-    samplesU = {'total': list()}
+    samplesU  = list()
 
     ## CE Procedure
     # Initializing parameters
@@ -72,7 +73,7 @@ def CEIS_SG(N, rho, g_fun, distr):
     for j in range(max_it):
         # Generate samples
         X = GM_sample(mu_hat, Si_hat, Pi_hat, N)
-        # X = scipy.stats.multivariate_normal.rvs(mean=mu_hat, cov=Si_hat, size=N)
+        samplesU.append(X.T)
 
         # Count generated samples
         N_tot += N
@@ -90,6 +91,7 @@ def CEIS_SG(N, rho, g_fun, distr):
         
         # obtaining estimator gamma
         gamma_hat[j+1] = np.maximum(0, np.percentile(geval, rho*100))
+        print(gamma_hat[j+1])
 
         # Indicator function
         I = (geval<=gamma_hat[j+1])
@@ -98,11 +100,9 @@ def CEIS_SG(N, rho, g_fun, distr):
         W = scipy.stats.multivariate_normal.pdf(X, mean=np.zeros((dim)), cov=np.eye((dim)))/h
 
         # Parameter update: EM algorithm
-        nGM = 1
-        # algtype = 'RAND'
-        algtype = 'KMEANS'
+        nGM = 3
 
-        [mu_hat, Si_hat, Pi_hat, k] = EMGM(X[I,:].T, 1/W[I], nGM, algtype)
+        [mu_hat, Si_hat, Pi_hat, k] = EMGM(X[I,:].T, W[I], nGM)
 
     # store the needed steps
     l = j
@@ -111,6 +111,25 @@ def CEIS_SG(N, rho, g_fun, distr):
     W_final = scipy.stats.multivariate_normal.pdf(X, mean=np.zeros(dim), cov=np.eye((dim)))/h
     I_final = (geval<=0)
     Pr = 1/N*sum(I_final*W_final)
+    
+    ## transform the samples to the physical/original space
+    samplesX = list()
+    if isinstance(distr, ERANataf):   # use Nataf transform (dependence)
+        if distr.Marginals[0].Name.lower() == 'standardnormal':
+            for i in range(l):
+                samplesX.append( samplesU[i][:,:] )
+        
+        else:
+            for i in range(l):
+                samplesX.append( distr.U2X(samplesU[i][:,:]) )
 
-    return [Pr, l, N_tot, gamma_hat, k_fin]
+    else:
+        if distr.Name.lower() == 'standardnormal':
+            for i in range(l):
+                samplesX.append( samplesU[i][:,:] )
+        else:
+            for i in range(l):
+                samplesX.append( u2x(samplesU[i][:,:]) )
+
+    return [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin]
 ##END

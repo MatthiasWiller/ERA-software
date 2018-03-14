@@ -39,16 +39,17 @@ R = np.eye(d)   # independent case
 pi_pdf = ERANataf(pi_pdf, R)    # if you want to include dependence
 
 ## limit-state function
-beta = 3.5
-g    = lambda x: -x.sum(axis=0)/np.sqrt(d) + beta
+beta = 2.5
+g    = lambda x: 0.1*(x[0,:]-x[1,:])**2 - (x[0,:]+x[1,:])/np.sqrt(2) + beta
+
 
 ## cross entropy-based IS
 N   = 1000        # Total number of samples for each level
 rho = 0.1         # ...
 
 print('CE-based IS stage: ')
-[Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_SG(N, rho, g, pi_pdf)       # single gaussian
-# [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_GM(N, rho, g, pi_pdf)       # gaussian mixture
+# [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_SG(N, rho, g, pi_pdf)       # single gaussian
+[Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_GM(N, rho, g, pi_pdf)       # gaussian mixture
 # [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_vMFNM(N, rho, g, pi_pdf)    # adaptive vMFN mixture
 
 
