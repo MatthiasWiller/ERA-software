@@ -1,4 +1,4 @@
-function [model] = EMGM(X,W,nGM)
+function [mu, si, pi] = EMGM(X,W,nGM)
 % Perform soft EM algorithm for fitting the Gaussian mixture model.
 %   X: d x N data matrix (dimensions x Number of samples)
 %   W: N x 1 vector of sample weights
@@ -8,11 +8,11 @@ function [model] = EMGM(X,W,nGM)
 %% initialization
 R = initialization(X,nGM);
 
-tol = 1e-5;
-maxiter = 500;
-llh = -inf(1,maxiter);
+tol       = 1e-5;
+maxiter   = 500;
+llh       = -inf(1,maxiter);
 converged = false;
-t = 1;
+t         = 1;
 
 %% soft EM algorithm
 while ~converged && t < maxiter
@@ -27,9 +27,8 @@ while ~converged && t < maxiter
     t = t+1;   
 
     
-    model = maximization(X,W,R);
-    [R, llh(t)] = expectation(X,W,model);
-   
+    [mu, si, pi] = maximization(X, W, R);
+    [R, llh(t)] = expectation(X, W, mu, si, pi);
 end
 
 if converged
@@ -38,17 +37,23 @@ else
     fprintf('Not converged in %d steps.\n',maxiter);
 end
 
-function R = initialization(X,nGM)
+return;
+%% END EMGM ----------------------------------------------------------------
+
+% --------------------------------------------------------------------------
+% Initialization with k-means algorithm 
+% --------------------------------------------------------------------------
+function R = initialization(X, nGM)
    
 % Initialization with k-means algorithm 
-idx=kmeans(X',nGM,'Replicates',10);
-R=dummyvar(idx);
+idx = kmeans(X',nGM,'Replicates',10);
+R   = dummyvar(idx);
 return;
 
-function [R, llh] = expectation(X,W, model)
-mu = model.mu;
-si = model.si;
-pi = model.pi;
+% --------------------------------------------------------------------------
+% ...
+% --------------------------------------------------------------------------
+function [R, llh] = expectation(X, W, mu, si, pi)
 
 n = size(X,2);
 k = size(mu,2);
@@ -65,7 +70,10 @@ logR = bsxfun(@minus,logpdf,T);
 R = exp(logR);
 return;
 
-function model = maximization(X,W,R)
+% --------------------------------------------------------------------------
+% ...
+% --------------------------------------------------------------------------
+function [mu, Sigma, w] = maximization(X,W,R)
 R = repmat(W,1,size(R,2)).*R;
 [d,~] = size(X);
 k = size(R,2);
@@ -83,11 +91,11 @@ for i = 1:k
     Sigma(:,:,i) = Sigma(:,:,i)+eye(d)*(1e-6); % add a prior for numerical stability
 end
 
-model.mu = mu;
-model.si = Sigma;
-model.pi = w;
 return;
 
+% --------------------------------------------------------------------------
+% ...
+% --------------------------------------------------------------------------
 function y = loggausspdf(X, mu, Sigma)
 d = size(X,1);
 X = bsxfun(@minus,X,mu);
@@ -98,6 +106,9 @@ c = d*log(2*pi)+2*sum(log(diag(U)));   % normalization constant
 y = -(c+q)/2;
 return;
 
+% --------------------------------------------------------------------------
+% ...
+% --------------------------------------------------------------------------
 function s = logsumexp(x, dim)
 % Compute log(sum(exp(x),dim)) while avoiding numerical underflow.
 %   By default dim = 1 (columns).
