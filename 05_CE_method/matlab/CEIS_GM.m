@@ -100,13 +100,13 @@ for j = 1:max_it
 
   % Parameter update
   nGM=3;
-  [mu, si, Pi] = EMGM(X(I,:)',W(I),nGM);
+  [mu, si, pi] = EMGM(X(I,:)',W(I),nGM);
 
   % Assigning the variables with updated parameters
   mu_hat=mu';
   Si_hat=si;
-  Pi_hat=Pi';
-  k=length(Pi);
+  Pi_hat=pi';
+  k=length(pi);
 
 end
 
