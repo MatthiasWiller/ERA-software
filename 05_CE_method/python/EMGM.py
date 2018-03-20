@@ -63,7 +63,7 @@ def EMGM(X, W, nGM):
 # --------------------------------------------------------------------------
 def initialization(X, nGM):
 
-    idx = kmeans(X.T,nGM,'Replicates',10)
+    idx = scipy.cluster.vq.kmeans2(X.T, nGM) # idx = kmeans(X.T,nGM,'Replicates',10)
     R   = dummyvar(idx)
     return R
 
@@ -71,20 +71,19 @@ def initialization(X, nGM):
 # ...
 # --------------------------------------------------------------------------
 def expectation(X, W, mu, si, pi):
+    n = np.size(X, axis=1)
+    k = np.size(mu, axis=1)
 
-    n = np.size(X,2)
-    k = np.size(mu,2)
-
-    logpdf = np.zeros(n,k)
+    logpdf = np.zeros((n,k))
     for i in range(k):
-        logpdf[:,i] = loggausspdf(X,mu[:,i],si[:,:,i])
+        logpdf[:,i] = loggausspdf(X, mu[:,i], si[:,:,i])
 
 
-    logpdf = bsxfun(@plus,logpdf,log(pi))
-    T = logsumexp(logpdf,2)
-    llh = sum(W.*T)/sum(W)
-    logR = bsxfun(@minus,logpdf,T)
-    R = exp(logR)
+    logpdf = logpdf + np.log(np.pi)     # logpdf = bsxfun(@plus,logpdf,log(pi))
+    T      = logsumexp(logpdf,1)
+    llh    = np.sum(W*T)/np.sum(W)
+    logR   = logpdf - T              # logR = bsxfun(@minus,logpdf,T)
+    R      = np.exp(logR)
     return [R, llh]
 
 
@@ -92,21 +91,21 @@ def expectation(X, W, mu, si, pi):
 # ...
 # --------------------------------------------------------------------------
 def maximization(X, W, R):
-    R = repmat(W,1,np.size(R,axis=1)).*R
+    R = W*R
     d = np.size(X, axis=0)
     k = np.size(R, axis=1)
 
     nk = sum(R,axis=0)
     w  = nk/sum(W)
-    mu = bsxfun(@times, X*R, 1./nk)
+    mu = X*R/nk              # mu = bsxfun(@times, X*R, 1./nk)
 
     Sigma = np.zeros((d,d,k))
     sqrtR = np.sqrt(R)
     for i in range(k):
-        Xo = bsxfun(@minus,X,mu(:,i))
-        Xo = bsxfun(@times,Xo,sqrtR(:,i)')
-        Sigma(:,:,i) = Xo*Xo'/nk(i)
-        Sigma(:,:,i) = Sigma(:,:,i)+eye(d)*(1e-6) # add a prior for numerical stability
+        Xo = X-mu[:,i]        # Xo = bsxfun(@minus,X,mu(:,i))
+        Xo = Xo*sqrtR[:,i]    # Xo = bsxfun(@times,Xo,sqrtR(:,i)')
+        Sigma[:,:,i] = Xo*Xo/nk[i]
+        Sigma[:,:,i] = Sigma[:,:,i]+np.eye(d)*(1e-6) # add a prior for numerical stability
 
     return [mu, Sigma, w]
 
@@ -115,34 +114,27 @@ def maximization(X, W, R):
 # --------------------------------------------------------------------------
 def loggausspdf(X, mu, Sigma):
     d = np.size(X, axis=0)
-    X = bsxfun(@minus,X,mu)
-    [U,~]= chol(Sigma)
-    Q = U'\X
+    X = X-mu                   # X = bsxfun(@minus,X,mu)
+    [U,~]= np.chol(Sigma)
+    Q = U'\X #TODO: solve this here
     q = dot(Q,Q,1)  # quadratic term (M distance)
-    c = d*log(2*pi)+2*sum(log(diag(U)))   # normalization constant
+    c = d*np.log(2*np.pi)+2*np.sum(np.log(np.diag(U)))   # normalization constant
     y = -(c+q)/2
 
     return y
 
 # --------------------------------------------------------------------------
 # Compute log(sum(exp(x),dim)) while avoiding numerical underflow.
-#   By default dim = 1 (columns).
+#   By default dim = 0 (columns).
 # Written by Michael Chen (sth4nth@gmail.com).
 # --------------------------------------------------------------------------
-def logsumexp(x, dim):
-    
-    if nargin == 1:
-        # Determine which dimension sum will use
-        dim = find(size(x)~=1,1)
-        if isempty(dim):
-            dim = 1
-
+def logsumexp(x, dim=0):
     # subtract the largest in each column
-    y = max(x,[],dim)
-    x = bsxfun(@minus,x,y)
-    s = y + log(sum(exp(x),dim))
-    i = find(~isfinite(y))
-    if ~isempty(i):
+    y = np.max(x,[],dim)
+    x = x - y                  #x = bsxfun(@minus,x,y)
+    s = y + np.log(np.sum(np.exp(x),dim))
+    i = find(not(isfinite(y)))
+    if not(isempty[i]):
         s[i] = y[i]
     
     return s
