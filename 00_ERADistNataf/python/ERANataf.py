@@ -208,16 +208,10 @@ class ERANataf(object):
             U = U.T
         Z = np.dot(self.A, U)
         m, n = np.shape(U)
-        if (np.size(self.Marginals) == 1):
-            X = np.zeros([n, m])
-            for i in range(m):
-                X[i, :] = self.Marginals[i].icdf(stats.norm.cdf(Z[i, :]))
-            diag = np.zeros([m, m])
-        else:
-            X = np.zeros([m, n])
-            for i in range(m):
-                X[i, :] = self.Marginals[i].icdf(stats.norm.cdf(Z[i, :]))
-            diag = np.zeros([m, m])
+        X = np.zeros([m, n])
+        for i in range(m):
+            X[i, :] = self.Marginals[i].icdf(stats.norm.cdf(Z[i, :]))
+        diag = np.zeros([m, m])
 #        U = np.linalg.solve(self.A, Z)
         if (not Jacobian):
             return X
