@@ -198,7 +198,12 @@ k_fin = length(pi); l_tot  = m+1;
 %% Calculation of the Probability of failure
 % accfin = accrate(m);
 const  = prod(Sk);
-Pr     = mean((gk < 0)./normcdf(-gk/sigmak(m+1)))*const;
+tmp1  = (gk < 0);
+tmp2  = -gk/sigmak(m+1);
+tmp3  = normcdf(tmp2);
+tmp4  = tmp1./tmp3;
+Pr    = mean(tmp4)*const;
+% Pr     = mean((gk < 0)./normcdf(-gk/sigmak(m+1)))*const;
 
 %% transform the samples to the physical/original space
 samplesX = cell(l_tot,1);

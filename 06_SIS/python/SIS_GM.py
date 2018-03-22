@@ -45,7 +45,7 @@ def SIS_GM(N, rho, g_fun, distr):
 
     elif isinstance(distr, ERADist):   # use distribution information for the transformation (independence)
         dim = len(distr)                    # number of random variables (dimension)
-        u2x = lambda u: distr[0].icdf(scipy.stats.norm.cdf(u))   # from u to x
+        u2x = lambda u: distr[0].icdf(sp.stats.norm.cdf(u))   # from u to x
         g   = lambda u: g_fun(u2x(u))                            # LSF in standard space
         
         # if the samples are standard normal do not make any transform
@@ -58,34 +58,36 @@ def SIS_GM(N, rho, g_fun, distr):
     ## Initialization of variables and storage
     max_it   = 100              # estimated number of iterations
     m        = 0                # counter for number of levels
+    samplesU = list()           # space for samples in U-space
 
     # Properties of SIS
-    nsamlev  = N                # number of samples
-    nchain   = nsamlev*rho      # number Markov chains
-    lenchain = nsamlev/nchain   # number of samples per Markov chain
-    burn     = 0                # burn-in
+    nsamlev  = N                    # number of samples
+    nchain   = int(nsamlev*rho)     # number Markov chains
+    lenchain = int(nsamlev/nchain)  # number of samples per Markov chain
+    burn     = 0                    # burn-in
 
     # tolerance of COV of weights
     tolCOV = 1.5
 
     # initialize samples
-    uk = np.zeros((nsamlev,dim))     # space for samples
-    gk = np.zeros((1,nsamlev))       # space for evaluations of g
-    accrate = np.zeros(max_it)   # space for acceptance rate
-    Sk      = np.ones(max_it)    # space for expected weights
+    uk      = np.zeros([nsamlev,dim])     # space for samples
+    gk      = np.zeros([nsamlev])       # space for evaluations of g
+    accrate = np.zeros([max_it])          # space for acceptance rate
+    Sk      = np.ones([max_it])           # space for expected weights
+    sigmak  = np.zeros([max_it])          # space for sigmak
 
     ### Step 1
     # Perform the first Monte Carlo simulation
-    for k in range(samlev):
-        u       = randn((dim,1))
+    for k in range(nsamlev):
+        u       = sp.stats.norm.rvs(size=[dim])
         uk[k,:] = u
-        gk[k]   = g[u.T]
+        gk[k]   = g(u.T)
 
     # save samples 
     samplesU.append(uk.T)
 
     # set initial subset and failure level
-    gmu         = np.mean(gk)
+    gmu       = np.mean(gk)
     sigmak[m] = 50*gmu
 
     ## Iteration
@@ -93,14 +95,16 @@ def SIS_GM(N, rho, g_fun, distr):
       
         ### Step 2 and 3
         # compute sigma and weights
-        if m == 1:
-            sigma2    = fminbnd(@(x)abs(np.std(normcdf(-gk/x))/np.mean(normcdf(-gk/x))-tolCOV),0,10.0*gmu)
-            sigmak[m] = sigma2
-            wk        = normcdf(-gk/sigmak[m])
-        else:     
-            sigma2    = fminbnd(@(x)abs(np.std(normcdf(-gk/x)./normcdf(-gk/sigmak[m]))/np.mean(normcdf(-gk/x)./normcdf(-gk/sigmak[m-1]))-tolCOV),0,sigmak[m-1])
-            sigmak[m] = sigma2
-            wk        = normcdf(-gk/sigmak[m])/normcdf(-gk/sigmak[m-1])
+        if m == 0:
+            func        = lambda x: abs(np.std(sp.stats.norm.cdf(-gk/x))/np.mean(sp.stats.norm.cdf(-gk/x))-tolCOV)
+            sigma2      = sp.optimize.fminbound(func, 0, 10.0*gmu)
+            sigmak[m+1] = sigma2
+            wk          = sp.stats.norm.cdf(-gk/sigmak[m+1])
+        else:
+            func        = lambda x: abs(np.std(sp.stats.norm.cdf(-gk/x)/sp.stats.norm.cdf(-gk/sigmak[m]))/np.mean(sp.stats.norm.cdf(-gk/x)/sp.stats.norm.cdf(-gk/sigmak[m]))-tolCOV)
+            sigma2      = sp.optimize.fminbound(func, 0, sigmak[m])
+            sigmak[m+1] = sigma2
+            wk          = sp.stats.norm.cdf(-gk/sigmak[m+1])/sp.stats.norm.cdf(-gk/sigmak[m])
 
         ### Step 4
         # compute estimate of expected w
@@ -119,7 +123,7 @@ def SIS_GM(N, rho, g_fun, distr):
         
         ### Step 5
         # resample
-        ind = randsample(nsamlev,nchain,true,wnork)
+        ind = np.random.choice(range(nsamlev),nchain,True,wnork)
 
         # seeds for chains
         gk0 = gk[ind]
@@ -133,8 +137,8 @@ def SIS_GM(N, rho, g_fun, distr):
         alphak = np.zeros([nchain])    
 
         # delete previous samples
-        gk = []
-        uk = []
+        gk = np.zeros([nsamlev])
+        uk = np.zeros([nsamlev,dim])
       
         for k in range(nchain):
           # set seed for chain
@@ -142,14 +146,13 @@ def SIS_GM(N, rho, g_fun, distr):
           g0 = gk0[k]
 
           for i in range(lenchain+burn):
-              count = count+1
-                    
+                                  
               if i == burn:
                   count = count-burn
                     
-              # get candidate sample from conditional normal distribution 
-              indw  = randsample(len(pi),1,true,pi)
-              ucand = mvnrnd(mu[:,indw],si[:,:,indw])
+              # get candidate sample from conditional normal distribution
+              indw  = np.random.choice(np.arange(len(pi)), 1, True, pi)[0]
+              ucand = sp.stats.multivariate_normal.rvs(mean=mu[:,indw], cov=si[:,:,indw])
                     
               # Evaluate limit-state function              
               gcand = g(ucand)             
@@ -157,11 +160,11 @@ def SIS_GM(N, rho, g_fun, distr):
               # compute acceptance probability
               pdfn = 0
               pdfd = 0
-              for ii = range(len(pi)):
-                  pdfn = pdfn+pi[ii]*mvnpdf(u0.T,mu[:,ii],si[:,:,ii])
-                  pdfd = pdfd+pi[ii]*mvnpdf(ucand.T,mu[:,ii],si[:,:,ii])
+              for ii in range(len(pi)):
+                  pdfn = pdfn+pi[ii]*sp.stats.multivariate_normal.pdf(u0.T,mu[:,ii],si[:,:,ii])
+                  pdfd = pdfd+pi[ii]*sp.stats.multivariate_normal.pdf(ucand.T,mu[:,ii],si[:,:,ii])
                     
-              alpha     = min(1,normcdf(-gcand/sigmak[m])*np.prod(normpdf(ucand))*pdfn/normcdf(-g0/sigmak(m+1))/prod(normpdf(u0))/pdfd)
+              alpha     = min(1,sp.stats.norm.cdf(-gcand/sigmak[m])*np.prod(sp.stats.norm.cdf(ucand))*pdfn/sp.stats.norm.cdf(-g0/sigmak[m])/np.prod(sp.stats.norm.pdf(u0))/pdfd)
               alphak[k] = alphak[k]+alpha/(lenchain+burn)
 
               # check if sample is accepted
@@ -174,6 +177,8 @@ def SIS_GM(N, rho, g_fun, distr):
               else:
                   uk[count,:] = u0
                   gk[count]   = g0
+
+              count = count+1
                                     
         uk = uk[:nsamlev,:]
         gk = gk[:nsamlev]
@@ -183,19 +188,24 @@ def SIS_GM(N, rho, g_fun, distr):
 
         # compute mean acceptance rate of all chains in level m
         accrate[m] = np.mean(alphak)
-        COV_Sl = np.std((gk < 0)./normcdf(-gk/sigmak[m]))/np.mean((gk < 0)./normcdf(-gk/sigmak(m+1)))
-        print('COV_Sl =',COV_Sl)
+        COV_Sl = np.std((gk < 0)/sp.stats.norm.cdf(-gk/sigmak[m]))/np.mean((gk < 0)/sp.stats.norm.cdf(-gk/sigmak[m]))
+        print('COV_Sl =', COV_Sl)
         if COV_Sl < 0.01:
             break
 
     # needed steps
     k_fin = len(pi) 
-    l_tot  = m+1
+    l     = m+1
 
     ## Calculation of the Probability of failure
     # accfin = accrate[m]
-    const  = np.prod(Sk)
-    Pr     = np.mean((gk < 0)./normcdf(-gk/sigmak[m]))*const
+    const = np.prod(Sk)
+    tmp1  = (gk < 0)
+    tmp2  = -gk/sigmak[m]
+    tmp3  = sp.stats.norm.cdf(tmp2)
+    tmp4  = tmp1/tmp3
+    Pr = np.mean(tmp4)*const
+    # Pr    = np.mean((gk < 0)/sp.stats.norm.cdf(-gk/sigmak[m]))*const
 
     ## transform the samples to the physical/original space
     samplesX = list()
@@ -216,5 +226,5 @@ def SIS_GM(N, rho, g_fun, distr):
             for i in range(l):
                 samplesX.append( u2x(samplesU[i][:,:]) )
 
-    return [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin]
+    return [Pr, l, samplesU, samplesX, k_fin]
 ##END

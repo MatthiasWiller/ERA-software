@@ -45,7 +45,7 @@ N   = 1000        # Total number of samples for each level
 rho = 0.1         # ...
 
 print('SIS stage: ')
-[Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = SIS_GM(N, rho, g, pi_pdf)
+[Pr, l, samplesU, samplesX, k_fin] = SIS_GM(N, rho, g, pi_pdf)
 
 # exact solution
 pf_ex    = scipy.stats.norm.cdf(-beta)
