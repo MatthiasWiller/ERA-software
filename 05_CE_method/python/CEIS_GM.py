@@ -10,6 +10,7 @@ from EMGM import EMGM
 Cross entropy-based importance sampling
 ---------------------------------------------------------------------------
 Created by:
+Sebastian Geyer (s.geyer@tum.de)
 Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group
 Technische Universitat Munchen
