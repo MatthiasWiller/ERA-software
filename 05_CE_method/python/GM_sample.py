@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.stats
+import scipy as sp
 """
 ---------------------------------------------------------------------------
 Basic algorithm
@@ -25,21 +25,30 @@ Output:
 ---------------------------------------------------------------------------
 """
 def GM_sample(mu, Si, Pi, N):
-    # Determine number of samples from each distribution
-    z = round(Pi*N)
-    
-    if sum(z)!=N:
-        dif    = sum(z)-N
-        ind    = np.argmax(z)
-        z[ind] = z[ind]-dif
-    
-    # Generate samples
-    X   = np.zeros((N, np.size(mu, axis=1)))
-    ind = 1
-    for p in range(Pi):
-        np                = z[p]
-        X[ind:ind+np-1,:] = scipy.stats.multivariate_normal(mean=mu[p,:], cov=Si[:,:,p], size=np)
-        ind               = ind+np
+    if np.size(mu, axis=1) == 1:
+        mu = mu.squeeze()
+        X = sp.stats.multivariate_normal.rvs(mean=mu,
+                                             cov=Si,
+                                             size=N)
+    else:
+        # Determine number of samples from each distribution
+        z = np.round(Pi*N)
+        
+        if np.sum(z) != N:
+            dif    = np.sum(z)-N
+            ind    = np.argmax(z)
+            z[ind] = z[ind]-dif
+        
+        z = z.astype(int) # integer conversion
+
+        # Generate samples
+        X   = np.zeros([N, np.size(mu, axis=1)])
+        ind = 0
+        for p in range(len(Pi)):
+            X[ind:ind+z[p],:] = sp.stats.multivariate_normal.rvs(mean=mu[p,:], 
+                                                                 cov=Si[:,:,p], 
+                                                                 size=z[p])
+            ind               = ind+z[p]
     
     return X
 ## END

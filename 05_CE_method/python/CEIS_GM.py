@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.stats
+import scipy as sp
 from ERANataf import ERANataf
 from ERADist import ERADist
 from h_calc import h_calc
@@ -40,7 +40,7 @@ def CEIS_GM(N, rho, g_fun, distr):
 
     elif isinstance(distr, ERADist):   # use distribution information for the transformation (independence)
         dim = len(distr)                    # number of random variables (dimension)
-        u2x = lambda u: distr[0].icdf(scipy.stats.norm.cdf(u))   # from u to x
+        u2x = lambda u: distr[0].icdf(sp.stats.norm.cdf(u))   # from u to x
         g   = lambda u: g_fun(u2x(u))                            # LSF in standard space
         
         # if the samples are standard normal do not make any transform
@@ -56,11 +56,11 @@ def CEIS_GM(N, rho, g_fun, distr):
     k      = 1         # number of Gaussians in mixture
     
     # Definition of parameters of the random variables (uncorrelated standard normal)
-    mu_init = np.zeros(dim)   # ...
+    mu_init = np.zeros([dim,1])   # ...
     Si_init = np.eye(dim)     # ...
-    Pi_init = [1]   # ...
+    Pi_init = np.asarray([1])   # ...
     #
-    gamma_hat = np.zeros((max_it+1)) # space for ...
+    gamma_hat = np.zeros([max_it+1]) # space for ...
     samplesU  = list()
 
     ## CE Procedure
@@ -98,18 +98,18 @@ def CEIS_GM(N, rho, g_fun, distr):
         I = (geval<=gamma_hat[j+1])
 
         # Likelihood ratio
-        W = scipy.stats.multivariate_normal.pdf(X, mean=np.zeros((dim)), cov=np.eye((dim)))/h
+        W = sp.stats.multivariate_normal.pdf(X, mean=np.zeros((dim)), cov=np.eye((dim)))/h
 
         # Parameter update: EM algorithm
-        nGM = 3
-
-        [mu_hat, Si_hat, Pi_hat, k] = EMGM(X[I,:].T, W[I], nGM)
+        nGM = 2
+        [mu_hat, Si_hat, Pi_hat] = EMGM(X[I,:].T, W[I], nGM)
+        k = len(Pi_hat)
 
     # store the needed steps
     l = j
     
     ## Calculation of the Probability of failure
-    W_final = scipy.stats.multivariate_normal.pdf(X, mean=np.zeros(dim), cov=np.eye((dim)))/h
+    W_final = sp.stats.multivariate_normal.pdf(X, mean=np.zeros(dim), cov=np.eye((dim)))/h
     I_final = (geval<=0)
     Pr = 1/N*sum(I_final*W_final)
     
