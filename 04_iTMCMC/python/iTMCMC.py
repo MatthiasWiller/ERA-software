@@ -1,11 +1,8 @@
 import numpy as np
-import scipy.stats
+import scipy as sp
 from ERANataf import ERANataf
 from ERADist import ERADist
 from resampling_index import resampling_index
-
-import matplotlib.pylab as plt
-
 """
 ---------------------------------------------------------------------------
 iTMCMC function
@@ -18,7 +15,7 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2018-02
+Version 2018-03
 ---------------------------------------------------------------------------
 Input:
 * Ns             : 
@@ -27,9 +24,10 @@ Input:
 * T_nataf        : Nataf distribution object (probabilistic transformation)
 ---------------------------------------------------------------------------
 Output:
-* Theta          : 
-* q              : 
-* S              : 
+* samplesU : 
+* samplesX : 
+* q        : 
+* S        : 
 ---------------------------------------------------------------------------
 References:
 1."Transitional Markov Chain Monte Carlo: Observations and improvements".
@@ -42,7 +40,7 @@ References:
 ---------------------------------------------------------------------------
 """
 def iTMCMC(Ns, Nb, log_likelihood, T_nataf):
-    ## some constants and initialization
+    # %% some constants and initialization
     d       = len(T_nataf.Marginals)   # number of dimensions
     beta    = 2.4/np.sqrt(d)           # prescribed scaling factor (recommended choice)
     t_acr   = 0.21/d + 0.23            # target acceptance rate
@@ -52,21 +50,21 @@ def iTMCMC(Ns, Nb, log_likelihood, T_nataf):
     S       = np.ones(max_it)      # space for factors S_j
     q       = np.zeros(max_it)     # store tempering parameters
     j       = 0                        # initialize counter for intermediate levels
-    Theta = {'standard': list(),
-             'original': list()}
+    samplesU = list()
+    samplesX = list()
 
 
-    ## 1. Obtain N samples from the prior pdf and evaluate likelihood
-    u_j     = scipy.stats.norm.rvs(size=(Ns,d))          # u_0 (Nxd matrix)
+    # %% 1. Obtain N samples from the prior pdf and evaluate likelihood
+    u_j     = sp.stats.norm.rvs(size=(Ns,d))          # u_0 (Nxd matrix)
     theta_j = T_nataf.U2X(u_j).T    # theta_0 (transform the samples)
     logL_j  = np.zeros(Ns)
     for i in range(Ns):
         logL_j[i] = log_likelihood(theta_j[i,:])
     
-    Theta['standard'].append(np.copy(u_j))           # store initial level samples
-    Theta['original'].append(np.copy(theta_j))       # store initial level samples
+    samplesU.append(np.copy(u_j))           # store initial level samples
+    samplesX.append(np.copy(theta_j))       # store initial level samples
 
-    ## iTMCMC
+    # %% iTMCMC
     while q[j] < 1:   # adaptively choose q
         j = j+1
         print('\niTMCMC intermediate level j = ', j-1,', with q_{j} = ', q[j-1], '\n')
@@ -74,15 +72,14 @@ def iTMCMC(Ns, Nb, log_likelihood, T_nataf):
         # e   = p_{j+1}-p_{j}
         # w_j = likelihood^(e), but we are using the log_likelihood, then:
         fun = lambda e: np.std(np.exp(np.abs(e)*logL_j)) - thres_p*np.mean(np.exp(np.abs(e)*logL_j))   # c.o.v equation
-        # [e,~,flag] = fzero(fun, 0)
-        e = scipy.optimize.fsolve(fun, 0)
+        e = sp.optimize.fsolve(fun, 0)
 
         #
         if e != np.nan:
             q[j] = np.minimum(1, q[j-1]+e)
         else:
             q[j] = 1
-            print('Variable q was set to ',q[j],', since it is not possible to find a suitable value')
+            print('Variable q was set to ', q[j], ', since it is not possible to find a suitable value')
     
         # 3. Compute 'plausibility weights' w(theta_j) and factors 'S_j' for the evidence
         w_j  = np.exp((q[j]-q[j-1])*logL_j)    # [Ref. 2 Eq. 12]
@@ -116,7 +113,7 @@ def iTMCMC(Ns, Nb, log_likelihood, T_nataf):
             l = resampling_index(w_j)
             
             # sampling from the proposal and evaluate likelihood
-            u_star     = scipy.stats.multivariate_normal.rvs(mean=u_c[l,:],cov=(beta**2)*Sigma_j)
+            u_star     = sp.stats.multivariate_normal.rvs(mean=u_c[l,:],cov=(beta**2)*Sigma_j)
             theta_star = T_nataf.U2X(u_star.reshape(-1,1)).T  # transform the sample
             logL_star  = log_likelihood(theta_star.flatten())
             
@@ -125,7 +122,7 @@ def iTMCMC(Ns, Nb, log_likelihood, T_nataf):
                     level_post(theta_c[l,:],logL_c[l])
             
             # accept/reject step
-            rv = scipy.stats.uniform.rvs()
+            rv = sp.stats.uniform.rvs()
             if rv <= ratio:
                 u_c[l,:]     = u_star
                 theta_c[l,:] = theta_star
@@ -153,18 +150,16 @@ def iTMCMC(Ns, Nb, log_likelihood, T_nataf):
         # print(np.tile('\b',1,msg))
         
         # store samples
-        Theta['standard'].append(np.copy(u_j))
-        Theta['original'].append(np.copy(theta_j))
-    #     plt.figure()
-    #     plt.plot(Theta['original'][j][:,0],Theta['original'][j][:,1],'b.')
-    # plt.show()
-    # delete unnecesary data
+        samplesU.append(np.copy(u_j))
+        samplesX.append(np.copy(theta_j))
+ 
+    # delete unnecessary data
     if j < max_it:
         q = q[:j+1]
         S = S[:j+1]
 
-    ## Compute evidence (normalization constant in Bayes' theorem)
+    # %% Compute evidence (normalization constant in Bayes' theorem)
     cE = np.prod(S)   # [Ref. 2 Eq. 17]
 
-    return [Theta, q, cE]
-## END
+    return [samplesU, samplesX, q, cE]
+# %% END

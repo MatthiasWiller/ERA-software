@@ -19,11 +19,14 @@ Version 2018-03
 ---------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------
-
+Based on:
+2."MCMC algorithms for subset simulation"
+   Papaioannou et al.
+   Probabilistic Engineering Mechanics 41 (2015) 83-103.
 ---------------------------------------------------------------------------
 """
 
-## definition of the random variables
+# %% definition of the random variables
 d      = 100         # number of dimensions
 pi_pdf = list()
 for i in range(d):
@@ -35,11 +38,11 @@ for i in range(d):
 # object with distribution information
 # pi_pdf = ERANataf(pi_pdf,R)    # if you want to include dependence
 
-## limit-state function
+# %% limit-state function
 Ca = 140
 g  = lambda x: Ca - np.sum(x)
 
-## CE-method
+# %% CE-method
 N   = 1000         # Total number of samples for each level
 rho = 0.1          # Probability of each subset, chosen adaptively
 
@@ -56,4 +59,4 @@ gg       = np.linspace(0,30,300)
 print('\n***Exact Pf: #g ***', pf_ex)
 print('\n***CEIS Pf: #g ***\n\n', Pr)
 
-##END
+# %%END

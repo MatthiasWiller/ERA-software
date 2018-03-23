@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.stats
+import scipy as sp
 from ERANataf import ERANataf
 from ERADist import ERADist
 """
@@ -14,7 +14,7 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2018-01
+Version 2018-03
 ---------------------------------------------------------------------------
 Input:
 * N       : number of samples to be generated
@@ -35,16 +35,16 @@ based on code offered by Engineering Risk Analysis Group,TUM
 ---------------------------------------------------------------------------
 """
 def MMA(u_j,H,b,N):
-    ## Initialize variables
+    # %% Initialize variables
     d  = np.size(u_j,axis=0)      # number of uncertain parameters(dimension),100 dimensions
     Ns = np.size(u_j,axis=1)     
     Nc = int(np.ceil(N/Ns))
-    ## initialization
+    # %% initialization
     u_jp1 = list()
     g_jp1 = list()
-    ## MMA process
-    P = lambda x: scipy.stats.norm.pdf(x)                   # Marginal pdf of u_j
-    # S = lambda x: scipy.stats.uniform.rvs(loc=x-1,scale=2)  # Proposal pdf
+    # %% MMA process
+    P = lambda x: sp.stats.norm.pdf(x)                   # Marginal pdf of u_j
+    # S = lambda x: sp.stats.uniform.rvs(loc=x-1,scale=2)  # Proposal pdf
     S = lambda x: np.random.uniform(low=x-1,high=x+1)       # Proposal pdf
 
     # generate a candidate state epsilon
@@ -88,4 +88,4 @@ def MMA(u_j,H,b,N):
     geval   = geval[:N]
 
     return samples, geval
-##END
+# %%END

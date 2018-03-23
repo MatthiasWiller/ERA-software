@@ -14,7 +14,7 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2018-01
+Version 2018-03
 ---------------------------------------------------------------------------
 Input:
 * N   : number of samples to be generated
@@ -36,7 +36,7 @@ Based on:
 ---------------------------------------------------------------------------
 """
 def aCS(N,l,b,u_j,H):
-    ## Initialize variables
+    # %% Initialize variables
     #pa = 0.1
     n  = np.size(u_j,axis=0)     # number of uncertain parameters
     Ns = np.size(u_j,axis=1)     # number of seeds
@@ -54,7 +54,7 @@ def aCS(N,l,b,u_j,H):
     hat_a  = np.zeros(int(np.floor(Ns/Na)))        # average acceptance rate of the chains
     lam    = np.zeros(int(np.floor(Ns/Na)+1))      # scaling parameter \in (0,1)
 
-    ## 1. compute the standard deviation
+    # %% 1. compute the standard deviation
     opc = 'b'
     if opc == 'a': # 1a. sigma = ones(n,1)
         sigma_0 = np.ones(n)
@@ -70,7 +70,7 @@ def aCS(N,l,b,u_j,H):
     else:
         raise RuntimeError('Choose a or b')
 
-    ## 2. iteration
+    # %% 2. iteration
     star_a = 0.44    # optimal acceptance rate 
     lam[0] = l       # initial scaling parameter \in (0,1)
 
@@ -104,7 +104,7 @@ def aCS(N,l,b,u_j,H):
                 acc[idx+t]    = 0                 # note the rejection
 
         # average of the accepted samples for each seed
-        mu_acc[i] = mu_acc[i] + np.minimum(1, np.mean(acc[idx:idx+Nchain[k]])) # min problem
+        mu_acc[i] = mu_acc[i] + np.minimum(1, np.mean(acc[idx+1:idx+Nchain[k]])) # min problem
         
         if np.mod(k+1,Na) == 0:
             # c. evaluate average acceptance rate
@@ -127,5 +127,5 @@ def aCS(N,l,b,u_j,H):
     # compute mean acceptance rate of all chains
     accrate = np.mean(hat_a)
 
-    return [u_jk, geval, new_lambda, accrate]
-##END
+    return u_jk, geval, new_lambda, accrate
+# %%END

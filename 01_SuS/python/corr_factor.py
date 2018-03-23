@@ -1,5 +1,4 @@
 import numpy as np
-import scipy.stats
 import matplotlib.pylab as plt
 from ERANataf import ERANataf
 from ERADist import ERADist
@@ -15,7 +14,7 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2018-01
+Version 2018-03
 ---------------------------------------------------------------------------
 Input:
 * I_Fj : matrix with the values of the indicator function in Ref. 1 Eq. 22

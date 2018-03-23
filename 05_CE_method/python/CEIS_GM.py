@@ -16,20 +16,30 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2018-02
+Version 2018-03
 ---------------------------------------------------------------------------
 Input:
-
+* N     : Number of samples per level
+* rho   : 
+* g_fun : limit state function
+* distr : Nataf distribution object or
+          marginal distribution object of the input variables
 ---------------------------------------------------------------------------
 Output:
-
+* Pr        :
+* l         :
+* N_tot     :
+* gamma_hat :
+* samplesU  :
+* samplesX  :
+* k_fin     :
 ---------------------------------------------------------------------------
 Based on:
 
 ---------------------------------------------------------------------------
 """
 def CEIS_GM(N, rho, g_fun, distr):
-    ## initial check if there exists a Nataf object
+    # %% initial check if there exists a Nataf object
     if isinstance(distr, ERANataf):   # use Nataf transform (dependence)
         dim = len(distr.Marginals)    # number of random variables (dimension)
         g   = lambda u: g_fun(distr.U2X(u))   # LSF in standard space
@@ -49,7 +59,7 @@ def CEIS_GM(N, rho, g_fun, distr):
     else:
         raise RuntimeError('Incorrect distribution. Please create an ERANataf object!')
 
-    ## Initialization of variables and storage
+    # %% Initialization of variables and storage
     j      = 0         # initial level
     max_it = 100       # estimated number of iterations
     N_tot  = 0         # total number of samples
@@ -63,7 +73,7 @@ def CEIS_GM(N, rho, g_fun, distr):
     gamma_hat = np.zeros([max_it+1]) # space for ...
     samplesU  = list()
 
-    ## CE Procedure
+    # %% CE Procedure
     # Initializing parameters
     gamma_hat[j] = 1
     mu_hat = mu_init
@@ -108,12 +118,12 @@ def CEIS_GM(N, rho, g_fun, distr):
     # store the needed steps
     l = j
     
-    ## Calculation of the Probability of failure
+    # %% Calculation of the Probability of failure
     W_final = sp.stats.multivariate_normal.pdf(X, mean=np.zeros(dim), cov=np.eye((dim)))/h
     I_final = (geval<=0)
     Pr = 1/N*sum(I_final*W_final)
     
-    ## transform the samples to the physical/original space
+    # %% transform the samples to the physical/original space
     samplesX = list()
     if isinstance(distr, ERANataf):   # use Nataf transform (dependence)
         if distr.Marginals[0].Name.lower() == 'standardnormal':
@@ -133,4 +143,4 @@ def CEIS_GM(N, rho, g_fun, distr):
                 samplesX.append( u2x(samplesU[i][:,:]) )
 
     return [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin]
-##END
+# %%END

@@ -2,7 +2,7 @@ import numpy as np
 import scipy as sp
 """
 ---------------------------------------------------------------------------
-Basic algorithm
+Algorithm to draw samples from a Gaussian-Mixture (GM) distribution
 ---------------------------------------------------------------------------
 Created by:
 Sebastian Geyer (s.geyer@tum.de)
@@ -12,27 +12,27 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2018-02
+Version 2018-03
 ---------------------------------------------------------------------------
 Input:
-* mu :
-* Si :
-* Pi :
-* N  :
+* mu : [npi x d]-array of means of Gaussians in the Mixture
+* Si : [d x d x npi]-array of cov-matrices of Gaussians in the Mixture
+* Pi : [npi]-array of weights of Gaussians in the Mixture (sum(Pi) = 1) 
+* N  : number of samples to draw from the GM distribution
 ---------------------------------------------------------------------------
 Output:
-* X  : 
+* X  : samples from the GM distribution
 ---------------------------------------------------------------------------
 """
-def GM_sample(mu, Si, Pi, N):
+def GM_sample(mu, si, pi, N):
     if np.size(mu, axis=1) == 1:
         mu = mu.squeeze()
         X = sp.stats.multivariate_normal.rvs(mean=mu,
-                                             cov=Si,
+                                             cov=si,
                                              size=N)
     else:
         # Determine number of samples from each distribution
-        z = np.round(Pi*N)
+        z = np.round(pi*N)
         
         if np.sum(z) != N:
             dif    = np.sum(z)-N
@@ -44,11 +44,11 @@ def GM_sample(mu, Si, Pi, N):
         # Generate samples
         X   = np.zeros([N, np.size(mu, axis=1)])
         ind = 0
-        for p in range(len(Pi)):
+        for p in range(len(pi)):
             X[ind:ind+z[p],:] = sp.stats.multivariate_normal.rvs(mean=mu[p,:], 
-                                                                 cov=Si[:,:,p], 
+                                                                 cov=si[:,:,p], 
                                                                  size=z[p])
             ind               = ind+z[p]
     
     return X
-## END
+# %% END

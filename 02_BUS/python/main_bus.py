@@ -9,7 +9,6 @@ Created on Mon Mar 19 09:45:40 2018
 import numpy as np
 import scipy as sp
 import matplotlib
-#import matplotlib.pylab as plt
 import matplotlib.pyplot as plt
 from ERANataf import ERANataf
 from ERADist import ERADist
@@ -54,8 +53,11 @@ p0 = 0.1        # probability of each subset
 [b,samplesU,samplesX,cE] = BUS_SuS(N,p0,c,likelihood,T_nataf)
        
 # %% results
-mu_xp    = np.mean(samplesX['total'][-1][0,:])
-sigma_xp = np.std(samplesX['total'][-1][0,:])
-print('Sample mean',mu_xp,'\nSample std:',sigma_xp,'\n\n')
+mu_exact    = 1.6   # if sigma_nu = 0.5
+sigma_exact = 0.45  # if sigma_nu = 0.5
+mu_xp       = np.mean(samplesX[-1][0,:])
+sigma_xp    = np.std(samplesX[-1][0,:])
+print('\nExact mean',mu_exact,'\nExact std:',sigma_exact,'\n')
+print('Sample mean',mu_xp,'\nSample std:',sigma_xp,'\n')
 
-# %% plots
+# %% END

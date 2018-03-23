@@ -1,5 +1,5 @@
 function X = GM_sample(mu,Si,Pi,N)
-%% Basic algorithm
+%% Algorithm to draw samples from a Gaussian-Mixture (GM) distribution
 %{
 ---------------------------------------------------------------------------
 Created by:
@@ -9,16 +9,16 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2018-02
+Version 2018-03
 ---------------------------------------------------------------------------
 Input:
-* mu :
-* Si :
-* Pi :
-* N  :
+* mu : [npi x d]-array of means of Gaussians in the Mixture
+* Si : [d x d x npi]-array of cov-matrices of Gaussians in the Mixture
+* Pi : [npi]-array of weights of Gaussians in the Mixture (sum(Pi) = 1) 
+* N  : number of samples to draw from the GM distribution
 ---------------------------------------------------------------------------
 Output:
-* X  : 
+* X  : samples from the GM distribution
 ---------------------------------------------------------------------------
 %}
 if size(mu,1)==1

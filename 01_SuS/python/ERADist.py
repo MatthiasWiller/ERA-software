@@ -1,6 +1,6 @@
 # import of modules
 import numpy as np
-import scipy.stats
+import scipy as sp
 '''
 ---------------------------------------------------------------------------
 Generation of distribution objects
@@ -36,7 +36,7 @@ class ERADist(object):
                 if ((val[1] >= 0) and (val[1] <= 1) and (val[0] % 1 == 0)):
                     self.Par[0] = val[0]
                     self.Par[1] = val[1]
-                    self.Dist = scipy.stats.binom(n=self.Par[0], p=self.Par[1])
+                    self.Dist = sp.stats.binom(n=self.Par[0], p=self.Par[1])
                 else:
                     raise RuntimeError("The Binomial distribution is not "
                                        "defined for your parameters")
@@ -44,7 +44,7 @@ class ERADist(object):
             elif (name.lower() == 'geometric'):
                 if (val > 0 and val <= 1):
                     self.Par = val
-                    self.Dist = scipy.stats.geom(p=val)
+                    self.Dist = sp.stats.geom(p=val)
                 else:
                     raise RuntimeError("The Geometric distribution is not "
                                        "defined for your parameters")
@@ -56,7 +56,7 @@ class ERADist(object):
                         (val[0] > 0) and
                         (val[0] % 1 == 0)):
                     self.Par = val
-                    self.Dist = scipy.stats.nbinom(n=val[0], p=val[1])
+                    self.Dist = sp.stats.nbinom(n=val[0], p=val[1])
                 else:
                     raise RuntimeError("The Negative Binomial distribution "
                                        "is not defined for your parameters")
@@ -66,21 +66,21 @@ class ERADist(object):
                 if (n == 1):
                     if (val > 0):
                         self.Par = val
-                        self.Dist = scipy.stats.poisson(mu=val)
+                        self.Dist = sp.stats.poisson(mu=val)
                     else:
                         raise RuntimeError("The Poisson distribution is not "
                                            "defined for your parameters")
                 if (n == 2):
                     if (val[0] > 0 and val[1] > 0):
                         self.Par = val[0] * val[1]
-                        self.Dist = scipy.stats.poisson(mu=val[0] * val[1])
+                        self.Dist = sp.stats.poisson(mu=val[0] * val[1])
                     else:
                         raise RuntimeError("The Poisson distribution is not "
                                            "defined for your parameters")
 
             elif (name.lower() == 'exponential'):
                 if (val > 0):
-                    self.Dist = scipy.stats.expon(scale=1/val)
+                    self.Dist = sp.stats.expon(scale=1/val)
                 else:
                     raise RuntimeError("The Exponential distribution is not "
                                        "defined for your parameters")
@@ -90,7 +90,7 @@ class ERADist(object):
                 if (val[0] > 0 and val[1] > 0):
                     self.Par[0] = val[0]
                     self.Par[1] = 1/val[1]
-                    self.Dist = scipy.stats.gamma(a=val[0], scale=1 / val[1])
+                    self.Dist = sp.stats.gamma(a=val[0], scale=1 / val[1])
                 else:
                     raise RuntimeError("The Gamma distribution is not defined "
                                        "for your parameters")
@@ -105,7 +105,7 @@ class ERADist(object):
                     self.Par[1] = val[1]
                     self.Par[2] = val[2]
                     self.Par[3] = val[3]
-                    self.Dist = scipy.stats.beta(a=val[0], b=val[1])
+                    self.Dist = sp.stats.beta(a=val[0], b=val[1])
                 else:
                     raise RuntimeError("The Beta distribution is not defined "
                                        "for your parameters")
@@ -121,7 +121,7 @@ class ERADist(object):
                     '''
                     self.Par[0] = val[0]
                     self.Par[1] = val[1]
-                    self.Dist = scipy.stats.genextreme(c=0,
+                    self.Dist = sp.stats.genextreme(c=0,
                                                        scale=val[1],
                                                        loc=-val[0])
                 else:
@@ -139,7 +139,7 @@ class ERADist(object):
                     '''
                     self.Par[0] = val[0]
                     self.Par[1] = val[1]
-                    self.Dist = scipy.stats.genextreme(c=0,
+                    self.Dist = sp.stats.genextreme(c=0,
                                                        scale=val[1],
                                                        loc=val[0])
                 else:
@@ -150,7 +150,7 @@ class ERADist(object):
                 if ((val[0] > 0) and (val[1] > 0)):
                     self.Par[0] = val[0]
                     self.Par[1] = val[1]
-                    self.Dist = scipy.stats.genextreme(c=-1/val[1],
+                    self.Dist = sp.stats.genextreme(c=-1/val[1],
                                                        scale=val[0]/val[1],
                                                        loc=val[0])
                 else:
@@ -161,7 +161,7 @@ class ERADist(object):
                 if ((val[0] > 0) and (val[1] > 0)):
                     self.Par[0] = val[0]
                     self.Par[1] = val[1]
-                    self.Dist = scipy.stats.weibull_min(c=val[0], scale=val[1])
+                    self.Dist = sp.stats.weibull_min(c=val[0], scale=val[1])
                 else:
                     raise RuntimeError("The Weibull distribution is not "
                                        "definied for your parameters")
@@ -171,7 +171,7 @@ class ERADist(object):
                     self.Par[0] = val[0]
                     self.Par[1] = val[1]
                     self.Par[2] = val[2]
-                    self.Dist = scipy.stats.genextreme(c=-val[0],
+                    self.Dist = sp.stats.genextreme(c=-val[0],
                                                        scale=val[1],
                                                        loc=val[2])
                 else:
@@ -181,7 +181,7 @@ class ERADist(object):
 
             elif (name.lower() == 'gevmin'):  # double check definition
                 if (val[1] > 0):
-                    self.Dist = scipy.stats.genextreme(c=-val[0],
+                    self.Dist = sp.stats.genextreme(c=-val[0],
                                                        scale=val[1],
                                                        loc=-val[2])
                 else:
@@ -191,7 +191,7 @@ class ERADist(object):
 
             elif (name.lower() == 'pareto'):
                 if (val[0] > 0 and val[1] > 0):
-                    self.Dist = scipy.stats.genpareto(c=1/val[1],
+                    self.Dist = sp.stats.genpareto(c=1/val[1],
                                                       scale=val[0]/val[1],
                                                       loc=val[0])
                 else:
@@ -200,14 +200,14 @@ class ERADist(object):
 
             elif (name.lower() == 'rayleigh'):
                 if (val > 0):
-                    self.Dist = scipy.stats.rayleigh(scale=val)
+                    self.Dist = sp.stats.rayleigh(scale=val)
                 else:
                     raise RuntimeError("The Rayleigh distribution is not "
                                        "defined for your parameters")
 
             elif (name.lower() == 'chisquare'):
                 if (val > 0 and val % 1 == 0):
-                    self.Dist = scipy.stats.gamma(a=val / 2.0, scale=2)
+                    self.Dist = sp.stats.gamma(a=val / 2.0, scale=2)
                 else:
                     raise RuntimeError("The Chisquared distribution is not "
                                        "defined for your parameters")
@@ -217,16 +217,16 @@ class ERADist(object):
                 the distribution defined in scipy is uniform between loc and
                 loc + scale
                 '''
-                self.Dist = scipy.stats.uniform(loc=val[0],
+                self.Dist = sp.stats.uniform(loc=val[0],
                                                 scale=val[1]-val[0])
 
             elif ((name.lower() == 'standardnormal') or
                   (name.lower() == 'standardgaussian')):
-                self.Dist = scipy.stats.norm(loc=0, scale=1)
+                self.Dist = sp.stats.norm(loc=0, scale=1)
 
             elif (name.lower() == 'normal' or name.lower() == 'gaussian'):
                 if (val[1] > 0):
-                    self.Dist = scipy.stats.norm(loc=val[0], scale=val[1])
+                    self.Dist = sp.stats.norm(loc=val[0], scale=val[1])
                 else:
                     raise RuntimeError("The Normal distribution is not defined"
                                        " for your parameters")
@@ -238,7 +238,7 @@ class ERADist(object):
                     distributed variable corresponds to s = sigma,
                     scale = exp(mu)
                     '''
-                    self.Dist = scipy.stats.lognorm(s=val[1],
+                    self.Dist = sp.stats.lognorm(s=val[1],
                                                     scale=np.exp(val[0]))
                 else:
                     raise RuntimeError("The Lognormal distribution is not "
@@ -262,7 +262,7 @@ class ERADist(object):
                 if (self.Par[1] % 1 <= 10**(-4)):
                     self.Par[1] = round(self.Par[1], 0)
                     if (0 <= self.Par[0] and self.Par[1] <= 1):  # OK
-                        self.Dist = scipy.stats.binom(n=self.Par[0],
+                        self.Dist = sp.stats.binom(n=self.Par[0],
                                                       p=self.par[1])
                     else:
                         raise RuntimeError('Please select other moments')
@@ -277,7 +277,7 @@ class ERADist(object):
                 the moments are well defined
                 '''
                 if (0 <= self.Par and self.Par <= 1):
-                    self.Dist = scipy.stats.geom(p=self.Par)
+                    self.Dist = sp.stats.geom(p=self.Par)
                 else:
                     raise RuntimeError('Please select other moments')
 
@@ -289,7 +289,7 @@ class ERADist(object):
                 if (self.Par[0] % 1 <= 10**(-4)):
                     self.Par[0] = round(self.Par[0], 0)
                     if (0 <= self.Par[1] and self.Par[1] <= 1):
-                        self.Dist = scipy.stats.nbinom(n=self.Par[0],
+                        self.Dist = sp.stats.nbinom(n=self.Par[0],
                                                        p=self.Par[1])
                     else:
                         raise RuntimeError('Please select other moments')
@@ -300,7 +300,7 @@ class ERADist(object):
                 self.Par = val[0]
                 # Evaluluate if moments match
                 if (0 <= self.Par):
-                    self.Dist = scipy.stats.poisson(mu=self.Par)
+                    self.Dist = sp.stats.poisson(mu=self.Par)
                 else:
                     raise RuntimeError('Please select other moments')
 
@@ -314,7 +314,7 @@ class ERADist(object):
                 except ZeroDivisionError:
                     raise RuntimeError('The first moment cannot be zero!')
                 if (0 <= self.Par):
-                    self.Dist = scipy.stats.expon(scale=1/self.Par)
+                    self.Dist = sp.stats.expon(scale=1/self.Par)
                 else:
                     raise RuntimeError('Please select other moments')
 
@@ -324,7 +324,7 @@ class ERADist(object):
                 self.Par[1] = self.Par[0] * val[0]  # parameter k
                 # Evaluate if distribution can be defined on the parameters
                 if (self.Par[0] > 0 and self.Par[1] > 0):
-                    self.Dist = scipy.stats.gamma(a=self.Par[1],
+                    self.Dist = sp.stats.gamma(a=self.Par[1],
                                                   scale=1/self.Par[0])
                 else:
                     raise RuntimeError('Please select other moments')
@@ -337,7 +337,7 @@ class ERADist(object):
                 self.Par[1] = val[1] * np.sqrt(6)/np.pi  # scale parameter
                 self.Par[0] = val[0] - ne*self.Par[1]  # location parameter
                 if (self.Par[1] > 0):
-                    self.Dist = scipy.stats.gumbel_l(loc=self.Par[0],
+                    self.Dist = sp.stats.gumbel_l(loc=self.Par[0],
                                                      scale=self.Par[1])
                 else:
                     raise RuntimeError('Please select other moments')
@@ -348,7 +348,7 @@ class ERADist(object):
                 self.Par[1] = val[1] * np.sqrt(6)/np.pi  # scale parameter
                 self.Par[0] = val[0] - ne * self.Par[1]  # location parameter
                 if (self.Par[1] > 0):
-                    self.Dist = scipy.stats.gumbel_r(loc=self.Par[0],
+                    self.Dist = sp.stats.gumbel_r(loc=self.Par[0],
                                                      scale=self.Par[1])
                 else:
                     raise RuntimeError('Please select other moments')
@@ -357,16 +357,16 @@ class ERADist(object):
                 par0 = 2.0001
 
                 def equation(par):
-                    return (np.sqrt(scipy.special.gamma(1 - 2/par) -
-                                    scipy.special.gamma(1 - 1/par)**2) /
-                            scipy.special.gamma(1 - 1/par) - val[1]/val[0])
+                    return (np.sqrt(sp.special.gamma(1 - 2/par) -
+                                    sp.special.gamma(1 - 1/par)**2) /
+                            sp.special.gamma(1 - 1/par) - val[1]/val[0])
 
-                sol = scipy.optimize.fsolve(equation,
+                sol = sp.optimize.fsolve(equation,
                                             x0=par0,
                                             full_output=True)
                 if (sol[2] == 1):
                     self.Par[1] = sol[0][0]
-                    self.Par[0] = val[0]/scipy.special.gamma(1 - 1/self.Par[1])
+                    self.Par[0] = val[0]/sp.special.gamma(1 - 1/self.Par[1])
                 else:
                     raise RuntimeError("fsolve could not converge to a solutio"
                                        "n for determining the parameters of th"
@@ -375,7 +375,7 @@ class ERADist(object):
                     c = 1/self.Par[1]
                     scale = self.Par[0]/self.Par[1]
                     loc = self.Par[0]
-                    self.Dist = scipy.stats.genextreme(c=c,
+                    self.Dist = sp.stats.genextreme(c=c,
                                                        scale=scale,
                                                        loc=loc)
                 else:
@@ -384,22 +384,22 @@ class ERADist(object):
             elif (name.lower() == 'weibull'):
 
                 def equation(par):
-                    return(np.sqrt(scipy.special.gamma(1 + 2 / par) -
-                                   (scipy.special.gamma(1 + 1 / par))**2) /
-                           scipy.special.gamma(1 + 1/par) - val[1]/val[0])
+                    return(np.sqrt(sp.special.gamma(1 + 2 / par) -
+                                   (sp.special.gamma(1 + 1 / par))**2) /
+                           sp.special.gamma(1 + 1/par) - val[1]/val[0])
 
-                sol = scipy.optimize.fsolve(equation,
+                sol = sp.optimize.fsolve(equation,
                                             x0=0.02,
                                             full_output=True)
                 if (sol[2] == 1):
                     self.Par[1] = sol[0][0]
-                    self.Par[0] = val[0]/scipy.special.gamma(1 + 1/self.Par[1])
+                    self.Par[0] = val[0]/sp.special.gamma(1 + 1/self.Par[1])
                 else:
                     raise RuntimeError("fsolve could not converge to a solutio"
                                        "n for determining the parameters of th"
                                        "e Weibull distribution")
                 if (self.Par[0] > 0 and self.Par[1] > 0):
-                    self.Dist = scipy.stats.weibull_min(c=self.Par[1],
+                    self.Dist = sp.stats.weibull_min(c=self.Par[1],
                                                         scale=self.Par[0])
                 else:
                     raise RuntimeError('Please select other moments')
@@ -416,24 +416,24 @@ class ERADist(object):
                         par0 = -1.5
 
                     def equation(par):
-                        return ((scipy.special.gamma(1 - 2*par) -
-                                 scipy.special.gamma(1 - par)**2) /
-                                (scipy.special.gamma(1 - par) - 1)**2 -
+                        return ((sp.special.gamma(1 - 2*par) -
+                                 sp.special.gamma(1 - par)**2) /
+                                (sp.special.gamma(1 - par) - 1)**2 -
                                 (val[2]/(val[1] - val[2]))**2)
 
-                    sol = scipy.optimize.fsolve(equation,
+                    sol = sp.optimize.fsolve(equation,
                                                 x0=par0,
                                                 full_output=True)
                     if (sol[2] == 1):
                         self.Par[0] = sol[0][0]
                         self.Par[1] = ((val[0]-val[3])*self.Par[0] /
-                                       (scipy.special.gamma(1-self.Par[0])-1))
+                                       (sp.special.gamma(1-self.Par[0])-1))
                     else:
                         raise RuntimeError("fsolve could not converge to a sol"
                                            "ution for determining the paramete"
                                            "rs of the GEV distribution")
                 if (self.Par[1] > 0):
-                    self.Dist = scipy.stats.genextreme(c=-self.Par[0],
+                    self.Dist = sp.stats.genextreme(c=-self.Par[0],
                                                        scale=self.Par[1],
                                                        loc=self.Par[2])
                 else:
@@ -446,7 +446,7 @@ class ERADist(object):
                     c = 1/self.Par[1]
                     scale = self.Par[0]/self.Par[1]
                     loc = self.Par[0]
-                    self.Dist = scipy.stats.genpareto(c=c,
+                    self.Dist = sp.stats.genpareto(c=c,
                                                       scale=scale,
                                                       loc=loc)
                 else:
@@ -455,7 +455,7 @@ class ERADist(object):
             elif (name.lower() == 'rayleigh'):
                 self.Par = val[0]/np.sqrt(np.pi/2)
                 if (self.Par > 0):
-                    self.Dist = scipy.stats.rayleigh(scale=self.Par)
+                    self.Dist = sp.stats.rayleigh(scale=self.Par)
                 else:
                     raise RuntimeError('Please select other moments')
 
@@ -466,7 +466,7 @@ class ERADist(object):
                 else:
                     raise RuntimeError('Please select other moments')
                 if (self.Par > 0):
-                    self.Dist = scipy.stats.gamma(a=self.Par/2.0, b=2.0)
+                    self.Dist = sp.stats.gamma(a=self.Par/2.0, b=2.0)
                 else:
                     raise RuntimeError('Please select other moments')
 
@@ -476,20 +476,20 @@ class ERADist(object):
                     a, b = p
                     return ((a+b)/2.0 - val[0], ((b-a)**2)/12.0 - val[1]**2)
 
-                a, b = scipy.optimize.fsolve(equations, (1, 1))
+                a, b = sp.optimize.fsolve(equations, (1, 1))
                 self.Par[0] = a
                 self.Par[1] = b
-                self.Dist = scipy.stats.uniform(loc=a, scale=b - a)
+                self.Dist = sp.stats.uniform(loc=a, scale=b - a)
 
             elif ((name.lower() == 'standardnormal') or
                   (name.lower() == 'standardgaussian')):
                 self.Par = [0, 1]
-                self.Dist = scipy.stats.norm()
+                self.Dist = sp.stats.norm()
 
             elif ((name.lower() == 'normal') or
                   (name.lower() == 'gaussian')):
                 self.Par = val
-                self.Dist = scipy.stats.norm(loc=self.Par[0],
+                self.Dist = sp.stats.norm(loc=self.Par[0],
                                              scale=self.Par[1])
 
             elif (name.lower() == 'lognormal'):
@@ -497,7 +497,7 @@ class ERADist(object):
                 self.Par[0] = (np.log(val[0]) - np.log(np.sqrt(1 +
                                (val[1]/val[0])**2)))
                 self.Par[1] = np.sqrt(np.log(1 + (val[1]/val[0])**2))
-                self.Dist = scipy.stats.lognorm(s=self.Par[0],
+                self.Dist = sp.stats.lognorm(s=self.Par[0],
                                                 scale=np.exp(self.Par[1]))
 
         # if the distribution is to be fitted to a data vector
@@ -519,15 +519,15 @@ class ERADist(object):
                                    " in DATA")
 
             elif (name.lower() == 'exponential'):
-                pars = scipy.stats.expon.fit(val, floc=0)
+                pars = sp.stats.expon.fit(val, floc=0)
                 self.Par = 1/pars[1]
-                self.Dist = scipy.stats.expon(scale=1/self.Par)
+                self.Dist = sp.stats.expon(scale=1/self.Par)
 
             elif (name.lower() == 'gamma'):
-                pars = scipy.stats.gamma.fit(val, floc=0)
+                pars = sp.stats.gamma.fit(val, floc=0)
                 self.Par[0] = pars[0]
                 self.Par[1] = 1/pars[2]
-                self.Dist = scipy.stats.gamma(a=self.Par[0],
+                self.Dist = sp.stats.gamma(a=self.Par[0],
                                               scale=1/self.Par[1])
 
             elif (name.lower() == 'beta'):
@@ -535,17 +535,17 @@ class ERADist(object):
                                    "in DATA")
 
             elif (name.lower() == 'gumbel'):
-                pars = scipy.stats.gumbel_r.fit(val)
+                pars = sp.stats.gumbel_r.fit(val)
                 self.Par[0] = pars[0]
                 self.Par[1] = pars[1]
-                self.Dist = scipy.stats.gumbel_r(loc=self.Par[0],
+                self.Dist = sp.stats.gumbel_r(loc=self.Par[0],
                                                  scale=self.Par[1])
 
             elif (name.lower() == 'gumbelmin'):
-                pars = scipy.stats.gumbel_l.fit(val)
+                pars = sp.stats.gumbel_l.fit(val)
                 self.Par[0] = pars[0]
                 self.Par[1] = pars[1]
-                self.Dist = scipy.stats.gumbel_l(loc=self.Par[0],
+                self.Dist = sp.stats.gumbel_l(loc=self.Par[0],
                                                  scale=self.Par[1])
 
             elif (name.lower() == 'frechet'):
@@ -553,41 +553,41 @@ class ERADist(object):
                                    "in DATA")
 
             elif (name.lower() == 'weibull'):
-                pars = scipy.stats.weibull_min.fit(val, floc=0)
+                pars = sp.stats.weibull_min.fit(val, floc=0)
                 self.Par[0] = pars[0]
                 self.Par[1] = pars[2]
-                self.Dist = scipy.stats.weibull_min(c=self.Par[0],
+                self.Dist = sp.stats.weibull_min(c=self.Par[0],
                                                     scale=self.Par[1])
 
             elif (name.lower() == 'normal' or name.lower() == 'gaussian'):
-                pars = scipy.stats.norm.fit(val)
+                pars = sp.stats.norm.fit(val)
                 self.Par[0] = pars[0]
                 self.Par[1] = pars[1]
-                self.Dist = scipy.stats.norm(loc=self.Par[0],
+                self.Dist = sp.stats.norm(loc=self.Par[0],
                                              scale=self.Par[1])
 
             elif (name.lower() == 'lognormal'):
-                pars = scipy.stats.lognorm.fit(val, floc=0)
+                pars = sp.stats.lognorm.fit(val, floc=0)
                 self.Par[0] = pars[0]
                 self.Par[1] = np.log(pars[2])
-                self.Dist = scipy.stats.lognorm(s=self.Par[0],
+                self.Dist = sp.stats.lognorm(s=self.Par[0],
                                                 scale=np.exp(self.Par[1]))
 
             elif (name.lower() == 'gev'):
-                pars = scipy.stats.genextreme.fit(val)
+                pars = sp.stats.genextreme.fit(val)
                 self.Par[0] = -pars[0]
                 self.Par[1] = pars[2]
                 self.Par[2] = pars[1]
-                self.Dist = scipy.stats.genextreme(c=-self.Par[0],
+                self.Dist = sp.stats.genextreme(c=-self.Par[0],
                                                    scale=self.Par[1],
                                                    loc=self.Par[2])
 
             elif (name.lower() == 'gevmin'):
-                pars = scipy.stats.genextreme.fit(-val)
+                pars = sp.stats.genextreme.fit(-val)
                 self.Par[0] = -pars[0]
                 self.Par[1] = pars[2]
                 self.Par[2] = pars[1]
-                self.Dist = scipy.stats.genextreme(c=-self.Par[0],
+                self.Dist = sp.stats.genextreme(c=-self.Par[0],
                                                    scale=self.Par[1],
                                                    loc=self.Par[2])
 
@@ -596,9 +596,9 @@ class ERADist(object):
                                    "in DATA")
 
             elif (name.lower() == 'rayleigh'):
-                pars = scipy.stats.rayleigh.fit(val, floc=0)
+                pars = sp.stats.rayleigh.fit(val, floc=0)
                 self.Par = pars[1]
-                self.Dist = scipy.stats.rayleigh(scale=self.Par)
+                self.Dist = sp.stats.rayleigh(scale=self.Par)
 
             elif (name.lower() == 'chisquare'):
                 raise RuntimeError("The Chisquare distribution is not "
@@ -609,6 +609,7 @@ class ERADist(object):
         else:
             raise RuntimeError('Unknown option :' + opt)
 
+    # %% ----------------------------------------------------------------------------
     def mean(self):
         if (self.Name == 'negativebinomial'):
             return self.Dist.mean() + self.Par[0]
@@ -627,11 +628,13 @@ class ERADist(object):
         else:
             return self.Dist.mean()
 
+    # %% ----------------------------------------------------------------------------
     def std(self):
         if (self.Name == 'beta'):
             return self.Dist.std() * (self.Par[3]-self.Par[2])
         return self.Dist.std()
 
+    # %% ----------------------------------------------------------------------------
     def pdf(self, x):
 
         if (self.Name == 'binomial'):
@@ -661,7 +664,8 @@ class ERADist(object):
 
         else:
             return self.Dist.pdf(x)
-
+    
+    # %% ----------------------------------------------------------------------------
     def cdf(self, x):
         if (self.Name == 'negativebinomial'):
             return self.Dist.cdf(x - self.Par[0])
@@ -675,11 +679,12 @@ class ERADist(object):
         else:
             return self.Dist.cdf(x)
 
+    # %% ----------------------------------------------------------------------------
     def random(self, m, n=0):
         # Matlab ERADist returns mxm samples if n isnt given, is this behaviour wanted?
         if (n == 0):
             if (self.Name == 'binomial'):
-                samples = scipy.stats.binom.rvs(int(self.Par[0]),
+                samples = sp.stats.binom.rvs(int(self.Par[0]),
                                                 p=self.Par[1],
                                                 size=m)
                 return samples
@@ -700,6 +705,7 @@ class ERADist(object):
                 samples = self.Dist.rvs(size=m)
                 return samples
 
+    # %% ----------------------------------------------------------------------------
     def icdf(self, y):
         if (self.Name == 'negativebinomial'):
             return self.Dist.ppf(y) + self.Par[0]

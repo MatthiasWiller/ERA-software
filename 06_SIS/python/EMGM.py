@@ -30,7 +30,7 @@ def EMGM(X, W, nGM):
     # reshaping just to be sure
     W = W.reshape(-1,1)
 
-    ## initialization
+    # %% initialization
     R = initialization(X, nGM)
 
     tol       = 1e-5
@@ -39,8 +39,8 @@ def EMGM(X, W, nGM):
     converged = False
     t         = 0
 
-    ## soft EM algorithm
-    while (not converged) and t < maxiter:
+    # %% soft EM algorithm
+    while (not converged) and t+1 < maxiter:
         t = t+1   
         
         # [~,label(:)] = max(R,[],2)
@@ -57,19 +57,19 @@ def EMGM(X, W, nGM):
     
 
     if converged:
-        print('Converged in', t-1,'steps.')
+        print('Converged in', t,'steps.')
     else:
         print('Not converged in ', maxiter, ' steps.')
 
     return [mu, si, pi]
-## END EMGM ----------------------------------------------------------------
+# %% END EMGM ----------------------------------------------------------------
 
 # --------------------------------------------------------------------------
 # Initialization with k-means algorithm 
 # --------------------------------------------------------------------------
 def initialization(X, nGM):
 
-    [_,idx] = sp.cluster.vq.kmeans2(X.T, nGM, iter=10) # idx = kmeans(X.T,nGM,'Replicates',10)
+    [_,idx] = sp.cluster.vq.kmeans2(X.T, nGM, iter=10)
     R   = dummyvar(idx)
     return R
 
@@ -85,10 +85,10 @@ def expectation(X, W, mu, si, pi):
         logpdf[:,i] = loggausspdf(X, mu[:,i], si[:,:,i])
 
 
-    logpdf = logpdf + np.log(pi)     # logpdf = bsxfun(@plus,logpdf,log(pi))
+    logpdf = logpdf + np.log(pi)
     T      = logsumexp(logpdf,1)
     llh    = np.sum(W*T)/np.sum(W)
-    logR   = logpdf - T              # logR = bsxfun(@minus,logpdf,T)
+    logR   = logpdf - T
     R      = np.exp(logR)
     return [R, llh]
 
@@ -103,13 +103,13 @@ def maximization(X, W, R):
 
     nk = np.sum(R,axis=0)
     w  = nk/np.sum(W)
-    mu = np.matmul(X,R)/nk.reshape(-1,1)   # TODO: maybe change to reshape(1,-1)?
+    mu = np.matmul(X,R)/nk.reshape(-1,1)   # maybe change to reshape(1,-1)?
 
     Sigma = np.zeros((d,d,k))
     sqrtR = np.sqrt(R)
     for i in range(k):
-        Xo = X-mu[:,i].reshape(-1,1)        # Xo = bsxfun(@minus,X,mu(:,i))
-        Xo = Xo*sqrtR[:,i].reshape(1,-1)    # Xo = bsxfun(@times,Xo,sqrtR(:,i)')
+        Xo = X-mu[:,i].reshape(-1,1)
+        Xo = Xo*sqrtR[:,i].reshape(1,-1)
         Sigma[:,:,i] = np.matmul(Xo,Xo.T)/nk[i]
         Sigma[:,:,i] = Sigma[:,:,i]+np.eye(d)*(1e-6) # add a prior for numerical stability
 
@@ -120,10 +120,9 @@ def maximization(X, W, R):
 # --------------------------------------------------------------------------
 def loggausspdf(X, mu, Sigma):
     d = np.size(X, axis=0)
-    X = X-mu.reshape(-1,1)                   # X = bsxfun(@minus,X,mu)
+    X = X-mu.reshape(-1,1)
     U = np.linalg.cholesky(Sigma).T.conj()
     Q = np.linalg.solve(U.T, X)
-    # q = np.dot(Q[0,:],Q[0,:])  # quadratic term (M distance)
     q = np.sum(Q*Q, axis=0)      # quadratic term (M distance)
     c = d*np.log(2*np.pi)+2*np.sum(np.log(np.diag(U)))   # normalization constant
     y = -(c+q)/2
@@ -137,13 +136,9 @@ def loggausspdf(X, mu, Sigma):
 def logsumexp(x, dim=0):
     # subtract the largest in each column
     y = np.max(x, axis=dim).reshape(-1,1)
-    x = x - y                  #x = bsxfun(@minus,x,y)
-    tmp1 = np.exp(x)
-    tmp2 = np.sum(tmp1, axis=dim)
-    tmp3 = np.log(tmp2)
-    # s = y + np.log(np.sum(np.exp(x),axis=dim))
-    s = y + tmp3.reshape(-1,1)
-    # if a bug occurs here, maybe find a better translation from matlab
+    x = x - y
+    s = y + np.log(np.sum(np.exp(x),axis=dim)).reshape(-1,1)
+    # if a bug occurs here, maybe find a better translation from matlab:
     i = np.where(np.invert(np.isfinite(y).squeeze()))
     s[i] = y[i] 
     
@@ -158,4 +153,4 @@ def dummyvar(idx):
     for i in range(len(idx)):
         d[i,idx[i]] = 1
     return d
-## END FILE
+# %% END FILE

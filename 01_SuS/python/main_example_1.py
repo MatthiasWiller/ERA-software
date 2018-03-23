@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.stats
+import scipy as sp
 import matplotlib.pylab as plt
 from ERANataf import ERANataf
 from ERADist import ERADist
@@ -16,7 +16,7 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2018-01
+Version 2018-03
 ---------------------------------------------------------------------------
 Comments:
 *Express the failure probability as a product of larger conditional failure
@@ -35,7 +35,7 @@ Based on:
 ---------------------------------------------------------------------------
 """
 
-## definition of the random variables
+# %% definition of the random variables
 d      = 2          # number of dimensions
 pi_pdf = list()
 for i in range(d):
@@ -47,11 +47,11 @@ R = np.eye(d)   # independent case
 # object with distribution information
 pi_pdf = ERANataf(pi_pdf, R)    # if you want to include dependence
 
-## limit-state function
+# %% limit-state function
 beta = 3.5
 g    = lambda x: -x.sum(axis=0)/np.sqrt(d) + beta
 
-## subset simulation
+# %% subset simulation
 N  = 1000         # Total number of samples for each level
 p0 = 0.1          # Probability of each subset, chosen adaptively
 
@@ -59,15 +59,15 @@ print('SUBSET SIMULATION stage: ')
 [Pf_SuS,delta_SuS,b,Pf,b_sus,pf_sus,u_samples] = SuS(N,p0,g,pi_pdf)
 
 # exact solution
-pf_ex    = scipy.stats.norm.cdf(-beta)
-Pf_exact = lambda gg: scipy.stats.norm.cdf(gg,beta,1)
+pf_ex    = sp.stats.norm.cdf(-beta)
+Pf_exact = lambda gg: sp.stats.norm.cdf(gg,beta,1)
 gg       = np.linspace(0,7,140)
 
 # show p_f results
 print('\n***Exact Pf: ', pf_ex, ' ***')
-print('\n***SuS Pf: ', Pf_SuS, ' ***\n\n')
+print('***SuS Pf: ', Pf_SuS, ' ***\n\n')
 
-## Plots
+# %% Plots
 # Options for font-family and font-size
 plt.rc('text', usetex=True)
 plt.rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
@@ -114,4 +114,4 @@ plt.plot(0,pf_ex,'ro', label='Pf Exact',
 plt.tight_layout()
 
 plt.show()
-##END
+# %%END

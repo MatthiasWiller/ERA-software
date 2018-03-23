@@ -1,13 +1,11 @@
 import numpy as np
-import scipy
-import matplotlib.pylab as plt
+import scipy as sp
 from ERANataf import ERANataf
 from ERADist import ERADist
 from aBUS_SuS import aBUS_SuS
-from shear_building_2DOF import shear_building_2DOF
 """
 ---------------------------------------------------------------------------
-aBUS+SuS: Ex. 1 Ref. 1 - Parameter identification two-DOF shear building
+aBUS+SuS: Ex. 1 Ref. 1 - Parameter identification 12D example
 ---------------------------------------------------------------------------
 Created by:
 Felipe Uribe (felipe.uribe@tum.de)
@@ -17,7 +15,7 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2018-02
+Version 2018-03
 ---------------------------------------------------------------------------
 References:
 1."Bayesian updating with structural reliability methods"
@@ -26,7 +24,7 @@ References:
 ---------------------------------------------------------------------------
 """
 
-## definition of the random variables
+# %% definition of the random variables
 n = 12   # number of random variables (dimensions)
 # assign data: 1st variable is Lognormal
 dist_x = ERADist('standardnormal','PAR',[0,1])
@@ -41,7 +39,7 @@ R = np.eye(n)   # independent case
 # object with distribution information
 T_nataf = ERANataf(dist_X,R)
 
-## likelihood function
+# %% likelihood function
 sigma_l        = 0.6
 mu_l           = 0.462
 likelihood     = lambda u: np.prod((u-mu_l)/sigma_l, axis=0)/sigma_l
@@ -50,18 +48,18 @@ realmin        = np.finfo(np.double).tiny # realmin to avoid Inf values in log(0
 def log_likelihood(u):
     tmp1 = (u-mu_l/sigma_l)
     tmp2 = np.prod(tmp1, axis=0)
-    tmp3 = scipy.stats.norm.pdf(tmp2)/sigma_l
+    tmp3 = sp.stats.norm.pdf(tmp2)/sigma_l
     tmp4 = np.log(tmp3 + realmin)
     return tmp4
 
-## aBUS-SuS
+# %% aBUS-SuS
 N  = 2000       # number of samples per level
 p0 = 0.1        # probability of each subset
 
 # run the BUS_SuS.m function
 [h,samplesU,samplesX,cE,c,lam_new] = aBUS_SuS(N,p0,log_likelihood,T_nataf)
 
-## organize samples and show results
+# %% organize samples and show results
 nsub = len(h.flatten())+1   # number of levels + final posterior
 u1p = list()
 u0p = list()
@@ -73,8 +71,8 @@ for i in range(nsub):
    u1p.append(samplesU['total'][i][0,:])  
    u0p.append(samplesU['total'][i][-1,:])
    # samples in physical
-   x1p.append(samplesX['total'][i][0,:])
-   pp.append( samplesX['total'][i][-1,:])
+   x1p.append(samplesX[i][0,:])
+   pp.append( samplesX[i][-1,:])
 
 # reference solutions
 mu_exact    = 0.34     # for all x_i
@@ -88,4 +86,4 @@ print('Exact posterior mean x_1 =', mu_exact)
 print('Mean value of x_1 =', np.mean(x1p[-1]), '\n')
 print('Exact posterior std x_1 =', sigma_exact)
 print('Std of x_1 =', np.std(x1p[-1]))
-##END
+# %%END

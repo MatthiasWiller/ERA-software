@@ -172,6 +172,7 @@ class ERANataf(object):
                                " definite --> Nataf transformation is not "
                                "applicable")
 
+    # %% ----------------------------------------------------------------------------
     '''
     This function performs the transformation from X to U by taking
     the inverse standard normal cdf of the cdf of every value. Then it
@@ -202,18 +203,13 @@ class ERANataf(object):
                 diag[i, i] = stats.norm.pdf(Z[i])/self.Marginals[i].pdf(X[i])
             Jac = np.dot(diag, self.A)
             return U, Jac
-
+    
+    # %% ----------------------------------------------------------------------------
     def U2X(self, U, Jacobian=False):
         if (not(np.shape(self.Marginals)[0] == np.shape(U)[0])):
             U = U.T
         Z = np.dot(self.A, U)
         m, n = np.shape(U)
-        # if (np.size(self.Marginals) == 1):
-        #     X = np.zeros([m, n])
-        #     for i in range(m):
-        #         X[i, :] = self.Marginals[i].icdf(stats.norm.cdf(Z[i, :]))
-        #     diag = np.zeros([m, m])
-        # else:
         X = np.zeros([m, n])
         for i in range(m):
             X[i, :] = self.Marginals[i].icdf(stats.norm.cdf(Z[i, :]))
@@ -227,6 +223,7 @@ class ERANataf(object):
             Jac = np.linalg.solve(self.A, diag)
             return X, Jac
 
+    # %% ----------------------------------------------------------------------------
     def random(self, N):
         N = int(N)
         si = np.size(self.Marginals)
@@ -237,6 +234,7 @@ class ERANataf(object):
             jr[i, :] = self.Marginals[i].icdf(stats.norm.cdf(Z[i, :]))
         return jr
 
+    # %% ----------------------------------------------------------------------------
     def jointpdf(self, x):
         x = np.array(x, ndmin=2)
         if(np.shape(x)[1] == 1):
@@ -271,6 +269,7 @@ class ERANataf(object):
                 jointpdf[i] = 0
         return jointpdf
 
+    # %% ----------------------------------------------------------------------------
     def jointcdf(self, x):
         x = np.array(x, ndmin=2)
         if(np.shape(x)[1] == 1):
@@ -294,6 +293,7 @@ class ERANataf(object):
         low = np.array(-np.inf * np.ones(s), ndmin=2)
         return stats.mvn.mvnun(low, U, mu.T, np.matrix(self.Rho_Z))
 
+    # %% ----------------------------------------------------------------------------
     @staticmethod
     def bivariateNormalPdf(x1, x2, rho):
         return (1 / (2 * np.pi * np.sqrt(1-rho**2)) *

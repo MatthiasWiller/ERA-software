@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.stats
+import scipy as sp
 from ERANataf import ERANataf
 from ERADist import ERADist
 from aCS import aCS
@@ -16,7 +16,7 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2018-01
+Version 2018-03
 ---------------------------------------------------------------------------
 Input:
 * N         : number of samples per level
@@ -46,12 +46,12 @@ def BUS_SuS(N,p0,c,likelihood,T_nataf):
     #dist_p  = ERADist('uniform','PAR',[0,1])     # uniform variable in BUS
 
     ## limit state function in the standard space
-    # H = lambda u: u[-1] - scipy.stats.norm.ppf(c*likelihood(T_nataf.U2X(u[0:-2])))
+    # H = lambda u: u[-1] - sp.stats.norm.ppf(c*likelihood(T_nataf.U2X(u[0:-2])))
     def H(u):
         tmp1 = T_nataf.U2X(u[0:-1].reshape((-1,1))).flatten()
         tmp2 = likelihood(tmp1)
         tmp3 = c*tmp2
-        tmp4 = scipy.stats.norm.ppf(tmp3)
+        tmp4 = sp.stats.norm.ppf(tmp3)
         tmp5 = u[-1] - tmp4
         return tmp5
 
@@ -61,7 +61,7 @@ def BUS_SuS(N,p0,c,likelihood,T_nataf):
     max_it = 20                        # maximum number of iterations
     samplesU = {'seeds': list(),
                 'total': list()}
-    samplesX = {'total': list()}
+    samplesX = list()
     #
     geval = np.zeros(N)            # space for the LSF evaluations
     gsort = np.zeros((max_it,N))   # space for the sorted LSF evaluations
@@ -72,7 +72,7 @@ def BUS_SuS(N,p0,c,likelihood,T_nataf):
     ## SuS procedure
     # initial MCS step
     print('Evaluating performance function:\t', end='')
-    u_j = scipy.stats.norm.rvs(size=(n,N))     # samples in the standard space
+    u_j = sp.stats.norm.rvs(size=(n,N))     # samples in the standard space
     for i in range(N):
         geval[i] = H(u_j[:,i])    # limit state function in standard (Ref. 2 Eq. 21)
         if geval[i] <= 0:
@@ -134,9 +134,9 @@ def BUS_SuS(N,p0,c,likelihood,T_nataf):
 
     ## transform the samples to the physical (original) space
     for i in range(m+1):
-        #p = dist_p.icdf(scipy.stats.normal.cdf(samplesU['total'][i][-1,:])) is the same as:
-        p = scipy.stats.norm.cdf(samplesU['total'][i][-1,:])
-        samplesX['total'].append(np.concatenate((T_nataf.U2X(samplesU['total'][i][:-1,:]), p.reshape(1,-1)), axis=0))
+        #p = dist_p.icdf(sp.stats.normal.cdf(samplesU['total'][i][-1,:])) is the same as:
+        p = sp.stats.norm.cdf(samplesU['total'][i][-1,:])
+        samplesX.append(np.concatenate((T_nataf.U2X(samplesU['total'][i][:-1,:]), p.reshape(1,-1)), axis=0))
     
     return [b,samplesU,samplesX,cE]
 ##END

@@ -6,7 +6,7 @@ from ERADist import ERADist
 from SIS_GM import SIS_GM
 """
 ---------------------------------------------------------------------------
-Sequential importance sampling method: Ex. 1 Ref. 2 - linear function of independent standard normal
+Sequential importance sampling method: Ex. 1 Ref. 2- linear function of independent standard normal
 ---------------------------------------------------------------------------
 Created by:
 Sebastian Geyer (s.geyer@tum.de)
@@ -20,11 +20,13 @@ Version 2018-03
 
 ---------------------------------------------------------------------------
 Based on:
-
+2."MCMC algorithms for subset simulation"
+   Papaioannou et al.
+   Probabilistic Engineering Mechanics 41 (2015) 83-103.
 ---------------------------------------------------------------------------
 """
 
-## definition of the random variables
+# %% definition of the random variables
 d      = 2          # number of dimensions
 pi_pdf = list()
 for i in range(d):
@@ -36,11 +38,11 @@ R = np.eye(d)   # independent case
 # object with distribution information
 pi_pdf = ERANataf(pi_pdf, R)    # if you want to include dependence
 
-## limit-state function
+# %% limit-state function
 beta = 3.5
 g    = lambda x: -x.sum(axis=0)/np.sqrt(d) + beta
 
-## cross entropy-based IS
+# %% cross entropy-based IS
 N   = 1000        # Total number of samples for each level
 rho = 0.1         # ...
 
@@ -56,7 +58,7 @@ gg       = np.linspace(0,7,140)
 print('***Exact Pf: ', pf_ex, ' ***')
 print('***CEIS Pf: ', Pr, ' ***\n\n')
 
-## Plots
+# %% Plots
 # Options for font-family and font-size
 plt.rc('text', usetex=True)
 plt.rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
@@ -83,4 +85,4 @@ if d == 2:
 
 plt.show()
 
-##END
+# %%END

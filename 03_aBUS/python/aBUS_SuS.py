@@ -1,11 +1,11 @@
 import numpy as np
-import scipy.stats
+import scipy as sp
 from ERANataf import ERANataf
 from ERADist import ERADist
 from aCS_BUS import aCS_BUS
 """
 ---------------------------------------------------------------------------
-Subset simulation function adapted for BUS (likelihood input)
+Subset simulation function adapted for aBUS (likelihood input)
 ---------------------------------------------------------------------------
 Created by:
 Felipe Uribe (felipe.uribe@tum.de)
@@ -16,7 +16,7 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2018-02
+Version 2018-03
 ---------------------------------------------------------------------------
 Input:
 * N              : number of samples per level
@@ -29,6 +29,8 @@ Output:
 * samplesU : object with the samples in the standard normal space
 * samplesX : object with the samples in the original space
 * cE       : model evidence/marginal likelihood
+* c        : 
+* lam      : 
 ---------------------------------------------------------------------------
 Based on:
 1."Bayesian inference with subset simulation: strategies and improvements"
@@ -50,7 +52,7 @@ def aBUS_SuS(N,p0,log_likelihood,distr):
     
     else: # use distribution information for the transformation (independence)
         n = len(distr.Marginals)+1        # number of parameters (dimension)
-        u2x       = lambda u: distr[0].icdf(scipy.stats.norm.cdf(u))   # from u to x
+        u2x       = lambda u: distr[0].icdf(sp.stats.norm.cdf(u))   # from u to x
         log_L_fun = lambda u: log_likelihood(u2x(u[:-1]))
         
         # if the samples are standard normal do not make any transform
@@ -58,7 +60,7 @@ def aBUS_SuS(N,p0,log_likelihood,distr):
             log_L_fun = lambda u: log_likelihood(u[:-1])
     
     ## limit state funtion for the observation event (Ref.1 Eq.12)
-    gl = lambda pi_u, l, log_L: np.log(scipy.stats.norm.cdf(pi_u)) + l - log_L
+    gl = lambda pi_u, l, log_L: np.log(sp.stats.norm.cdf(pi_u)) + l - log_L
     # note that gl = log(p) + l(i) - leval
     # where p = normcdf(u_j(end,:)) is the standard uniform variable of BUS
 
@@ -68,10 +70,10 @@ def aBUS_SuS(N,p0,log_likelihood,distr):
     max_it = 30                        # maximum number of iterations
     samplesU = {'seeds': list(),
                 'total': list()}
-    samplesX = {'total': list()}
+    samplesX = list()
     #
-    geval = np.zeros((N))              # space for the LSF evaluations
-    leval = np.zeros((N))              # space for the LSF evaluations
+    geval = np.zeros(N)                # space for the LSF evaluations
+    leval = np.zeros(N)                # space for the LSF evaluations
     nF    = np.zeros(max_it,dtype=int) # space for the number of failure point per level
     h     = np.zeros(max_it)           # space for the intermediate leveles
     prob  = np.zeros(max_it)           # space for the failure probability at each level
@@ -142,7 +144,7 @@ def aBUS_SuS(N,p0,log_likelihood,distr):
                               high=np.min([np.ones(N),
                                            np.exp(leval - l + h[i])],
                                           axis=0))
-        u_j[-1,:] = scipy.stats.norm.ppf(p) # to the standard space
+        u_j[-1,:] = sp.stats.norm.ppf(p) # to the standard space
 
     # number of intermediate levels
     m = i
@@ -164,21 +166,21 @@ def aBUS_SuS(N,p0,log_likelihood,distr):
     if isinstance(distr, ERANataf):
         if distr.Marginals[0].Name == 'standardnormal':
             for i in range(m+1):
-                p = scipy.stats.norm.cdf(samplesU['total'][i][-1,:])
-                samplesX['total'].append(np.concatenate((samplesU['total'][i][:-1,:], p.reshape(1,-1)), axis=0))
+                p = sp.stats.norm.cdf(samplesU['total'][i][-1,:])
+                samplesX.append(np.concatenate((samplesU['total'][i][:-1,:], p.reshape(1,-1)), axis=0))
         else:
             for i in range(m+1):
-                p = scipy.stats.norm.cdf(samplesU['total'][i][-1,:])
-                samplesX['total'].append(np.concatenate((distr.U2X(samplesU['total'][i][:-1,:]), p.reshape(1,-1)), axis=0))
+                p = sp.stats.norm.cdf(samplesU['total'][i][-1,:])
+                samplesX.append(np.concatenate((distr.U2X(samplesU['total'][i][:-1,:]), p.reshape(1,-1)), axis=0))
     else:
         if distr[0].Name == 'standardnormal':
             for i in range(m+1):
-                p = scipy.stats.norm.cdf(samplesU['total'][i][-1,:])
-                samplesX['total'].append(np.concatenate((samplesU['total'][i][:-1,:], p.reshape(1,-1)), axis=0))
+                p = sp.stats.norm.cdf(samplesU['total'][i][-1,:])
+                samplesX.append(np.concatenate((samplesU['total'][i][:-1,:], p.reshape(1,-1)), axis=0))
         else:
             for i in range(m+1):
-                p = scipy.stats.norm.cdf(samplesU['total'][i][-1,:])
-                samplesX['total'].append(np.concatenate((u2x(samplesU['total'][i][:-1,:]), p.reshape(1,-1)), axis=0))
+                p = sp.stats.norm.cdf(samplesU['total'][i][-1,:])
+                samplesX.append(np.concatenate((u2x(samplesU['total'][i][:-1,:]), p.reshape(1,-1)), axis=0))
     
     return [h,samplesU,samplesX,cE,c,lam]
 ##END

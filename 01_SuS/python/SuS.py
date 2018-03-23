@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.stats
+import scipy as sp
 from ERANataf import ERANataf
 from ERADist import ERADist
 from aCS import aCS
@@ -45,7 +45,7 @@ Based on:
 ---------------------------------------------------------------------------
 """
 def SuS(N,p0,g_fun,distr):
-    ## initial check if there exists a Nataf object
+    # %% initial check if there exists a Nataf object
     if isinstance(distr, ERANataf):   # use Nataf transform (dependence)
         n = len(distr.Marginals)    # number of random variables (dimension)
         g = lambda u: g_fun(distr.U2X(u))   # LSF in standard space
@@ -56,14 +56,14 @@ def SuS(N,p0,g_fun,distr):
 
     else:   # use distribution information for the transformation (independence)
         n   = len(distr)                    # number of random variables (dimension)
-        u2x = lambda u: distr[0].icdf(scipy.stats.norm.cdf(u))   # from u to x
+        u2x = lambda u: distr[0].icdf(sp.stats.norm.cdf(u))   # from u to x
         g   = lambda u: g_fun(u2x(u))                            # LSF in standard space
         
         # if the samples are standard normal do not make any transform
         if distr[0].Name.lower() =='standardnormal':
             g = g_fun
 
-    ## Initialization of variables and storage
+    # %% Initialization of variables and storage
     j      = 0                # initial conditional level
     Nc     = int(N*p0)        # number of markov chains
     Ns     = int(1/p0)        # number of samples simulated from each Markov chain
@@ -73,16 +73,16 @@ def SuS(N,p0,g_fun,distr):
                 'order': list()}
     #
     geval = np.zeros(N  )          # space for the LSF evaluations
-    gsort = np.zeros((max_it,N))   # space for the sorted LSF evaluations
+    gsort = np.zeros([max_it,N])   # space for the sorted LSF evaluations
     delta = np.zeros(max_it)   # space for the coefficient of variation
     Nf    = np.zeros(max_it)   # space for the number of failure point per level
     prob  = np.zeros(max_it)   # space for the failure probability at each level
     b     = np.zeros(max_it)   # space for the intermediate leveles
 
-    ## SuS procedure
+    # %% SuS procedure
     # initial MCS stage
     print('Evaluating performance function:\t', end='')
-    u_j = scipy.stats.norm.rvs(size=(n,N))     # samples in the standard space
+    u_j = sp.stats.norm.rvs(size=(n,N))     # samples in the standard space
     for i in range(N):
         geval[i] = g(u_j[:,i])
         if geval[i] <= 0:
@@ -149,14 +149,14 @@ def SuS(N,p0,g_fun,distr):
         b     = b[:m]
         delta = delta[:m]
 
-    ## probability of failure
+    # %% probability of failure
     # failure probability estimate
     Pf_SuS = np.prod(prob)   # or p0^(m-1)*(Nf(m)/N)
 
     # coefficient of variation estimate
     delta_SuS = np.sqrt(np.sum(delta**2))   # (Ref. 2 Eq. 12)
 
-    ## Pf evolution 
+    # %% Pf evolution 
     Pf           = np.zeros(m)
     Pf_line      = np.zeros((m,Nc))
     b_line       = np.zeros((m,Nc))
@@ -172,4 +172,4 @@ def SuS(N,p0,g_fun,distr):
     b_line  = np.sort(b_line.reshape(-1))
 
     return [Pf_SuS,delta_SuS,b,Pf,b_line,Pf_line,samplesU]
-##END
+# %%END

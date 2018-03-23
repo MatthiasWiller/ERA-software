@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.stats
+import scipy as sp
 import matplotlib.pylab as plt
 from ERANataf import ERANataf
 from ERADist import ERADist
@@ -16,7 +16,7 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2018-01
+Version 2018-03
 ---------------------------------------------------------------------------
 Comments:
 * Compute small failure probabilities in reliability analysis of engineering systems.
@@ -36,7 +36,7 @@ Based on:
 ---------------------------------------------------------------------------
 """
 
-## definition of the random variables
+# %% definition of the random variables
 d      = 100         # number of dimensions
 pi_pdf = list()
 for i in range(d):
@@ -48,11 +48,11 @@ for i in range(d):
 # object with distribution information
 # pi_pdf = ERANataf(pi_pdf,R)    # if you want to include dependence
 
-## limit-state function
+# %% limit-state function
 Ca = 140
 g  = lambda x: Ca - np.sum(x)
 
-## Subset simulation
+# %% Subset simulation
 N  = 1000         # Total number of samples for each level
 p0 = 0.1          # Probability of each subset, chosen adaptively
 
@@ -61,15 +61,15 @@ print('SUBSET SIMULATION stage: ')
 
 # exact solution
 lam      = 1
-pf_ex    = 1 - scipy.stats.gamma.cdf(Ca, a=d)
-Pf_exact = lambda gg: 1-scipy.stats.gamma.cdf(Ca-gg, a=d)
+pf_ex    = 1 - sp.stats.gamma.cdf(Ca, a=d)
+Pf_exact = lambda gg: 1-sp.stats.gamma.cdf(Ca-gg, a=d)
 gg       = np.linspace(0,30,300)
 
 # show p_f results
 print('\n***Exact Pf: ', pf_ex, ' ***')
-print('\n***SuS Pf: ', Pf_SuS, ' ***\n\n')
+print('***SuS Pf: ', Pf_SuS, ' ***\n\n')
 
-## Plots
+# %% Plots
 # Plot failure probability: Exact
 plt.figure()
 plt.yscale('log')
@@ -92,4 +92,4 @@ plt.plot(0,pf_ex,'ro', label='Pf Exact',
 plt.tight_layout()
 
 plt.show()
-##END
+# %%END

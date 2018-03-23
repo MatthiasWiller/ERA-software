@@ -14,20 +14,22 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2018-01
+Version 2018-03
 ---------------------------------------------------------------------------
 Input:
-* N   : number of samples to be generated
-* l   : scaling parameter lambda 
-* b   : actual intermediate level
-* u_j : seeds used to generate the new samples
-* H   : limit state function in the standard space
+* N         : number of samples to be generated
+* lam       : scaling parameter lambda
+* h         : current intermediate level
+* u_j       : seeds used to generate the new samples
+* log_L_fun : log-likelihood function
+* l         : =-log(c) ~ scaling constant of BUS for the current level
+* gl        : limit state function in the standard space
 ---------------------------------------------------------------------------
 Output:
 * u_jk       : next level samples
-* geval      : limit state function evaluations of the new samples
+* leval      : log-likelihood function of the new samples
 * new_lambda : next scaling parameter lambda
-* accrate    : acceptance rate of the method
+* accrate    : acceptance rate of the samples
 ---------------------------------------------------------------------------
 Based on:
 1."MCMC algorithms for subset simulation"
@@ -36,7 +38,7 @@ Based on:
 ---------------------------------------------------------------------------
 """
 def aCS_BUS(N, lam_prev, h, u_j, log_L_fun, l, gl):
-    ## Initialize variables
+    # %% Initialize variables
     #pa = 0.1
     n  = np.size(u_j,axis=0)     # number of uncertain parameters
     Ns = np.size(u_j,axis=1)     # number of seeds
@@ -54,7 +56,7 @@ def aCS_BUS(N, lam_prev, h, u_j, log_L_fun, l, gl):
     hat_a  = np.zeros(int(np.floor(Ns/Na)))        # average acceptance rate of the chains
     lam    = np.zeros(int(np.floor(Ns/Na)+1))      # scaling parameter \in (0,1)
 
-    ## 1. compute the standard deviation
+    # %% 1. compute the standard deviation
     opc = 'b'
     if opc == 'a': # 1a. sigma = ones(n,1)
         sigma_0 = np.ones(n)
@@ -70,7 +72,7 @@ def aCS_BUS(N, lam_prev, h, u_j, log_L_fun, l, gl):
     else:
         raise RuntimeError('Choose a or b')
 
-    ## 2. iteration
+    # %% 2. iteration
     star_a = 0.44     # optimal acceptance rate 
     lam[0] = lam_prev # initial scaling parameter \in (0,1)
 
@@ -130,4 +132,4 @@ def aCS_BUS(N, lam_prev, h, u_j, log_L_fun, l, gl):
     accrate = np.mean(hat_a)
 
     return [u_jk, leval, new_lambda, accrate]
-##END
+# %%END

@@ -2,8 +2,6 @@ import numpy as np
 import scipy as sp
 from ERANataf import ERANataf
 from ERADist import ERADist
-from h_calc import h_calc
-from GM_sample import GM_sample
 from EMGM import EMGM
 """
 ---------------------------------------------------------------------------
@@ -26,7 +24,11 @@ Input:
               marginal distribution object of the input variables
 ---------------------------------------------------------------------------
 Output:
-
+* Pr       :
+* l        :
+* samplesU :
+* samplesX :
+* k_fin    :
 ---------------------------------------------------------------------------
 Based on:
 
@@ -34,7 +36,7 @@ Based on:
 """
 def SIS_GM(N, rho, g_fun, distr):
 
-    ## initial check if there exists a Nataf object
+    # %% initial check if there exists a Nataf object
     if isinstance(distr, ERANataf):   # use Nataf transform (dependence)
         dim = len(distr.Marginals)    # number of random variables (dimension)
         g   = lambda u: g_fun(distr.U2X(u))   # LSF in standard space
@@ -55,7 +57,7 @@ def SIS_GM(N, rho, g_fun, distr):
         raise RuntimeError('Incorrect distribution. Please create an ERANataf object!')
 
 
-    ## Initialization of variables and storage
+    # %% Initialization of variables and storage
     max_it   = 100              # estimated number of iterations
     m        = 0                # counter for number of levels
     samplesU = list()           # space for samples in U-space
@@ -76,7 +78,7 @@ def SIS_GM(N, rho, g_fun, distr):
     Sk      = np.ones([max_it])           # space for expected weights
     sigmak  = np.zeros([max_it])          # space for sigmak
 
-    ### Step 1
+    # %% Step 1
     # Perform the first Monte Carlo simulation
     for k in range(nsamlev):
         u       = sp.stats.norm.rvs(size=[dim])
@@ -90,10 +92,10 @@ def SIS_GM(N, rho, g_fun, distr):
     gmu       = np.mean(gk)
     sigmak[m] = 50*gmu
 
-    ## Iteration
+    # %% Iteration
     for m in range(max_it):
       
-        ### Step 2 and 3
+        # %% Step 2 and 3
         # compute sigma and weights
         if m == 0:
             func        = lambda x: abs(np.std(sp.stats.norm.cdf(-gk/x))/np.mean(sp.stats.norm.cdf(-gk/x))-tolCOV)
@@ -106,7 +108,7 @@ def SIS_GM(N, rho, g_fun, distr):
             sigmak[m+1] = sigma2
             wk          = sp.stats.norm.cdf(-gk/sigmak[m+1])/sp.stats.norm.cdf(-gk/sigmak[m])
 
-        ### Step 4
+        # %% Step 4
         # compute estimate of expected w
         Sk[m] = np.mean(wk)
 
@@ -121,7 +123,7 @@ def SIS_GM(N, rho, g_fun, distr):
         nGM = 2
         [mu, si, pi] = EMGM(uk.T,wnork.T,nGM)
         
-        ### Step 5
+        # %% Step 5
         # resample
         ind = np.random.choice(range(nsamlev),nchain,True,wnork)
 
@@ -129,7 +131,7 @@ def SIS_GM(N, rho, g_fun, distr):
         gk0 = gk[ind]
         uk0 = uk[ind,:]
 
-        ### Step 6
+        # %% Step 6
         # perform M-H
         count = 0
 
@@ -197,7 +199,7 @@ def SIS_GM(N, rho, g_fun, distr):
     k_fin = len(pi) 
     l     = m+1
 
-    ## Calculation of the Probability of failure
+    # %% Calculation of the Probability of failure
     # accfin = accrate[m]
     const = np.prod(Sk)
     tmp1  = (gk < 0)
@@ -207,7 +209,7 @@ def SIS_GM(N, rho, g_fun, distr):
     Pr = np.mean(tmp4)*const
     # Pr    = np.mean((gk < 0)/sp.stats.norm.cdf(-gk/sigmak[m]))*const
 
-    ## transform the samples to the physical/original space
+    # %% transform the samples to the physical/original space
     samplesX = list()
     if isinstance(distr, ERANataf):   # use Nataf transform (dependence)
         if distr.Marginals[0].Name.lower() == 'standardnormal':
@@ -227,4 +229,4 @@ def SIS_GM(N, rho, g_fun, distr):
                 samplesX.append( u2x(samplesU[i][:,:]) )
 
     return [Pr, l, samplesU, samplesX, k_fin]
-##END
+# %%END

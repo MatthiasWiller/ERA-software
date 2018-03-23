@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.stats
+import scipy as sp
 """
 ---------------------------------------------------------------------------
 Basic resampling algorithm
@@ -13,7 +13,7 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2018-02
+Version 2018-03
 ---------------------------------------------------------------------------
 Input:
 * w : unnormalized plausability weights
@@ -26,14 +26,14 @@ def resampling_index(w):
     N    = len(w)
     csum = np.cumsum(w)
     ssum = sum(w)
-    lim  = ssum*scipy.stats.uniform.rvs()
+    lim  = ssum*sp.stats.uniform.rvs()
     #
     i = 1
     while csum[i] <= lim:
         i = i+1
         if i > N:
             i   = 1
-            lim = ssum*scipy.stats.uniform.rvs()
+            lim = ssum*sp.stats.uniform.rvs()
     idx = i
 
     return idx

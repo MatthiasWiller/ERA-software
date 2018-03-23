@@ -11,7 +11,7 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2018-01
+Version 2018-03
 ---------------------------------------------------------------------------
 EXAMPLE:
 m1 = 16.531e3;   m2 = 16.131e3;
@@ -25,13 +25,13 @@ References:
 ---------------------------------------------------------------------------
 """
 def shear_building_2DOF(m1,m2,k1,k2):
-    ## Mass and Stiffness matrices
+    # %% Mass and Stiffness matrices
     M = np.matrix([[m1,  0], \
                    [0 , m2]   ])      # mass matrix
     K = np.matrix([[k1 + k2, -k2], \
                    [-k2    ,  k2]])   # stiffness matrix
 
-    ## Free response - Modal analysis 
+    # %% Free response - Modal analysis 
     [L,V]   = np.linalg.eig(np.linalg.solve(M,K))   # eigenvalue solution
     w       = np.sqrt(L)/(2*np.pi)   # natural frequencies [Hz]
     idx     = np.argsort(w)                   # ordering (ascendent)
@@ -43,4 +43,4 @@ def shear_building_2DOF(m1,m2,k1,k2):
     # Phi = Phi/np.tile(np.sqrt(np.diag(q)).T,(2,1))
 
     return w
-##END
+# %%END
