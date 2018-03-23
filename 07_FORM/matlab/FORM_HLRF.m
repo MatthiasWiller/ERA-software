@@ -52,7 +52,7 @@ while true
    
    % 2. evaluate LSF gradient at point u_k and direction cosines
    DH_uk      = J\DG(xk);
-   norm_DH_uk = norm(DH_uk);
+   norm_DH_uk = norm(DH_uk)
    alpha      = DH_uk/norm_DH_uk;
    
    % 3. calculate beta
