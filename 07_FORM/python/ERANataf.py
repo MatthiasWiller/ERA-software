@@ -219,7 +219,7 @@ class ERANataf(object):
             return X
         else:
             for i in range(m):
-                diag[i, i] = self.Marginals[i].pdf(U[i])/stats.norm.pdf(Z[i])
+                diag[i, i] = self.Marginals[i].pdf(X[i])/stats.norm.pdf(Z[i])
             Jac = np.linalg.solve(self.A, diag)
             return X, Jac
 
