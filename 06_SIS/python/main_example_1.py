@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.stats
+import scipy as sp
 import matplotlib.pylab as plt
 from ERANataf import ERANataf
 from ERADist import ERADist
@@ -48,8 +48,8 @@ print('SIS stage: ')
 [Pr, l, samplesU, samplesX, k_fin] = SIS_GM(N, rho, g, pi_pdf)
 
 # exact solution
-pf_ex    = scipy.stats.norm.cdf(-beta)
-Pf_exact = lambda gg: scipy.stats.norm.cdf(gg,beta,1)
+pf_ex    = sp.stats.norm.cdf(-beta)
+Pf_exact = lambda gg: sp.stats.norm.cdf(gg,beta,1)
 gg       = np.linspace(0,7,140)
 
 # show p_f results

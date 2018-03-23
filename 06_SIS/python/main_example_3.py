@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.stats
+import scipy as sp
 import matplotlib.pylab as plt
 from ERANataf import ERANataf
 from ERADist import ERADist
@@ -40,17 +40,16 @@ pi_pdf = ERANataf(pi_pdf, R)    # if you want to include dependence
 beta = 2.5
 g    = lambda x: 0.1*(x[0,:]-x[1,:])**2 - (x[0,:]+x[1,:])/np.sqrt(2) + beta
 
-
 ## cross entropy-based IS
 N   = 1000        # Total number of samples for each level
 rho = 0.1         # ...
 
 print('SIS stage: ')
-[Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = SIS_GM(N, rho, g, pi_pdf)
+[Pr, l, samplesU, samplesX, k_fin] = SIS_GM(N, rho, g, pi_pdf)
 
 # exact solution
-pf_ex    = scipy.stats.norm.cdf(-beta)
-Pf_exact = lambda gg: scipy.stats.norm.cdf(gg,beta,1)
+pf_ex    = sp.stats.norm.cdf(-beta)
+Pf_exact = lambda gg: sp.stats.norm.cdf(gg,beta,1)
 gg       = np.linspace(0,7,140)
 
 # show p_f results

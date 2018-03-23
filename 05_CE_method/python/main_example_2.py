@@ -1,11 +1,11 @@
 import numpy as np
-import scipy.stats
+import scipy as sp
 import matplotlib.pylab as plt
 from ERANataf import ERANataf
 from ERADist import ERADist
 from CEIS_SG import CEIS_SG
 from CEIS_GM import CEIS_GM
-from CEIS_vMFNM import CEIS_vMFNM
+# from CEIS_vMFNM import CEIS_vMFNM
 """
 ---------------------------------------------------------------------------
 Cross entropy method: Ex. 2 Ref. 2 - linear function of independent exponential
@@ -52,8 +52,8 @@ print('CE-based IS stage: ')
 
 # exact solution
 lam      = 1
-pf_ex    = 1 - scipy.stats.gamma.cdf(a=Ca, scale=lam, size=d)
-Pf_exact = lambda gg: 1-scipy.stats.gamma.cdf(a=Ca-gg, scale=lam)
+pf_ex    = 1 - sp.stats.gamma.cdf(a=Ca, scale=lam, size=d)
+Pf_exact = lambda gg: 1-sp.stats.gamma.cdf(a=Ca-gg, scale=lam)
 gg       = np.linspace(0,30,300)
 
 # show p_f results

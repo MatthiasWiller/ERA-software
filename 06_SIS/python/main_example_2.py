@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.stats
+import scipy as sp
 import matplotlib.pylab as plt
 from ERANataf import ERANataf
 from ERADist import ERADist
@@ -44,12 +44,12 @@ N   = 1000         # Total number of samples for each level
 rho = 0.1          # Probability of each subset, chosen adaptively
 
 print('SIS stage: ')
-[Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = SIS_GM(N, rho, g, pi_pdf)
+[Pr, l, samplesU, samplesX, k_fin] = SIS_GM(N, rho, g, pi_pdf)
 
 # exact solution
 lam      = 1
-pf_ex    = 1 - scipy.stats.gamma.cdf(a=Ca, scale=lam, size=d)
-Pf_exact = lambda gg: 1-scipy.stats.gamma.cdf(a=Ca-gg, scale=lam)
+pf_ex    = 1 - sp.stats.gamma.cdf(a=Ca, scale=lam, size=d)
+Pf_exact = lambda gg: 1-sp.stats.gamma.cdf(a=Ca-gg, scale=lam)
 gg       = np.linspace(0,30,300)
 
 # show p_f results
