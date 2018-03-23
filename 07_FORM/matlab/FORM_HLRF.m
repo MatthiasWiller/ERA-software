@@ -1,4 +1,4 @@
-function [u_star,beta,Pf] = HLRF(H,DH,n)
+function [u_star,x_star,beta,Pf] = FORM_HLRF(G,DG,distr)
 %% HLRF function
 %{
 ---------------------------------------------------------------------------
@@ -8,15 +8,16 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2017-04
+Version 2018-03
 ---------------------------------------------------------------------------
 Input:
-* H  : limit state function in the standard space
-* DH : gradient of the limit state function in the standard space
-* n  : number of random variables (dim)
+* G     : limit state function in the original space
+* DG    : gradient of the limit state function in the standard space
+* distr : ERANataf-Object containing the distribution
 ---------------------------------------------------------------------------
 Output:
 * u_star : design point in the standard space
+* x_star : design point in the original space
 * beta   : reliability index
 * Pf     : probability of failure
 ---------------------------------------------------------------------------
@@ -27,6 +28,13 @@ References:
 ---------------------------------------------------------------------------
 %}
 
+%% initial check if there exists a Nataf object
+if ~(any(strcmp('Marginals',fieldnames(distr))) == 1)   % use Nataf transform (dependence)
+	return;
+end
+
+n = length(distr.Marginals);    % number of random variables (dimension)
+
 %% initialization
 maxit = 1e2;
 tol   = 1e-5;
@@ -36,11 +44,14 @@ beta  = zeros(1,maxit);
 %% HLRF method
 k = 1;
 while true
+   % 0. Get x and Jacobi from u (important for transformation)
+   [xk, J] = distr.U2X(u(:,k), 'Jac');
+   
    % 1. evaluate LSF at point u_k
-   H_uk = H(u(:,k));
+   H_uk = G(xk);
    
    % 2. evaluate LSF gradient at point u_k and direction cosines
-   DH_uk      = DH(u(:,k));
+   DH_uk      = J\DG(xk);
    norm_DH_uk = norm(DH_uk);
    alpha      = DH_uk/norm_DH_uk;
    
@@ -63,11 +74,12 @@ u(:,k+2:end) = [];
 
 % compute design point, reliability index and Pf
 u_star = u(:,end);
+x_star = distr.U2X(u_star);
 beta   = beta(k);
 Pf     = normcdf(-beta,0,1);
 
 % print results
-fprintf('*HLRF Method\n');
+fprintf('*FORM Method\n');
 fprintf(' %g iterations... Reliability index = %g --- Failure probability = %g\n\n',k,beta,Pf);
 
 return;

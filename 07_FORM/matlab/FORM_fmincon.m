@@ -1,4 +1,4 @@
-function [u_star,beta,Pf] = opt_fmincon(H)
+function [u_star,x_star,beta,Pf] = FORM_fmincon(G, distr)
 %% optimization using the fmincon function
 %{
 ---------------------------------------------------------------------------
@@ -8,13 +8,15 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2017-04
+Version 2018-03
 ---------------------------------------------------------------------------
 Input:
-* H  : limit state function in the standard space
+* G     : limit state function in the original space
+* distr : ERANataf-Object containing the distribution
 ---------------------------------------------------------------------------
 Output:
 * u_star : design point in the standard space
+* x_star : design point in the original space
 * beta   : reliability index
 * Pf     : probability of failure
 ---------------------------------------------------------------------------
@@ -38,6 +40,7 @@ lb  = [-5,-5];    % lower bound constraints
 ub  = [5,5];      % upper bound constraints
 
 % nonlinear constraint: H(u) <= 0
+H      = @(u) G(distr.U2X(u));
 lsfcon = @(u) deal([], H(u));
 
 %% use fmincon
@@ -47,8 +50,9 @@ options = optimoptions('fmincon','Display','off','Algorithm','sqp');
 iter = output.iterations;
 alg  = output.algorithm;
 
-% failure probability
-Pf = normcdf(-beta);
+% compute design point in orignal space and failure probability
+x_star = distr.U2X(u_star);
+Pf     = normcdf(-beta);
 
 % print results
 fprintf('*fmincon with %s Method\n',alg);
