@@ -40,42 +40,41 @@ Based on:
    Engineering Risk Analysis Group, TUM (Sep 2017)
 ---------------------------------------------------------------------------
 """
-def CEIS_vMFNM(N,rho,g_fun,distr):
-    ## initial check if there exists a Nataf object
-    if any(strcmp('Marginals',fieldnames(distr))) == 1   # use Nataf transform (dependence)
-    dim = length(distr.Marginals)    # number of random variables (dimension)
-    g   = @(u) g_fun(distr.U2X(u))   # LSF in standard space
-    
-    # if the samples are standard normal do not make any transform
-    if strcmp(distr.Marginals(1).Name,'standardnormal')
-        g = g_fun
-    end
-    else   # use distribution information for the transformation (independence)
-    dim = length(distr)                    # number of random variables (dimension)
-    u2x = @(u) distr(1).icdf(normcdf(u))   # from u to x
-    g   = @(u) g_fun(u2x(u))               # LSF in standard space
-    
-    # if the samples are standard normal do not make any transform
-    if strcmp(distr(1).Name,'standardnormal')
-        g = g_fun
-    end
-    end
+def CEIS_vMFNM(N, rho, g_fun, distr):
+    # %% initial check if there exists a Nataf object
+    if isinstance(distr, ERANataf):   # use Nataf transform (dependence)
+        dim = len(distr.Marginals)    # number of random variables (dimension)
+        g   = lambda u: g_fun(distr.U2X(u))   # LSF in standard space
 
+        # if the samples are standard normal do not make any transform
+        if distr.Marginals[0].Name.lower() == 'standardnormal':
+            g = g_fun
 
-    ## Initialization of variables and storage
+    elif isinstance(distr, ERADist):   # use distribution information for the transformation (independence)
+        dim = len(distr)                    # number of random variables (dimension)
+        u2x = lambda u: distr[0].icdf(sp.stats.norm.cdf(u))   # from u to x
+        g   = lambda u: g_fun(u2x(u))                            # LSF in standard space
+        
+        # if the samples are standard normal do not make any transform
+        if distr[0].Name.lower() =='standardnormal':
+            g = g_fun
+    else:
+        raise RuntimeError('Incorrect distribution. Please create an ERANataf object!')
+
+    # %% Initialization of variables and storage
     j      = 0                # initial level
     max_it = 100              # estimated number of iterations
     N_tot  = 0                # total number of samples
 
     # Definition of parameters of the random variables (uncorrelated standard normal)
-    mu_init = zeros(1,dim)   # ...
-    Si_init = eye(dim)       # ...
-    Pi_init = 1              # ...
+    mu_init = np.zeros([dim,1]) # ...
+    Si_init = np.eye(dim)       # ...
+    Pi_init = np.asarray([1])   # ...
     #
-    gamma_hat = zeros(max_it+1,1) # space for ...
-    samplesU = {}
+    gamma_hat = np.zeros([max_it+1]) # space for ...
+    samplesU = list()
 
-    ## CE procedure
+    # %% CE procedure
     # initial nakagami parameters (make it equal to chi distribution)
     omega_init = dim    # spread parameter
     m_init     = dim/2  # shape parameter
@@ -87,318 +86,329 @@ def CEIS_vMFNM(N,rho,g_fun,distr):
     # initial disribution weight
     alpha_init = 1
 
-    ## Initializing parameters
+    # %% Initializing parameters
     mu_hat       = mu_init
     kappa_hat    = kappa_init
     omega_hat    = omega_init
     m_hat        = m_init
-    gamma_hat(1) = 1
+    gamma_hat[j] = 1
     alpha_hat    = alpha_init
         
-    ## Iteration
-    for j=1:max_it
+    # %% Iteration
+    for j in range(max_it):
+        # save parameters from previous step
+        mu_cur    = mu_hat
+        kappa_cur = kappa_hat
+        omega_cur = omega_hat
+        m_cur     = m_hat
+        alpha_cur = alpha_hat
 
-    # save parameters from previous step
-    mu_cur    = mu_hat
-    kappa_cur = kappa_hat
-    omega_cur = omega_hat
-    m_cur     = m_hat
-    alpha_cur = alpha_hat
-
-    # Generate samples
-    X = vMFNM_sample(mu_cur,kappa_cur,omega_cur,m_cur,alpha_cur,N)
-    samplesU{j} = X'
+        # Generate samples
+        X = vMFNM_sample(mu_cur,kappa_cur,omega_cur,m_cur,alpha_cur,N)
+        samplesU.append(X.T)
             
-    # Count generated samples
-    N_tot = N_tot + N
+        # Count generated samples
+        N_tot = N_tot + N
+                
+        # Evaluation of the limit state function
+        geval = g(X.T)
+                
+        # Calculation of the likelihood ratio
+        W_log = likelihood_ratio_log(X,mu_cur,kappa_cur,omega_cur,m_cur,alpha_cur)
+
+        # Check convergence
+        if gamma_hat[j] == 0:
+            k_fin = len(alpha_cur)     
+            break
+
+        # obtaining estimator gamma
+        gamma_hat[j+1] = np.maximum(0, np.percentile(geval, rho*100))
+        print(gamma_hat[j+1])
+
+        # Indicator function
+        I = (geval<=gamma_hat[j+1])
             
-    # Evaluation of the limit state function
-    geval = g(X')
-            
-    # Calculation of the likelihood ratio
-    W_log = likelihood_ratio_log(X,mu_cur,kappa_cur,omega_cur,m_cur,alpha_cur)
+        # EM initialization with kmeans algorithm
+        k = 4
+        # EM algorithm
+        [] = EMvMFNM(X[I,:].T, np.exp(W_log[I,:]), k)
 
-    # Check convergence
-    if gamma_hat(j) == 0 
-        k_fin = length(alpha_cur)     
-        break
-    end
+        # remove unnecessary components
+        if min(alpha)<=0.01:
+            ind   = np.where(alpha>0.01)
+            mu    = mu[:,ind]
+            kappa = kappa[ind]
+            m     = m[ind]
+            omega = omega[ind]
+            alpha = alpha[ind]
 
-    # obtaining estimator gamma
-    gamma_hat(j+1) = max(0,prctile(geval,rho*100))
-
-    # Indicator function
-    I = geval<=gamma_hat(j+1)
-        
-    # EM initialization with kmeans algorithm
-    k=4
-    # EM algorithm
-    dist = EMvMFNM(X(I,:)',exp(W_log(I,:)),k)
-
-    # remove unnecessary components
-    if min(dist.alpha)<=0.01 
-        ind=find(dist.alpha>0.01)
-        dist.mu=dist.mu(:,ind)
-        dist.kappa=dist.kappa(ind)
-        dist.m=dist.m(ind)
-        dist.omega=dist.omega(ind)
-        dist.alpha=dist.alpha(ind)
-    end
-
-    # Assigning updated parameters            
-    mu_hat    = dist.mu'
-    kappa_hat = dist.kappa
-    m_hat     = dist.m
-    omega_hat = dist.omega
-    alpha_hat = dist.alpha
-    end
+        # Assigning updated parameters            
+        mu_hat    = mu.T
+        kappa_hat = kappa
+        m_hat     = m
+        omega_hat = omega
+        alpha_hat = alpha
         
     # store the needed steps
     l = j
 
-    ## Calculation of Probability of failure
-    I  = geval<=gamma_hat(j)
-    Pr = 1/N*sum(exp(W_log(I,:))) 
+    # %% Calculation of Probability of failure
+    I  = (geval<=gamma_hat[j])
+    Pr = 1/N*sum(np.exp(W_log[I,:])) 
 
-    ## transform the samples to the physical/original space
-    samplesX = cell(l,1)
-    if any(strcmp('Marginals',fieldnames(distr))) == 1   # use Nataf transform (dependence)
-    if strcmp(distr.Marginals(1).Name,'standardnormal')
-        for i = 1:l
-            samplesX{i} = samplesU{i}(:,:)
-        end
-    else
-        for i = 1:l
-            samplesX{i} = distr.U2X(samplesU{i}(:,:))
-        end
-    end
-    else
-    if strcmp(distr(1).Name,'standardnormal')
-        for i = 1:l
-            samplesX{i} = samplesU{i}(:,:)
-        end
-    else
-        for i = 1:l
-            samplesX{i} = u2x(samplesU{i}(1:end-1,:))
-        end
-    end
-    end
+    # %% transform the samples to the physical/original space
+    samplesX = list()
+    if isinstance(distr, ERANataf):   # use Nataf transform (dependence)
+        if distr.Marginals[0].Name.lower() == 'standardnormal':
+            for i in range(l):
+                samplesX.append( samplesU[i][:,:] )
+        
+        else:
+            for i in range(l):
+                samplesX.append( distr.U2X(samplesU[i][:,:]) )
+
+    else:
+        if distr.Name.lower() == 'standardnormal':
+            for i in range(l):
+                samplesX.append( samplesU[i][:,:] )
+        else:
+            for i in range(l):
+                samplesX.append( u2x(samplesU[i][:,:]) )
 
     return [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin]
 
-
-function X = hs_sample(N,n,R)
+# --------------------------------------------------------------------------
 # Returns uniformly distributed samples from the surface of an
 # n-dimensional hypersphere 
-
+# --------------------------------------------------------------------------
 # N: # samples
 # n: # dimensions
 # R: radius of hypersphere
+# --------------------------------------------------------------------------
+def hs_sample(N,n,R):
 
-Y = randn(n,N)
-Y=Y'
+    Y = sp.stats.norm.rvs(size=(n,N)) # randn(n,N)
+    Y = Y.T
 
-norm=repmat(sqrt(sum(Y.^2,2)),[1 n])
+    norm = np.tile(np.sqrt(np.sum(Y**2,axis=1)),[1,n])
 
-X=Y./norm*R
+    X = np.matmul(Y/norm,R)
+    return X
 
-function X=vMFNM_sample(mu,kappa,omega,m,alpha,N)
+# --------------------------------------------------------------------------
 # Returns samples from the von Mises-Fisher-Nakagami mixture
+# --------------------------------------------------------------------------
+def vMFNM_sample(mu,kappa,omega,m,alpha,N):
 
-[k,dim]=size(mu)
+    [k, dim] = np.size(mu)
 
-if k==1
-    
-    # sampling the radius
-    #     pd=makedist('Nakagami','mu',m,'omega',omega)
-    #     R=pd.random(N,1)
-    R=sqrt(gamrnd(m,omega./m,N,1))
-    
-    # sampling on unit hypersphere
-    X_norm=vsamp(mu',kappa,N)
-    
-else
-    
-    # Determine number of samples from each distribution
-    z=sum(dummyvar(randsample(k,N,true,alpha)))
-    k=length(z)
-    
-    # Generation of samples
-    R=zeros(N,1)
-    R_last=0
-    X_norm=zeros(N,dim)
-    X_last=0
-    
-    for p=1:k
-
+    if k==1:
         # sampling the radius
-        R(R_last+1:R_last+z(p))=sqrt(gamrnd(m(p),omega(p)./m(p),z(p),1))
-        R_last=R_last+z(p)
+        #     pd=makedist('Nakagami','mu',m,'omega',omega)
+        #     R=pd.random(N,1)
+        R = np.sqrt(gamrnd(m,omega/m,N,1))
         
         # sampling on unit hypersphere
-        X_norm(X_last+1:X_last+z(p),:)=vsamp(mu(p,:)',kappa(p),z(p))
-        X_last=X_last+z(p)
+        X_norm = vsamp(mu.T,kappa,N)
         
-        clear pd
-    end
-end
+    else:
+        # Determine number of samples from each distribution
+        z = sum(dummyvar(randsample(k,N,true,alpha)))
+        k = len(z)
+        
+        # Generation of samples
+        R = np.zeros(N)
+        R_last = 0
+        X_norm = np.zeros([N,dim])
+        X_last = 0
+        
+        for p in range(k):
+            # sampling the radius
+            R[R_last:R_last+z[p]] = np.sqrt(gamrnd(m[p],omega[p]/m[p],z[p],1))
+            R_last = R_last + z(p)
+            
+            # sampling on unit hypersphere
+            X_norm[X_last:X_last+z[p],:] = vsamp(mu[p,:].T,kappa[p],z[p])
+            X_last = X_last+z[p]
+            
+            # clear pd
 
-# Assign sample vector
-X=bsxfun(@times,R,X_norm)
+    # Assign sample vector
+    X = R*X_norm # bsxfun(@times,R,X_norm)
+    return X
 
-function X = vsamp(center, kappa, n)
+# --------------------------------------------------------------------------
 # Returns samples from the von Mises-Fisher distribution
+# --------------------------------------------------------------------------
+def vsamp(center, kappa, n):
 
-# d > 1 of course
-d = size(center,1)			# Dimensionality
-l = kappa				# shorthand
-t1 = sqrt(4*l*l + (d-1)*(d-1))
-b = (-2*l + t1 )/(d-1)
+    # d > 1 of course
+    d  = np.size(center,size=0)			# Dimensionality
+    l  = kappa				# shorthand
+    t1 = np.sqrt(4*l*l + (d-1)*(d-1))
+    b  = (-2*l + t1 )/(d-1)
 
-x0 = (1-b)/(1+b)
+    x0 = (1-b)/(1+b)
 
-X = zeros(n,d)
+    X = np.zeros([n,d])
 
-m = (d-1)/2
-c = l*x0 + (d-1)*log(1-x0*x0)
+    m = (d-1)/2
+    c = l*x0 + (d-1)*np.log(1-x0*x0)
 
-for i=1:n
-  t = -1000 u = 1
+    for i in range(n):
+        t = -1000 
+        u = 1
 
-  while (t < log(u))
-    z = betarnd(m , m)			# z is a beta rand var
-    u = rand(1)				# u is unif rand var
-    w = (1 - (1+b)*z)/(1 - (1-b)*z)
-    t = l*w + (d-1)*log(1-x0*w) - c
-  end
-  
-  v=hs_sample(1,d-1,1)                                      
-  X(i,1:d-1) = sqrt(1-w*w)*v'
-  X(i,d) = w
-end
+        while t < np.log(u):
+            z = betarnd(m , m)			# z is a beta rand var
+            u = rand(1)				# u is unif rand var
+            w = (1 - (1+b)*z)/(1 - (1-b)*z)
+            t = l*w + (d-1)*np.log(1-x0*w) - c
+        
+        v         = hs_sample(1,d-1,1)                                      
+        X[i,:d-1] = np.matmul(np.sqrt(1-w*w),v.T)
+        X[i,d]    = w
 
-[v,b]=house(center)
-Q = eye(d)-b*v*v'
+    [v,b] = house(center)
+    Q = np.eye(d) - b*np.matmul(v,v.T)
 
-for i=1:n
-  tmpv = Q*X(i,:)'
-  X(i,:) = tmpv'
-end
+    for i in range(n):
+        tmpv = np.matmul(Q,X[i,:].T)
+        X[i,:] = tmpv.T
 
-function y = vMF_logpdf(X,mu,kappa)
+    return X
 
+# --------------------------------------------------------------------------
 # X,mu,kappa
 # Returns the von Mises-Fisher mixture log pdf on the unit hypersphere
+# --------------------------------------------------------------------------
+def vMF_logpdf(X,mu,kappa):
 
-d = size(X,1)
-n=size(X,2)
+    d = np.size(X, axis=0)
+    n = np.size(X, axis=1)
 
-if kappa==0
-    A=log(d)+log(pi^(d/2))-gammaln(d/2+1)
-    y=-A*ones(1,n)
-elseif kappa>0
-    c = (d/2-1)*log(kappa)-(d/2)*log(2*pi)-logbesseli(d/2-1,kappa)
-    q = bsxfun(@times,mu,kappa)'*X
-    y = bsxfun(@plus,q,c')
-else
-    error('kappa must not be negative')
-end
+    if kappa == 0:
+        A = np.log(d) + np.log(np.pi**(d/2)) - gammaln(d/2+1)
+        y = -A*np.ones([1,n])
+    elif kappa > 0:
+        c = (d/2-1)*np.log(kappa)-(d/2)*np.log(2*np.pi)-logbesseli(d/2-1,kappa)
+        q = np.matmul((mu*kappa).T,X) # bsxfun(@times,mu,kappa)'*X
+        y = q + c.T                   # bsxfun(@plus,q,c')
+    else:
+        raise ValueError('Kappa must not be negative!')
 
-function y = nakagami_logpdf(X,m,om)
+    return y
 
-y=log(2)+m*(log(m)-log(om)-X.^2./om)+log(X).*(2*m-1)-gammaln(m)
+# --------------------------------------------------------------------------
+# ...
+# --------------------------------------------------------------------------
+def nakagami_logpdf(X,m,om):
 
-function W_log=likelihood_ratio_log(X,mu,kappa,omega,m,alpha)
-k=length(alpha)
-[N,dim]=size(X)
-R=sqrt(sum(X.^2,2))
+    y = np.log(2) + m*(np.log(m)-np.log(om)-X**2/om) + np.log(X)*(2*m-1) - gammaln(m)
+    return y
 
-if k==1
-    
-    # log pdf of vMF distribution
-    logpdf_vMF=vMF_logpdf((bsxfun(@times,X,1./R))',mu',kappa)'
-    # log pdf of Nakagami distribution
-    logpdf_N=nakagami_logpdf(R,m,omega)
-    # log pdf of weighted combined distribution
-    h_log=logpdf_vMF+logpdf_N
-    
-else
-    
-    logpdf_vMF=zeros(N,k)
-    logpdf_N=zeros(N,k)
-    h_log=zeros(N,k)
-    
-    # log pdf of distributions in the mixture 
-    for p=1:k
+# --------------------------------------------------------------------------
+# ...
+# --------------------------------------------------------------------------
+def likelihood_ratio_log(X,mu,kappa,omega,m,alpha):
+    k       = len(alpha)
+    [N,dim] = np.size(X)
+    R       = np.sqrt(np.sum(X*X,axis=1))
+
+    if k==1:
+        
         # log pdf of vMF distribution
-        logpdf_vMF(:,p)=vMF_logpdf((bsxfun(@times,X,1./R))',mu(p,:)',kappa(p))'
+        logpdf_vMF = vMF_logpdf((X/R).T,mu.T,kappa).T
         # log pdf of Nakagami distribution
-        logpdf_N(:,p)=nakagami_logpdf(R,m(p),omega(p))
+        logpdf_N   = nakagami_logpdf(R,m,omega)
         # log pdf of weighted combined distribution
-        h_log(:,p)=logpdf_vMF(:,p)+logpdf_N(:,p)+log(alpha(p))
-    end
-    
-    # mixture log pdf
-    h_log=logsumexp(h_log,2)
-    
-end   
+        h_log      = logpdf_vMF + logpdf_N
+        
+    else:
+        
+        logpdf_vMF = np.zeros([N,k])
+        logpdf_N   = np.zeros([N,k])
+        h_log      = np.zeros([N,k])
+        
+        # log pdf of distributions in the mixture 
+        for p in range(k):
+            # log pdf of vMF distribution
+            logpdf_vMF(:,p)=vMF_logpdf((bsxfun(@times,X,1./R))',mu(p,:)',kappa(p))'
+            # log pdf of Nakagami distribution
+            logpdf_N(:,p)=nakagami_logpdf(R,m(p),omega(p))
+            # log pdf of weighted combined distribution
+            h_log(:,p)=logpdf_vMF(:,p)+logpdf_N(:,p)+log(alpha(p))
+        
+        # mixture log pdf
+        h_log = logsumexp(h_log,2)
 
-# unit hypersphere uniform log pdf
-A=log(dim)+log(pi^(dim/2))-gammaln(dim/2+1)
-f_u=-A
+    # unit hypersphere uniform log pdf
+    A=log(dim)+log(pi^(dim/2))-gammaln(dim/2+1)
+    f_u=-A
 
-# chi log pdf
-f_chi=log(2)*(1-dim/2)+log(R)*(dim-1)-0.5*R.^2-gammaln(dim/2)
+    # chi log pdf
+    f_chi=log(2)*(1-dim/2)+log(R)*(dim-1)-0.5*R.^2-gammaln(dim/2)
 
-# logpdf of the standard distribution (uniform combined with chi
-# distribution)
-f_log=f_u+f_chi
+    # logpdf of the standard distribution (uniform combined with chi
+    # distribution)
+    f_log=f_u+f_chi
 
-W_log=f_log-h_log
+    W_log=f_log-h_log
 
-function [v,b]=house(x)
+    return W_log
+
+# --------------------------------------------------------------------------
 # HOUSE Returns the householder transf to reduce x to b*e_n 
 #
 # [V,B] = HOUSE(X)  Returns vector v and multiplier b so that
 # H = eye(n)-b*v*v' is the householder matrix that will transform
 # Hx ==> [0 0 0 ... ||x||], where  is a constant.
+# --------------------------------------------------------------------------
+def house(x):
 
-n=length(x)
+    n = len(x)
 
-s = x(1:n-1)'*x(1:n-1)
-v= [x(1:n-1)' 1]'
+    s = x(1:n-1)'*x(1:n-1)
+    v = [x(1:n-1)' 1]'
 
-if (s == 0)
-  b = 0
-else
-  m = sqrt(x(n)*x(n) + s)
-  
-  if (x(n) <= 0)
-    v(n) = x(n)-m
-  else
-    v(n) = -s/(x(n)+m)
-  end
-  b = 2*v(n)*v(n)/(s + v(n)*v(n))
-  v = v/v(n)
-end
+    if s == 0:
+        b = 0
+    else:
+        m = np.sqrt(x(n)*x(n) + s)
+    
+        if x(n) <= 0:
+            v(n) = x(n)-m
+        else:
+            v(n) = -s/(x(n)+m)
 
-function logb = logbesseli(nu,x)
+        b = 2*v(n)*v(n)/(s + v(n)*v(n))
+        v = v/v(n)
+
+    return [v,b]
+
+# --------------------------------------------------------------------------
 # log of the Bessel function, extended for large nu and x
 # approximation from Eqn 9.7.7 of Abramowitz and Stegun
 # http://www.math.sfu.ca/~cbm/aands/page_378.htm
+# --------------------------------------------------------------------------
+def logbesseli(nu,x):
 
-if nu==0 # special case when nu=0
-    logb=log(besseli(nu,x))
-else # normal case
-    n=size(x,1)
-    frac = x./nu
-    
-    square = ones(n,1) + frac.^2
-    root = sqrt(square)
-    eta = root + log(frac) - log(ones(n,1)+root)
-    logb = - log(sqrt(2*pi*nu)) + nu.*eta - 0.25*log(square)
-end
+    if nu==0 # special case when nu=0
+        logb = np.log(besseli(nu,x))
+    else # normal case
+        n = np.size(x, axis=0)
+        frac = x/nu
+        
+        square = np.ones(n) + frac**2
+        root   = np.sqrt(square)
+        eta    = root + np.log(frac) - np.log(np.ones(n)+root)
+        logb   = - np.log(np.sqrt(2*np.pi*nu)) + nu*eta - 0.25*np.log(square)
 
+return logb
+
+# --------------------------------------------------------------------------
+# ...
+# --------------------------------------------------------------------------
 function s = logsumexp(x, dim)
 # Compute log(sum(exp(x),dim)) while avoiding numerical underflow.
 #   By default dim = 1 (columns).

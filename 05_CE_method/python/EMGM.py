@@ -16,21 +16,26 @@ www.era.bgu.tum.de
 Version 2018-03
 ---------------------------------------------------------------------------
 Input:
-* X       :
-* W       :
-* nGM     :
+* X   : data matrix (dimensions x Number of samples)
+* W   : vector of likelihood ratios for weighted samples
+* nGM : number of Gaussians in the Mixture
 ---------------------------------------------------------------------------
 Output:
-* mu    : 
-* Sigma :
-* pi    :
+* mu : [npi x d]-array of means of Gaussians in the Mixture
+* si : [d x d x npi]-array of cov-matrices of Gaussians in the Mixture
+* pi : [npi]-array of weights of Gaussians in the Mixture (sum(Pi) = 1) 
+---------------------------------------------------------------------------
+Based on:
+1. "EM Demystified: An Expectation-Maximization Tutorial"
+   Yihua Chen and Maya R. Gupta
+   University of Washington, Dep. of EE (Feb. 2010)
 ---------------------------------------------------------------------------
 """
 def EMGM(X, W, nGM):
     # reshaping just to be sure
     W = W.reshape(-1,1)
 
-    ## initialization
+    # %% initialization
     R = initialization(X, nGM)
 
     tol       = 1e-5
@@ -39,8 +44,8 @@ def EMGM(X, W, nGM):
     converged = False
     t         = 0
 
-    ## soft EM algorithm
-    while (not converged) and t+1 < maxiter:
+    # %% soft EM algorithm
+    while (not converged) and (t+1 < maxiter):
         t = t+1   
         
         # [~,label(:)] = max(R,[],2)
@@ -53,7 +58,7 @@ def EMGM(X, W, nGM):
             converged = ( eps < tol*abs(llh[t-1]) )
         
         [mu, si, pi] = maximization(X,W,R)
-        [R, llh[t]] = expectation(X, W, mu, si, pi)
+        [R, llh[t]]  = expectation(X, W, mu, si, pi)
     
 
     if converged:
@@ -62,7 +67,7 @@ def EMGM(X, W, nGM):
         print('Not converged in ', maxiter, ' steps.')
 
     return [mu, si, pi]
-## END EMGM ----------------------------------------------------------------
+# %% END EMGM ----------------------------------------------------------------
 
 # --------------------------------------------------------------------------
 # Initialization with k-means algorithm 
@@ -153,4 +158,4 @@ def dummyvar(idx):
     for i in range(len(idx)):
         d[i,idx[i]] = 1
     return d
-## END FILE
+# %% END FILE
