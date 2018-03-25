@@ -11,7 +11,13 @@ www.era.bgu.tum.de
 Version 2018-03
 ---------------------------------------------------------------------------
 Based on:
-
+1."Cross entropy-based importance sampling 
+   using Gaussian densities revisited"
+   Geyer et al.
+   Engineering Risk Analysis Group, TUM (Sep 2017)
+2."MCMC algorithms for subset simulation"
+   Papaioannou et al.
+   Probabilistic Engineering Mechanics 41 (2015) 83-103.
 ---------------------------------------------------------------------------
 %}
 clear; close all; clc;

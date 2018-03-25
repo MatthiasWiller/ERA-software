@@ -1,4 +1,4 @@
-function [Theta,q,S] = iTMCMC(Ns, Nb, log_likelihood, T_nataf)
+function [samplesU,samplesX,q,cE] = iTMCMC(Ns, Nb, log_likelihood, T_nataf)
 %% iTMCMC function
 %{
 ---------------------------------------------------------------------------
@@ -11,6 +11,18 @@ www.era.bgu.tum.de
 Version 2017-04
 * License check for optimization toolbox -> Use of fsolve if available in case 
   fzero does not work
+---------------------------------------------------------------------------
+Input:
+* Ns             : number of samples per level
+* Nb             : number of samples for burn-in
+* log_likelihood : log-likelihood function of the problem at hand
+* T_nataf        : Nataf distribution object (probabilistic transformation)
+---------------------------------------------------------------------------
+Output:
+* samplesU : object with the samples in the standard normal space
+* samplesX : object with the samples in the original space
+* q        : array of tempering parameter for each level
+* cE       : model evidence/marginal likelihood
 ---------------------------------------------------------------------------
 References:
 1."Transitional Markov Chain Monte Carlo: Observations and improvements".
@@ -41,8 +53,8 @@ logL_j  = zeros(Ns,1);
 for i = 1:Ns
    logL_j(i) = log_likelihood(theta_j(i,:));
 end
-Theta.standard{1} = u_j;           % store initial level samples
-Theta.original{1} = theta_j;       % store initial level samples
+samplesU{1} = u_j;           % store initial level samples
+samplesX{1} = theta_j;       % store initial level samples
 
 %% iTMCMC
 while q(j+1) < 1   % adaptively choose q
@@ -146,8 +158,8 @@ while q(j+1) < 1   % adaptively choose q
    fprintf(repmat('\b',1,msg));
    
    % store samples
-   Theta.standard{j+1} = u_j;
-   Theta.original{j+1} = theta_j;
+   samplesU{j+1} = u_j;
+   samplesX{j+1} = theta_j;
 end
 
 % delete unnecesary data
@@ -157,6 +169,6 @@ if j < max_it
 end
 
 %% Compute evidence (normalization constant in Bayes' theorem)
-S = prod(S);   % [Ref. 2 Eq. 17]
+cE = prod(S);   % [Ref. 2 Eq. 17]
 
 return;

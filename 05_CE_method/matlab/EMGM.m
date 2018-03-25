@@ -1,9 +1,32 @@
 function [mu, si, pi] = EMGM(X,W,nGM)
-% Perform soft EM algorithm for fitting the Gaussian mixture model.
-%   X: d x N data matrix (dimensions x Number of samples)
-%   W: N x 1 vector of sample weights
-%   nGM: Number of Gaussians in the mixture
-                             
+%% Perform soft EM algorithm for fitting the Gaussian mixture model
+%{
+---------------------------------------------------------------------------
+Created by:
+Sebastian Geyer (s.geyer@tum.de)
+Matthias Willer (matthias.willer@tum.de)
+Engineering Risk Analysis Group
+Technische Universitat Munchen
+www.era.bgu.tum.de
+---------------------------------------------------------------------------
+Version 2018-03
+---------------------------------------------------------------------------
+Input:
+* X   : data matrix (dimensions x Number of samples)
+* W   : vector of likelihood ratios for weighted samples
+* nGM : number of Gaussians in the Mixture
+---------------------------------------------------------------------------
+Output:
+* mu : [npi x d]-array of means of Gaussians in the Mixture
+* si : [d x d x npi]-array of cov-matrices of Gaussians in the Mixture
+* pi : [npi]-array of weights of Gaussians in the Mixture (sum(Pi) = 1) 
+---------------------------------------------------------------------------
+Based on:
+1. "EM Demystified: An Expectation-Maximization Tutorial"
+   Yihua Chen and Maya R. Gupta
+   University of Washington, Dep. of EE (Feb. 2010)
+---------------------------------------------------------------------------
+%}
 
 %% initialization
 R = initialization(X,nGM);

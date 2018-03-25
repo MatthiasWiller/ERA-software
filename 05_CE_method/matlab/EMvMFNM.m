@@ -1,8 +1,32 @@
 function [model] = EMvMFNM(X,W,k)
-% Perform soft EM algorithm for fitting the von Mises-Fisher-Nakagami mixture model.
-%   X: d x N data matrix (dimensions x Number of samples)
-%   W: N x 1 vector of likelihood ratios for weighted samples
-%   k: struct or vector to define initialization of EM algorithm
+%% Perform soft EM algorithm for fitting the von Mises-Fisher-Nakagami mixture model.
+%{
+---------------------------------------------------------------------------
+Created by:
+Sebastian Geyer (s.geyer@tum.de)
+Matthias Willer (matthias.willer@tum.de)
+Engineering Risk Analysis Group
+Technische Universitat Munchen
+www.era.bgu.tum.de
+---------------------------------------------------------------------------
+Version 2018-03
+---------------------------------------------------------------------------
+Input:
+* X   : data matrix (dimensions x Number of samples)
+* W   : vector of likelihood ratios for weighted samples
+* nGM : number of vMFN-distributions in the mixture
+---------------------------------------------------------------------------
+Output:
+* mu : [npi x d]-array of means of vMFN-distributions in the Mixture
+* si : [d x d x npi]-array of cov-matrices of vMFN-distributions in the Mixture
+* pi : [npi]-array of weights of vMFN-distributions in the Mixture (sum(Pi) = 1) 
+---------------------------------------------------------------------------
+Based on:
+1. "EM Demystified: An Expectation-Maximization Tutorial"
+   Yihua Chen and Maya R. Gupta
+   University of Washington, Dep. of EE (Feb. 2010)
+---------------------------------------------------------------------------
+%}
 
 %% initialization
 M = initialization(X,k);

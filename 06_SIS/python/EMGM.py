@@ -16,14 +16,19 @@ www.era.bgu.tum.de
 Version 2018-03
 ---------------------------------------------------------------------------
 Input:
-* X       :
-* W       :
-* nGM     :
+* X   : data matrix (dimensions x Number of samples)
+* W   : vector of likelihood ratios for weighted samples
+* nGM : number of Gaussians in the Mixture
 ---------------------------------------------------------------------------
 Output:
-* mu    : 
-* Sigma :
-* pi    :
+* mu : [npi x d]-array of means of Gaussians in the Mixture
+* si : [d x d x npi]-array of cov-matrices of Gaussians in the Mixture
+* pi : [npi]-array of weights of Gaussians in the Mixture (sum(Pi) = 1) 
+---------------------------------------------------------------------------
+Based on:
+1. "EM Demystified: An Expectation-Maximization Tutorial"
+   Yihua Chen and Maya R. Gupta
+   University of Washington, Dep. of EE (Feb. 2010)
 ---------------------------------------------------------------------------
 """
 def EMGM(X, W, nGM):

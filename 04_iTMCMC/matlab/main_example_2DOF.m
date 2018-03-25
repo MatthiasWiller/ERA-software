@@ -82,7 +82,7 @@ Ns = 1e3;        % number of samples per level
 Nb = 0.1*Ns;     % burn-in period
 
 % run the iTMCMC.m function
-[Theta,p,S] = iTMCMC(Ns, Nb, log_likelihood, T_nataf);
+[samplesU,samplesX,p,S] = iTMCMC(Ns, Nb, log_likelihood, T_nataf);
 
 %% show results
 % reference solutions
@@ -93,9 +93,9 @@ cE_exact    = 1.52e-3;
 fprintf('\nExact model evidence = %g',cE_exact);
 fprintf('\nModel evidence TMCMC = %g\n',S);
 fprintf('\nExact posterior mean x_1 = %g',mu_exact);
-fprintf('\nMean value of x_1 = %g\n',mean(Theta.original{end}(:,1)));
+fprintf('\nMean value of x_1 = %g\n',mean(samplesX{end}(:,1)));
 fprintf('\nExact posterior std x_1 = %g',sigma_exact);
-fprintf('\nStd of x_1 = %g\n\n',std(Theta.original{end}(:,1)));
+fprintf('\nStd of x_1 = %g\n\n',std(samplesX{end}(:,1)));
 
 %% plots
 m = length(p);   % number of stages (intermediate levels)
@@ -110,7 +110,7 @@ set(gca,'FontSize',15); axis tight;
 idx = [1 round(m/3) round(2*m/3) m];
 figure;
 for i = 1:4
-   subplot(2,2,i); plot(Theta.original{idx(i)}(:,1),Theta.original{idx(i)}(:,2),'b.');
+   subplot(2,2,i); plot(samplesX{idx(i)}(:,1),samplesX{idx(i)}(:,2),'b.');
    title(sprintf('$p_j$=%4.3f',p(idx(i))),'Interpreter','Latex','FontSize', 18);
    xlabel('$\theta_1$','Interpreter','Latex','FontSize', 18);
    ylabel('$\theta_2$','Interpreter','Latex','FontSize', 18);

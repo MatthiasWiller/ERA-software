@@ -6,7 +6,8 @@ from ERADist import ERADist
 from SIS_GM import SIS_GM
 """
 ---------------------------------------------------------------------------
-Sequential importance sampling method: Ex. 2 Ref. 2 - linear function of independent exponential
+Sequential importance sampling method: 
+Ex. 2 Ref. 2 - linear function of independent exponential
 ---------------------------------------------------------------------------
 Created by:
 Sebastian Geyer (s.geyer@tum.de)
@@ -17,9 +18,10 @@ www.era.bgu.tum.de
 ---------------------------------------------------------------------------
 Version 2018-03
 ---------------------------------------------------------------------------
-
----------------------------------------------------------------------------
 Based on:
+1. "Sequential importance sampling for structural reliability analysis"
+   Papaioannou et al.
+   Structural Safety 62 (2016) 66-75
 2."MCMC algorithms for subset simulation"
    Papaioannou et al.
    Probabilistic Engineering Mechanics 41 (2015) 83-103.
@@ -33,10 +35,10 @@ for i in range(d):
     pi_pdf.append(ERADist('exponential', 'PAR',1)) # n independent rv
 
 # correlation matrix
-# R = eye(n)   # independent case
+R = np.eye(d)   # independent case
 
 # object with distribution information
-# pi_pdf = ERANataf(pi_pdf,R)    # if you want to include dependence
+pi_pdf = ERANataf(pi_pdf,R)    # if you want to include dependence
 
 # %% limit-state function
 Ca = 140

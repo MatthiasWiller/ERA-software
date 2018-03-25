@@ -1,5 +1,5 @@
 function h = h_calc(X, mu, Si, Pi)
-%% Basic algorithm
+%% Basic algorithm to calculate h for the likelihood ratio
 %{
 ---------------------------------------------------------------------------
 Created by:
@@ -9,16 +9,16 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2018-02
+Version 2018-03
 ---------------------------------------------------------------------------
 Input:
-* X  :
-* mu :
-* Si :
-* Pi :
+* X  : input samples
+* mu : [npi x d]-array of means of Gaussians in the Mixture
+* Si : [d x d x npi]-array of cov-matrices of Gaussians in the Mixture
+* Pi : [npi]-array of weights of Gaussians in the Mixture (sum(Pi) = 1) 
 ---------------------------------------------------------------------------
 Output:
-* h  : 
+* h  : parameters h (IS density)
 ---------------------------------------------------------------------------
 %}
 N=size(X,1);

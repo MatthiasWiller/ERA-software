@@ -18,20 +18,22 @@ Version 2018-03
 ---------------------------------------------------------------------------
 Input:
 * N         : Number of samples per level
-* rho       : 
+* rho       : cross-correlation coefficient for conditional sampling
 * g_fun     : limit state function
 * distr     : Nataf distribution object or
               marginal distribution object of the input variables
 ---------------------------------------------------------------------------
 Output:
-* Pr       :
-* l        :
-* samplesU :
-* samplesX :
-* k_fin    :
+* Pr       : probability of failure
+* l        : total number of levels
+* samplesU : object with the samples in the standard normal space
+* samplesX : object with the samples in the original space
+* k_fin    : final number of Gaussians in the mixture
 ---------------------------------------------------------------------------
 Based on:
-
+1. "Sequential importance sampling for structural reliability analysis"
+   Papaioannou et al.
+   Structural Safety 62 (2016) 66-75
 ---------------------------------------------------------------------------
 """
 def SIS_GM(N, rho, g_fun, distr):
@@ -39,7 +41,7 @@ def SIS_GM(N, rho, g_fun, distr):
     # %% initial check if there exists a Nataf object
     if isinstance(distr, ERANataf):   # use Nataf transform (dependence)
         dim = len(distr.Marginals)    # number of random variables (dimension)
-        g   = lambda u: g_fun(distr.U2X(u))   # LSF in standard space
+        g   = lambda u: g_fun(distr.U2X(u.reshape(-1,1)))   # LSF in standard space
 
         # if the samples are standard normal do not make any transform
         if distr.Marginals[0].Name.lower() == 'standardnormal':

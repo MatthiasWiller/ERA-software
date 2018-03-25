@@ -11,7 +11,10 @@ www.era.bgu.tum.de
 Version 2018-03
 ---------------------------------------------------------------------------
 Based on:
-
+1."Cross entropy-based importance sampling 
+   using Gaussian densities revisited"
+   Geyer et al.
+   Engineering Risk Analysis Group, TUM (Sep 2017)
 ---------------------------------------------------------------------------
 %}
 clear; close all; clc;

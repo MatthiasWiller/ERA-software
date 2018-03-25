@@ -31,6 +31,8 @@ Output:
 * samplesU : object with the samples in the standard normal space
 * samplesX : object with the samples in the original space
 * cE       : model evidence/marginal likelihood
+* c        : scaling constant that holds 1/c >= Lmax
+* lam      : scaling parameter lambda (for aCS)
 ---------------------------------------------------------------------------
 Based on:
 1."Bayesian inference with subset simulation: strategies and improvements"

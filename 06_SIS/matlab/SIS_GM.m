@@ -13,16 +13,22 @@ Version 2018-03
 ---------------------------------------------------------------------------
 Input:
 * N         : Number of samples per level
-* rho       : 
+* rho       : cross-correlation coefficient for conditional sampling
 * g_fun     : limit state function
 * distr     : Nataf distribution object or
               marginal distribution object of the input variables
 ---------------------------------------------------------------------------
 Output:
-
+* Pr       : probability of failure
+* l        : total number of levels
+* samplesU : object with the samples in the standard normal space
+* samplesX : object with the samples in the original space
+* k_fin    : final number of Gaussians in the mixture
 ---------------------------------------------------------------------------
 Based on:
-
+1. "Sequential importance sampling for structural reliability analysis"
+   Papaioannou et al.
+   Structural Safety 62 (2016) 66-75
 ---------------------------------------------------------------------------
 %}
 

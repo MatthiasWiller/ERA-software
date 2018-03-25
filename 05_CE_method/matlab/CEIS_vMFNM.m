@@ -1,5 +1,5 @@
 function [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_vMFNM(N,rho,g_fun,distr)
-%% Cross entropy-based importance sampling
+%% Cross entropy-based importance sampling with vMFNM-distribution
 %{
 ---------------------------------------------------------------------------
 Created by:
@@ -9,20 +9,29 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2018-02
+Version 2018-03
 ---------------------------------------------------------------------------
 Input:
-* N         : Number of samples per level
-* rho       : 
-* g_fun     : limit state function
-* distr     : Nataf distribution object or
-              marginal distribution object of the input variables
+* N     : Number of samples per level
+* rho   : cross-correlation coefficient for conditional sampling
+* g_fun : limit state function
+* distr : Nataf distribution object or
+          marginal distribution object of the input variables
 ---------------------------------------------------------------------------
 Output:
-
+* Pr        : probability of failure
+* l         : total number of levels
+* N_tot     : total number of samples
+* gamma_hat : gamma_ik probability of sample i belonging to distribution k 
+* samplesU  : object with the samples in the standard normal space
+* samplesX  : object with the samples in the original space
+* k_fin     : final number of distributions in the mixture
 ---------------------------------------------------------------------------
 Based on:
-
+1."Cross entropy-based importance sampling 
+   using Gaussian densities revisited"
+   Geyer et al.
+   Engineering Risk Analysis Group, TUM (Sep 2017)
 ---------------------------------------------------------------------------
 %}
 

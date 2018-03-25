@@ -18,16 +18,16 @@ www.era.bgu.tum.de
 Version 2018-03
 ---------------------------------------------------------------------------
 Input:
-* Ns             : 
-* Nb             : 
+* Ns             : number of samples per level
+* Nb             : number of samples for burn-in
 * log_likelihood : log-likelihood function of the problem at hand
 * T_nataf        : Nataf distribution object (probabilistic transformation)
 ---------------------------------------------------------------------------
 Output:
-* samplesU : 
-* samplesX : 
-* q        : 
-* S        : 
+* samplesU : object with the samples in the standard normal space
+* samplesX : object with the samples in the original space
+* q        : array of tempering parameter for each level
+* cE       : model evidence/marginal likelihood
 ---------------------------------------------------------------------------
 References:
 1."Transitional Markov Chain Monte Carlo: Observations and improvements".
@@ -47,8 +47,8 @@ def iTMCMC(Ns, Nb, log_likelihood, T_nataf):
     Na      = 100                      # number of chains to adapt
     thres_p = 1                        # threshold for the c.o.v (100# recommended choice)
     max_it  = 20                       # max number of iterations (for allocation)
-    S       = np.ones(max_it)      # space for factors S_j
-    q       = np.zeros(max_it)     # store tempering parameters
+    S       = np.ones(max_it)          # space for factors S_j
+    q       = np.zeros(max_it)         # store tempering parameters
     j       = 0                        # initialize counter for intermediate levels
     samplesU = list()
     samplesX = list()
