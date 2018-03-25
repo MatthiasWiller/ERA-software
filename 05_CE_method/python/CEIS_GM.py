@@ -20,22 +20,25 @@ Version 2018-03
 ---------------------------------------------------------------------------
 Input:
 * N     : Number of samples per level
-* rho   : 
+* rho   : cross-correlation coefficient for conditional sampling
 * g_fun : limit state function
 * distr : Nataf distribution object or
           marginal distribution object of the input variables
 ---------------------------------------------------------------------------
 Output:
-* Pr        :
-* l         :
-* N_tot     :
-* gamma_hat :
-* samplesU  :
-* samplesX  :
-* k_fin     :
+* Pr        : probability of failure
+* l         : total number of levels
+* N_tot     : total number of samples
+* gamma_hat : gamma_ik probability of sample i belonging to distribution k 
+* samplesU  : object with the samples in the standard normal space
+* samplesX  : object with the samples in the original space
+* k_fin     : final number of Gaussians in the mixture
 ---------------------------------------------------------------------------
 Based on:
-
+1."Cross entropy-based importance sampling 
+   using Gaussian densities revisited"
+   Geyer et al.
+   Engineering Risk Analysis Group, TUM (Sep 2017)
 ---------------------------------------------------------------------------
 """
 def CEIS_GM(N, rho, g_fun, distr):
