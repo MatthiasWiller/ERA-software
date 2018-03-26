@@ -20,9 +20,11 @@ Input:
 * nGM : number of vMFN-distributions in the mixture
 ---------------------------------------------------------------------------
 Output:
-* mu : [npi x d]-array of means of vMFN-distributions in the Mixture
-* si : [d x d x npi]-array of cov-matrices of vMFN-distributions in the Mixture
-* pi : [npi]-array of weights of vMFN-distributions in the Mixture (sum(Pi) = 1) 
+* mu    :
+* kappa :
+* m     :
+* omega :
+* alpha :
 ---------------------------------------------------------------------------
 Based on:
 1. "EM Demystified: An Expectation-Maximization Tutorial"
@@ -101,7 +103,7 @@ def expectation(X,W,R,mu,kappa,m,omega,alpha):
     T    = logsumexp(logpdf,2)
     logM = logpdf - T             # logM = bsxfun(@minus,logpdf,T)
     M    = np.exp(logM)
-    M(M<1e-3) = 0 # TODO: does it work? I doubt it ;-)
+    M(M<1e-3) = 0                 # TODO: does it work? I doubt it ;-)
     M    = M/np.sum(M, axis=1)    # M=bsxfun(@times,M,1./sum(M,2))
 
     # loglikelihood as tolerance criterion

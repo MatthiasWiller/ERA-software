@@ -131,7 +131,7 @@ def CEIS_vMFNM(N, rho, g_fun, distr):
         # EM initialization with kmeans algorithm
         k = 4
         # EM algorithm
-        [] = EMvMFNM(X[I,:].T, np.exp(W_log[I,:]), k)
+        [mu, kappa, m, omega, alpha] = EMvMFNM(X[I,:].T, np.exp(W_log[I,:]), k)
 
         # remove unnecessary components
         if min(alpha)<=0.01:
@@ -213,7 +213,7 @@ def vMFNM_sample(mu,kappa,omega,m,alpha,N):
         
     else:
         # Determine number of samples from each distribution
-        z = sum(dummyvar(randsample(k,N,true,alpha)))
+        z = sum(dummyvar(randsample(k,N,True,alpha)))
         k = len(z)
         
         # Generation of samples
@@ -261,7 +261,7 @@ def vsamp(center, kappa, n):
 
         while t < np.log(u):
             z = betarnd(m , m)			# z is a beta rand var
-            u = rand(1)				# u is unif rand var
+            u = sp.stats.uniform.rvs()	# u is unif rand var
             w = (1 - (1+b)*z)/(1 - (1-b)*z)
             t = l*w + (d-1)*np.log(1-x0*w) - c
         
@@ -333,27 +333,27 @@ def likelihood_ratio_log(X,mu,kappa,omega,m,alpha):
         # log pdf of distributions in the mixture 
         for p in range(k):
             # log pdf of vMF distribution
-            logpdf_vMF(:,p)=vMF_logpdf((bsxfun(@times,X,1./R))',mu(p,:)',kappa(p))'
+            logpdf_vMF[:,p] = vMF_logpdf((X/R).T, mu[p,:].T,kappa[p]).T
             # log pdf of Nakagami distribution
-            logpdf_N(:,p)=nakagami_logpdf(R,m(p),omega(p))
+            logpdf_N[:,p]   = nakagami_logpdf(R,m[p],omega[p])
             # log pdf of weighted combined distribution
-            h_log(:,p)=logpdf_vMF(:,p)+logpdf_N(:,p)+log(alpha(p))
+            h_log[:,p]      = logpdf_vMF[:,p] + logpdf_N[:,p] + np.log(alpha[p])
         
         # mixture log pdf
         h_log = logsumexp(h_log,2)
 
     # unit hypersphere uniform log pdf
-    A=log(dim)+log(pi^(dim/2))-gammaln(dim/2+1)
-    f_u=-A
+    A   = np.log(dim) + np.log(np.pi**(dim/2)) - gammaln(dim/2+1)
+    f_u = -A
 
     # chi log pdf
-    f_chi=log(2)*(1-dim/2)+log(R)*(dim-1)-0.5*R.^2-gammaln(dim/2)
+    f_chi=np.log(2)*(1-dim/2) + np.log(R)*(dim-1) - 0.5*R**2 - gammaln(dim/2)
 
     # logpdf of the standard distribution (uniform combined with chi
     # distribution)
-    f_log=f_u+f_chi
+    f_log = f_u + f_chi
 
-    W_log=f_log-h_log
+    W_log = f_log - h_log
 
     return W_log
 
@@ -365,24 +365,23 @@ def likelihood_ratio_log(X,mu,kappa,omega,m,alpha):
 # Hx ==> [0 0 0 ... ||x||], where  is a constant.
 # --------------------------------------------------------------------------
 def house(x):
-
     n = len(x)
 
-    s = x(1:n-1)'*x(1:n-1)
-    v = [x(1:n-1)' 1]'
+    s = np.matmul(x[:n-1].T,x[:n-1])
+    v = np.asarray([x[:n-1].T, 1]).T
 
     if s == 0:
         b = 0
     else:
-        m = np.sqrt(x(n)*x(n) + s)
+        m = np.sqrt(x[n]*x[n] + s)
     
-        if x(n) <= 0:
-            v(n) = x(n)-m
+        if x[n] <= 0:
+            v[n] = x[n]-m
         else:
-            v(n) = -s/(x(n)+m)
+            v[n] = -s/(x[n]+m)
 
-        b = 2*v(n)*v(n)/(s + v(n)*v(n))
-        v = v/v(n)
+        b = 2*v[n]*v[n]/(s + v[n]*v[n])
+        v = v/v[n]
 
     return [v,b]
 
@@ -393,10 +392,10 @@ def house(x):
 # --------------------------------------------------------------------------
 def logbesseli(nu,x):
 
-    if nu==0 # special case when nu=0
+    if nu == 0: # special case when nu=0
         logb = np.log(besseli(nu,x))
-    else # normal case
-        n = np.size(x, axis=0)
+    else: # normal case
+        n    = np.size(x, axis=0)
         frac = x/nu
         
         square = np.ones(n) + frac**2
@@ -404,26 +403,31 @@ def logbesseli(nu,x):
         eta    = root + np.log(frac) - np.log(np.ones(n)+root)
         logb   = - np.log(np.sqrt(2*np.pi*nu)) + nu*eta - 0.25*np.log(square)
 
-return logb
+    return [logb]
 
 # --------------------------------------------------------------------------
-# ...
-# --------------------------------------------------------------------------
-function s = logsumexp(x, dim)
 # Compute log(sum(exp(x),dim)) while avoiding numerical underflow.
-#   By default dim = 1 (columns).
+#   By default dim = 0 (columns).
 # Written by Michael Chen (sth4nth@gmail.com).
-if nargin == 1
-    # Determine which dimension sum will use
-    dim = find(size(x)~=1,1)
-    if isempty(dim), dim = 1 end
-end
+# --------------------------------------------------------------------------
+def logsumexp(x, dim=0):
+    # subtract the largest in each column
+    y = np.max(x, axis=dim).reshape(-1,1)
+    x = x - y
+    s = y + np.log(np.sum(np.exp(x),axis=dim)).reshape(-1,1)
+    # if a bug occurs here, maybe find a better translation from matlab:
+    i = np.where(np.invert(np.isfinite(y).squeeze()))
+    s[i] = y[i] 
+    
+    return s
 
-# subtract the largest in each column
-y = max(x,[],dim)
-x = bsxfun(@minus,x,y)
-s = y + log(sum(exp(x),dim))
-i = find(~isfinite(y))
-if ~isempty(i)
-    s(i) = y(i)
-end
+# --------------------------------------------------------------------------
+# Translation of the Matlab-function "dummyvar()" to Python
+# --------------------------------------------------------------------------
+def dummyvar(idx):
+    n = np.max(idx)+1
+    d = np.zeros([len(idx),n],int)
+    for i in range(len(idx)):
+        d[i,idx[i]] = 1
+    return d
+# %% END FILE
