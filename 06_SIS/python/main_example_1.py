@@ -58,7 +58,7 @@ gg       = np.linspace(0,7,140)
 
 # show p_f results
 print('***Exact Pf: ', pf_ex, ' ***')
-print('***CEIS Pf: ', Pr, ' ***\n\n')
+print('***SIS Pf: ', Pr, ' ***\n\n')
 
 # %% Plots
 # Options for font-family and font-size

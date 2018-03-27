@@ -19,9 +19,14 @@ www.era.bgu.tum.de
 ---------------------------------------------------------------------------
 Version 2018-03
 ---------------------------------------------------------------------------
-
----------------------------------------------------------------------------
-
+Based on:
+1."Cross entropy-based importance sampling 
+   using Gaussian densities revisited"
+   Geyer et al.
+   Engineering Risk Analysis Group, TUM (Sep 2017)
+2."MCMC algorithms for subset simulation"
+   Papaioannou et al.
+   Probabilistic Engineering Mechanics 41 (2015) 83-103.
 ---------------------------------------------------------------------------
 """
 
@@ -32,14 +37,14 @@ for i in range(d):
     pi_pdf.append(ERADist('exponential', 'PAR',1)) # n independent rv
 
 # correlation matrix
-# R = eye(n)   # independent case
+R = np.eye(d)   # independent case
 
 # object with distribution information
-# pi_pdf = ERANataf(pi_pdf,R)    # if you want to include dependence
+pi_pdf = ERANataf(pi_pdf,R)    # if you want to include dependence
 
 ## limit-state function
 Ca = 140
-g  = lambda x: Ca - np.sum(x)
+g  = lambda x: Ca - np.sum(x, axis=0)
 
 ## CE-method
 N   = 1000         # Total number of samples for each level
@@ -57,7 +62,7 @@ Pf_exact = lambda gg: 1-sp.stats.gamma.cdf(a=Ca-gg, scale=lam)
 gg       = np.linspace(0,30,300)
 
 # show p_f results
-print('\n***Exact Pf: #g ***', pf_ex)
-print('\n***CEIS Pf: #g ***\n\n', Pr)
+print('\n***Exact Pf: ', pf_ex, ' ***')
+print('\n***CEIS Pf: ', Pr, ' ***\n\n')
 
 ##END

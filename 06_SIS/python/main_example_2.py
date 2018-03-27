@@ -42,7 +42,7 @@ pi_pdf = ERANataf(pi_pdf,R)    # if you want to include dependence
 
 # %% limit-state function
 Ca = 140
-g  = lambda x: Ca - np.sum(x)
+g  = lambda x: Ca - np.sum(x, axis=0)
 
 # %% CE-method
 N   = 1000         # Total number of samples for each level
@@ -53,12 +53,12 @@ print('SIS stage: ')
 
 # exact solution
 lam      = 1
-pf_ex    = 1 - sp.stats.gamma.cdf(a=Ca, scale=lam, size=d)
-Pf_exact = lambda gg: 1-sp.stats.gamma.cdf(a=Ca-gg, scale=lam)
+pf_ex    = 1 - sp.stats.gamma.cdf(Ca, a=d, scale=lam)
+Pf_exact = lambda gg: 1-sp.stats.gamma.cdf(Ca-gg, a=d, scale=lam)
 gg       = np.linspace(0,30,300)
 
 # show p_f results
-print('\n***Exact Pf: #g ***', pf_ex)
-print('\n***CEIS Pf: #g ***\n\n', Pr)
+print('\n***Exact Pf: ', pf_ex, ' ***')
+print('\n***SIS Pf: ', Pr, ' ***\n\n')
 
 # %%END
