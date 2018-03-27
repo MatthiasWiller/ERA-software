@@ -47,11 +47,12 @@ def EMGM(X, W, nGM):
     # %% soft EM algorithm
     while (not converged) and (t+1 < maxiter):
         t = t+1   
-        
-        # [~,label(:)] = max(R,[],2)
-        # u = unique(label)   # non-empty components
-        # if size(R,2) ~= size(u,2):
-        #     R = R[:,u]   # remove empty components
+
+        label = np.amax(R, axis=1)
+        u = np.unique(label)    # non-empty components
+        if np.size(R, axis=1) != np.size(u, axis=0):
+            R = R[:,u]          # remove empty components
+
         if t > 1:
             diff = llh[t-1]-llh[t-2]
             eps = abs(diff)
@@ -106,11 +107,11 @@ def maximization(X, W, R):
     d = np.size(X, axis=0)
     k = np.size(R, axis=1)
 
-    nk = np.sum(R,axis=0)
+    nk = np.sum(R, axis=0)
     w  = nk/np.sum(W)
     mu = np.matmul(X,R)/nk.reshape(-1,1)   # maybe change to reshape(1,-1)?
 
-    Sigma = np.zeros((d,d,k))
+    Sigma = np.zeros([d,d,k])
     sqrtR = np.sqrt(R)
     for i in range(k):
         Xo = X-mu[:,i].reshape(-1,1)

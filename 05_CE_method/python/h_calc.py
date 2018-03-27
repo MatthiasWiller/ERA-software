@@ -23,16 +23,17 @@ Output:
 * h  : parameters h (IS density)
 ---------------------------------------------------------------------------
 """
-def h_calc(X, mu, Si, Pi):
+def h_calc(X, mu, si, Pi):
     N     = len(X)
     k_tmp = len(Pi)
     if k_tmp == 1:
         mu = mu.squeeze()
-        h = sp.stats.multivariate_normal.pdf(X,mu,Si)
+        si = si.squeeze()
+        h = sp.stats.multivariate_normal.pdf(X,mu,si)
     else:
         h_pre = np.zeros((N, k_tmp))
         for q in range(k_tmp):
-            h_pre[:,q] = Pi[q] * sp.stats.multivariate_normal.pdf(X,mu[q,:], Si[:,:,q])
+            h_pre[:,q] = Pi[q] * sp.stats.multivariate_normal.pdf(X,mu[q,:], si[:,:,q])
         h = np.sum(h_pre, axis=1)
     return h
 ## END

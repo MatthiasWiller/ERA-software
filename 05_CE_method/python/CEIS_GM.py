@@ -70,18 +70,18 @@ def CEIS_GM(N, rho, g_fun, distr):
     
     # Definition of parameters of the random variables (uncorrelated standard normal)
     mu_init = np.zeros([dim,1])   # ...
-    Si_init = np.eye(dim)     # ...
-    Pi_init = np.asarray([1])   # ...
+    Si_init = np.eye(dim)         # ...
+    Pi_init = np.array([1.0])     # ...
     #
     gamma_hat = np.zeros([max_it+1]) # space for ...
     samplesU  = list()
 
     # %% CE Procedure
     # Initializing parameters
-    gamma_hat[j] = 1
-    mu_hat = mu_init
-    Si_hat = Si_init
-    Pi_hat = Pi_init
+    gamma_hat[j] = 1.0
+    mu_hat       = mu_init
+    Si_hat       = Si_init
+    Pi_hat       = Pi_init
 
     # Iteration
     for j in range(max_it):
@@ -108,7 +108,7 @@ def CEIS_GM(N, rho, g_fun, distr):
         print(gamma_hat[j+1])
 
         # Indicator function
-        I = (geval<=gamma_hat[j+1])
+        I = (geval<=gamma_hat[j+1]).astype(int)
 
         # Likelihood ratio
         W = sp.stats.multivariate_normal.pdf(X, mean=np.zeros((dim)), cov=np.eye((dim)))/h

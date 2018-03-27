@@ -168,8 +168,8 @@ def SIS_GM(N, rho, g_fun, distr):
                   pdfn = pdfn+pi[ii]*sp.stats.multivariate_normal.pdf(u0.T,mu[:,ii],si[:,:,ii])
                   pdfd = pdfd+pi[ii]*sp.stats.multivariate_normal.pdf(ucand.T,mu[:,ii],si[:,:,ii])
                     
-              alpha     = min(1,sp.stats.norm.cdf(-gcand/sigmak[m])*np.prod(sp.stats.norm.cdf(ucand))*pdfn/sp.stats.norm.cdf(-g0/sigmak[m])/np.prod(sp.stats.norm.pdf(u0))/pdfd)
-              alphak[k] = alphak[k]+alpha/(lenchain+burn)
+              alpha     = min(1,sp.stats.norm.cdf(-gcand/sigmak[m+1])*np.prod(sp.stats.norm.cdf(ucand))*pdfn/sp.stats.norm.cdf(-g0/sigmak[m+1])/np.prod(sp.stats.norm.pdf(u0))/pdfd)
+              alphak[k] = alphak[k] + alpha/(lenchain+burn)
 
               # check if sample is accepted
               uhelp = sp.stats.uniform.rvs()
@@ -192,7 +192,10 @@ def SIS_GM(N, rho, g_fun, distr):
 
         # compute mean acceptance rate of all chains in level m
         accrate[m] = np.mean(alphak)
-        COV_Sl = np.std((gk < 0)/sp.stats.norm.cdf(-gk/sigmak[m]))/np.mean((gk < 0)/sp.stats.norm.cdf(-gk/sigmak[m]))
+        if sigmak[m+1] == 0:
+            COV_Sl = np.nan
+        else:
+            COV_Sl = np.std((gk < 0)/sp.stats.norm.cdf(-gk/sigmak[m+1]))/np.mean((gk < 0)/sp.stats.norm.cdf(-gk/sigmak[m+1]))
         print('COV_Sl =', COV_Sl)
         if COV_Sl < 0.01:
             break
@@ -205,7 +208,7 @@ def SIS_GM(N, rho, g_fun, distr):
     # accfin = accrate[m]
     const = np.prod(Sk)
     tmp1  = (gk < 0)
-    tmp2  = -gk/sigmak[m]
+    tmp2  = -gk/sigmak[m+1]
     tmp3  = sp.stats.norm.cdf(tmp2)
     tmp4  = tmp1/tmp3
     Pr = np.mean(tmp4)*const

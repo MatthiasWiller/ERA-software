@@ -27,6 +27,7 @@ Output:
 def GM_sample(mu, si, pi, N):
     if np.size(mu, axis=1) == 1:
         mu = mu.squeeze()
+        si = si.squeeze()
         X = sp.stats.multivariate_normal.rvs(mean=mu,
                                              cov=si,
                                              size=N)
