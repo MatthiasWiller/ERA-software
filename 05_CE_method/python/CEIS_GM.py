@@ -108,7 +108,7 @@ def CEIS_GM(N, rho, g_fun, distr):
         print(gamma_hat[j+1])
 
         # Indicator function
-        I = (geval<=gamma_hat[j+1]).astype(int)
+        I = (geval<=gamma_hat[j+1])
 
         # Likelihood ratio
         W = sp.stats.multivariate_normal.pdf(X, mean=np.zeros((dim)), cov=np.eye((dim)))/h

@@ -55,7 +55,6 @@ def EMGM(X, W, nGM):
         
         [mu, si, pi] = maximization(X,W,R)
         [R, llh[t]]  = expectation(X, W, mu, si, pi)
-        # print(llh[t])
 
         if t > 1:
             diff = llh[t]-llh[t-1]

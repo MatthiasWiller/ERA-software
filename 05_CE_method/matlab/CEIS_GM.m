@@ -108,7 +108,7 @@ for j = 1:max_it
   W=mvnpdf(X,zeros(1,dim),eye(dim))./h;
 
   % Parameter update
-  nGM=3;
+  nGM=2;
   [mu, si, pi] = EMGM(X(I,:)',W(I),nGM);
 
   % Assigning the variables with updated parameters

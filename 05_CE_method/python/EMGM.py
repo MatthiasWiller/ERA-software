@@ -55,7 +55,6 @@ def EMGM(X, W, nGM):
         
         [mu, si, pi] = maximization(X,W,R)
         [R, llh[t]]  = expectation(X, W, mu, si, pi)
-        # print(llh[t])
 
         if t > 1:
             diff = llh[t]-llh[t-1]
@@ -74,8 +73,8 @@ def EMGM(X, W, nGM):
 # Initialization with k-means algorithm 
 # --------------------------------------------------------------------------
 def initialization(X, nGM):
-
     [_,idx] = sp.cluster.vq.kmeans2(X.T, nGM, iter=10)
+    # [_,idx] = sp.cluster.vq.kmeans2(X.T, nGM, iter=10, minit='points')
     R   = dummyvar(idx)
     return R
 
