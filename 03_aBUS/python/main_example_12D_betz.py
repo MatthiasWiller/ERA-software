@@ -40,17 +40,11 @@ R = np.eye(n)   # independent case
 T_nataf = ERANataf(dist_X,R)
 
 # %% likelihood function
-sigma_l        = 0.6
 mu_l           = 0.462
-likelihood     = lambda u: np.prod((u-mu_l)/sigma_l, axis=0)/sigma_l
+sigma_l        = 0.6
+likelihood     = lambda u: np.prod(sp.stats.norm.pdf((u-mu_l)/sigma_l), axis=0)/sigma_l
 realmin        = np.finfo(np.double).tiny # realmin to avoid Inf values in log(0)
-# log_likelihood = lambda u: np.log(np.prod((u-mu_l)/sigma_l, axis=0)/sigma_l + realmin)
-def log_likelihood(u):
-    tmp1 = (u-mu_l/sigma_l)
-    tmp2 = np.prod(tmp1, axis=0)
-    tmp3 = sp.stats.norm.pdf(tmp2)/sigma_l
-    tmp4 = np.log(tmp3 + realmin)
-    return tmp4
+log_likelihood = lambda u: np.log(likelihood(u) + realmin)
 
 # %% aBUS-SuS
 N  = 2000       # number of samples per level
