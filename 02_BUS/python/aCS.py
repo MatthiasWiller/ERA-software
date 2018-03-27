@@ -104,7 +104,7 @@ def aCS(N,l,b,u_j,H):
                 acc[idx+t]    = 0                 # note the rejection
 
         # average of the accepted samples for each seed
-        mu_acc[i] = mu_acc[i] + np.minimum(1, np.mean(acc[idx+1:idx+Nchain[k]])) # min problem
+        mu_acc[i] = mu_acc[i] + np.minimum(1, np.mean(acc[idx:idx+Nchain[k]])) # min problem
         
         if np.mod(k+1,Na) == 0:
             # c. evaluate average acceptance rate
