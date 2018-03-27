@@ -12,8 +12,8 @@ www.era.bgu.tum.de
 Version 2018-03
 ---------------------------------------------------------------------------
 Input:
-* X   : data matrix (dimensions x Number of samples)
-* W   : vector of likelihood ratios for weighted samples
+* X   : input samples
+* W   : initial guess for the weights
 * nGM : number of Gaussians in the Mixture
 ---------------------------------------------------------------------------
 Output:
@@ -39,19 +39,20 @@ t         = 1;
 
 %% soft EM algorithm
 while ~converged && t < maxiter
+    t = t+1;   
     
     [~,label(:)] = max(R,[],2);
     u = unique(label);   % non-empty components
     if size(R,2) ~= size(u,2)
         R = R(:,u);   % remove empty components
-    elseif t>1
-        converged = abs(llh(t)-llh(t-1)) < tol*abs(llh(t));
     end
-    t = t+1;   
-
     
     [mu, si, pi] = maximization(X, W, R);
     [R, llh(t)] = expectation(X, W, mu, si, pi);
+    
+    if t>2
+        converged = abs(llh(t)-llh(t-1)) < tol*abs(llh(t));
+    end
 end
 
 if converged

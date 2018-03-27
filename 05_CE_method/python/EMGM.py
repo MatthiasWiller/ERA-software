@@ -48,19 +48,19 @@ def EMGM(X, W, nGM):
     while (not converged) and (t+1 < maxiter):
         t = t+1   
 
-        label = np.amax(R, axis=1)
+        label = np.argmax(R, axis=1)
         u = np.unique(label)    # non-empty components
         if np.size(R, axis=1) != np.size(u, axis=0):
             R = R[:,u]          # remove empty components
-
-        if t > 1:
-            diff = llh[t-1]-llh[t-2]
-            eps = abs(diff)
-            converged = ( eps < tol*abs(llh[t-1]) )
         
         [mu, si, pi] = maximization(X,W,R)
         [R, llh[t]]  = expectation(X, W, mu, si, pi)
-    
+        # print(llh[t])
+
+        if t > 1:
+            diff = llh[t]-llh[t-1]
+            eps = abs(diff)
+            converged = ( eps < tol*abs(llh[t]) )
 
     if converged:
         print('Converged in', t,'steps.')
