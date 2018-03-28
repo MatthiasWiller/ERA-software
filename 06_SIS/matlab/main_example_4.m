@@ -1,4 +1,4 @@
-%% Cross entropy method: Ex. 1 Ref. 2 - convex limit-state function
+%% Sequential importance sampling method: Ex. 2 Ref. 1 - parabolic/concave limit-state function
 %{
 ---------------------------------------------------------------------------
 Created by:
@@ -8,11 +8,7 @@ Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
 Based on:
-1."Cross entropy-based importance sampling 
-   using Gaussian densities revisited"
-   Geyer et al.
-   Engineering Risk Analysis Group, TUM (Sep 2017)
-2. "Sequential importance sampling for structural reliability analysis"
+1. "Sequential importance sampling for structural reliability analysis"
    Papaioannou et al.
    Structural Safety 62 (2016) 66-75
 ---------------------------------------------------------------------------
@@ -30,32 +26,32 @@ pi_pdf = repmat(ERADist('standardnormal','PAR'),d,1);   % n independent rv
 % pi_pdf = ERANataf(pi_pdf,R);    % if you want to include dependence
 
 %% limit-state function
-g = @(x) 0.1*(x(1,:)-x(2,:)).^2 - (x(1,:)+x(2,:))./sqrt(2) + 2.5;
+b=5; kappa=0.5; e=0.1;
+g_fun = @(u) b - u(2,:) - kappa*(u(1,:)-e).^2;
+g     = @(x) g_fun(x');
 
 %% Subset simulation
-N  = 1000;         % Total number of samples for each level
+N  = 5000;         % Total number of samples for each level
 rho = 0.1;         % Probability of each subset, chosen adaptively
 
-fprintf('CE-based IS stage: \n');
-% [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_SG(N,rho,g,pi_pdf);     % single gaussian 
-[Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_GM(N,rho,g,pi_pdf);    % gaussian mixture
-% [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_vMFNM(N,rho,g,pi_pdf); % adaptive vMFN mixture
+fprintf('SIS stage: \n');
+[Pr, l, samplesU, samplesX, k_fin] = SIS_GM(N,rho,g,pi_pdf);  % gaussian mixture 
 
 % reference solution
-pf_ref   = 4.21e-3;
+pf_ref   = 3.01e-3;
 
 % show p_f results
 fprintf('\n***Reference Pf: %g ***', pf_ref);
-fprintf('\n***CEIS Pf: %g ***\n\n', Pr);
+fprintf('\n***SIS Pf: %g ***\n\n', Pr);
 
 %% Plots
 % plot samplesU
 if d == 2
-   figure; hold on; axis equal;
-   xx = -5:0.05:5; nnp = length(xx); [X,Y] = meshgrid(xx);
+   figure; hold on;
+   xx = -6:0.05:6; nnp = length(xx); [X,Y] = meshgrid(xx);
    xnod = cat(2,reshape(X',nnp^2,1),reshape(Y',nnp^2,1));
-   Z    = g(xnod'); Z = reshape(Z,nnp,nnp);
-   contour(X,Y,Z,[0,0],'r','LineWidth',3);  % LSF
+   Z    = g(xnod); Z = reshape(Z,nnp,nnp);
+   contour(Y,X,Z,[0,0],'r','LineWidth',3);  % LSF
    for j = 1:l
       u_j_samples= samplesU{j};
       plot(u_j_samples(1,:),u_j_samples(2,:),'.');

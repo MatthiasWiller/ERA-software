@@ -1,4 +1,4 @@
-%% Cross entropy method: Ex. 1 Ref. 2 - convex limit-state function
+%% Cross entropy method: Ex. 3 Ref. 2 - series system reliability problem
 %{
 ---------------------------------------------------------------------------
 Created by:
@@ -30,10 +30,11 @@ pi_pdf = repmat(ERADist('standardnormal','PAR'),d,1);   % n independent rv
 % pi_pdf = ERANataf(pi_pdf,R);    % if you want to include dependence
 
 %% limit-state function
-g = @(x) 0.1*(x(1,:)-x(2,:)).^2 - (x(1,:)+x(2,:))./sqrt(2) + 2.5;
+g_fun = @(x) min([0.1.*(x(:,1)-x(:,2)).^2-(x(:,1)+x(:,2))./sqrt(2)+3,0.1.*(x(:,1)-x(:,2)).^2+(x(:,1)+x(:,2))./sqrt(2)+3,x(:,1)-x(:,2)+7./sqrt(2),x(:,2)-x(:,1)+7./sqrt(2)],[],2);
+g = @(x) g_fun(x')';
 
 %% Subset simulation
-N  = 1000;         % Total number of samples for each level
+N  = 5000;         % Total number of samples for each level
 rho = 0.1;         % Probability of each subset, chosen adaptively
 
 fprintf('CE-based IS stage: \n');
@@ -42,7 +43,7 @@ fprintf('CE-based IS stage: \n');
 % [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_vMFNM(N,rho,g,pi_pdf); % adaptive vMFN mixture
 
 % reference solution
-pf_ref   = 4.21e-3;
+pf_ref   = 2.2e-3;
 
 % show p_f results
 fprintf('\n***Reference Pf: %g ***', pf_ref);
@@ -52,7 +53,7 @@ fprintf('\n***CEIS Pf: %g ***\n\n', Pr);
 % plot samplesU
 if d == 2
    figure; hold on; axis equal;
-   xx = -5:0.05:5; nnp = length(xx); [X,Y] = meshgrid(xx);
+   xx = -7:0.05:7; nnp = length(xx); [X,Y] = meshgrid(xx);
    xnod = cat(2,reshape(X',nnp^2,1),reshape(Y',nnp^2,1));
    Z    = g(xnod'); Z = reshape(Z,nnp,nnp);
    contour(X,Y,Z,[0,0],'r','LineWidth',3);  % LSF

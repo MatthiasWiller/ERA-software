@@ -1,4 +1,4 @@
-%% Cross entropy method: Ex. 1 Ref. 2 - convex limit-state function
+%% Cross entropy method: Ex. 2 Ref. 2 - parabolic/concave limit-state function
 %{
 ---------------------------------------------------------------------------
 Created by:
@@ -30,10 +30,11 @@ pi_pdf = repmat(ERADist('standardnormal','PAR'),d,1);   % n independent rv
 % pi_pdf = ERANataf(pi_pdf,R);    % if you want to include dependence
 
 %% limit-state function
-g = @(x) 0.1*(x(1,:)-x(2,:)).^2 - (x(1,:)+x(2,:))./sqrt(2) + 2.5;
+b=5; kappa=0.5; e=0.1;
+g = @(u) b - u(2,:) - kappa*(u(1,:)-e).^2;
 
 %% Subset simulation
-N  = 1000;         % Total number of samples for each level
+N  = 5000;         % Total number of samples for each level
 rho = 0.1;         % Probability of each subset, chosen adaptively
 
 fprintf('CE-based IS stage: \n');
@@ -42,7 +43,7 @@ fprintf('CE-based IS stage: \n');
 % [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_vMFNM(N,rho,g,pi_pdf); % adaptive vMFN mixture
 
 % reference solution
-pf_ref   = 4.21e-3;
+pf_ref   = 3.01e-3;
 
 % show p_f results
 fprintf('\n***Reference Pf: %g ***', pf_ref);
@@ -51,11 +52,11 @@ fprintf('\n***CEIS Pf: %g ***\n\n', Pr);
 %% Plots
 % plot samplesU
 if d == 2
-   figure; hold on; axis equal;
-   xx = -5:0.05:5; nnp = length(xx); [X,Y] = meshgrid(xx);
+   figure; hold on;
+   xx = -6:0.05:6; nnp = length(xx); [X,Y] = meshgrid(xx);
    xnod = cat(2,reshape(X',nnp^2,1),reshape(Y',nnp^2,1));
    Z    = g(xnod'); Z = reshape(Z,nnp,nnp);
-   contour(X,Y,Z,[0,0],'r','LineWidth',3);  % LSF
+   contour(Y,X,Z,[0,0],'r','LineWidth',3);  % LSF
    for j = 1:l
       u_j_samples= samplesU{j};
       plot(u_j_samples(1,:),u_j_samples(2,:),'.');

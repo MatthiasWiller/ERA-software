@@ -53,8 +53,6 @@ fprintf('SIS stage: \n');
 % exact solution
 lambda   = 1;
 pf_ex    = 1 - gamcdf(Ca,d,lambda);
-Pf_exact = @(gg) 1-gamcdf(Ca-gg,d,lambda);
-gg       = 0:0.1:30;
 
 % show p_f results
 fprintf('\n***Exact Pf: %g ***', pf_ex);
