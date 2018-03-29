@@ -1,4 +1,4 @@
-function [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_GM(N,rho,g_fun,distr)
+function [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_GM(N,rho,g_fun,distr,k_init)
 %% Cross entropy-based importance sampling with Gaussian Mixture
 %{
 ---------------------------------------------------------------------------
@@ -11,12 +11,19 @@ www.era.bgu.tum.de
 ---------------------------------------------------------------------------
 Version 2018-03
 ---------------------------------------------------------------------------
+Comments:
+* The CE-method in combination with a Gaussian Mixture model can only be
+  applied for low-dimensional problems, since its accuracy decreases
+  dramatically in high dimensions.
+* General convergence issues can be observed with linear LSFs.
+---------------------------------------------------------------------------
 Input:
-* N     : Number of samples per level
-* rho   : cross-correlation coefficient for conditional sampling
-* g_fun : limit state function
-* distr : Nataf distribution object or
-          marginal distribution object of the input variables
+* N      : Number of samples per level
+* rho    : cross-correlation coefficient for conditional sampling
+* g_fun  : limit state function
+* distr  : Nataf distribution object or
+           marginal distribution object of the input variables
+* k_init : initial number of Gaussians in the mixture
 ---------------------------------------------------------------------------
 Output:
 * Pr        : probability of failure
@@ -59,7 +66,7 @@ end
 j      = 0;                % initial level
 max_it = 100;              % estimated number of iterations
 N_tot  = 0;                % total number of samples
-k      = 1;                % number of Gaussians in mixture
+k      = k_init;                % number of Gaussians in mixture
 
 % Definition of parameters of the random variables (uncorrelated standard normal)
 mu_init = zeros(1,dim);   % ...
@@ -108,8 +115,7 @@ for j = 1:max_it
   W=mvnpdf(X,zeros(1,dim),eye(dim))./h;
 
   % Parameter update
-  nGM=1;
-  [mu, si, pi] = EMGM(X(I,:)',W(I),nGM);
+  [mu, si, pi] = EMGM(X(I,:)',W(I),k_init);
 
   % Assigning the variables with updated parameters
   mu_hat=mu';

@@ -1,4 +1,4 @@
-function [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_vMFNM(N,rho,g_fun,distr)
+function [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_vMFNM(N,rho,g_fun,distr,k_init)
 %% Cross entropy-based importance sampling with vMFNM-distribution
 %{
 ---------------------------------------------------------------------------
@@ -12,11 +12,12 @@ www.era.bgu.tum.de
 Version 2018-03
 ---------------------------------------------------------------------------
 Input:
-* N     : Number of samples per level
-* rho   : cross-correlation coefficient for conditional sampling
-* g_fun : limit state function
-* distr : Nataf distribution object or
-          marginal distribution object of the input variables
+* N      : Number of samples per level
+* rho    : cross-correlation coefficient for conditional sampling
+* g_fun  : limit state function
+* distr  : Nataf distribution object or
+           marginal distribution object of the input variables
+* k_init : initial number of distributions in the mixture model
 ---------------------------------------------------------------------------
 Output:
 * Pr        : probability of failure
@@ -124,10 +125,8 @@ for j=1:max_it
   % Indicator function
   I = geval<=gamma_hat(j+1);
        
-  % EM initialization with kmeans algorithm
-  k=4;
   % EM algorithm
-  dist = EMvMFNM(X(I,:)',exp(W_log(I,:)),k);
+  dist = EMvMFNM(X(I,:)',exp(W_log(I,:)),k_init);
 
   % remove unnecessary components
   if min(dist.alpha)<=0.01 

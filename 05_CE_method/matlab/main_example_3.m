@@ -2,10 +2,19 @@
 %{
 ---------------------------------------------------------------------------
 Created by:
-Felipe Uribe (felipe.uribe@tum.de)
+Sebastian Geyer (s.geyer@tum.de)
+Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group   
 Technische Universitat Munchen
 www.era.bgu.tum.de
+---------------------------------------------------------------------------
+Version 2018-03
+---------------------------------------------------------------------------
+Comments:
+* The CE-method in combination with a Gaussian Mixture model can only be
+  applied for low-dimensional problems, since its accuracy decreases
+  dramatically in high dimensions.
+* General convergence issues can be observed with linear LSFs.
 ---------------------------------------------------------------------------
 Based on:
 1."Cross entropy-based importance sampling 
@@ -32,14 +41,16 @@ pi_pdf = repmat(ERADist('standardnormal','PAR'),d,1);   % n independent rv
 %% limit-state function
 g = @(x) 0.1*(x(1,:)-x(2,:)).^2 - (x(1,:)+x(2,:))./sqrt(2) + 2.5;
 
-%% Subset simulation
-N  = 1000;         % Total number of samples for each level
-rho = 0.1;         % Probability of each subset, chosen adaptively
+%% CE-method
+N      = 1000;    % Total number of samples for each level
+rho    = 0.1;     % Cross-correlation coefficient for conditional sampling
+k_init = 3;       % Initial number of distributions in the Mixture Model (GM/vMFNM)
 
 fprintf('CE-based IS stage: \n');
 % [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_SG(N,rho,g,pi_pdf);     % single gaussian 
-[Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_GM(N,rho,g,pi_pdf);    % gaussian mixture
-% [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_vMFNM(N,rho,g,pi_pdf); % adaptive vMFN mixture
+% [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_GM(N,rho,g,pi_pdf,k_init);    % gaussian mixture
+[Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_vMFNM(N,rho,g,pi_pdf,k_init); % adaptive vMFN mixture
+
 
 % reference solution
 pf_ref   = 4.21e-3;

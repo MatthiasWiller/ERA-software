@@ -11,6 +11,12 @@ www.era.bgu.tum.de
 ---------------------------------------------------------------------------
 Version 2018-03
 ---------------------------------------------------------------------------
+Comments:
+* The CE-method in combination with a Gaussian Mixture model can only be
+  applied for low-dimensional problems, since its accuracy decreases
+  dramatically in high dimensions.
+* General convergence issues can be observed with linear LSFs.
+---------------------------------------------------------------------------
 Input:
 * N     : Number of samples per level
 * rho   : cross-correlation coefficient for conditional sampling
@@ -25,7 +31,7 @@ Output:
 * gamma_hat : gamma_ik probability of sample i belonging to distribution k 
 * samplesU  : object with the samples in the standard normal space
 * samplesX  : object with the samples in the original space
-* k_fin     : final number of Gaussians in the mixture
+* k_fin     : final number of Gaussians in the mixture (for SG k_fin = 1)
 ---------------------------------------------------------------------------
 Based on:
 1."Cross entropy-based importance sampling 

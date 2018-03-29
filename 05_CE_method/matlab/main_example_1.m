@@ -10,6 +10,12 @@ www.era.bgu.tum.de
 ---------------------------------------------------------------------------
 Version 2018-03
 ---------------------------------------------------------------------------
+Comments:
+* The CE-method in combination with a Gaussian Mixture model can only be
+  applied for low-dimensional problems, since its accuracy decreases
+  dramatically in high dimensions.
+* General convergence issues can be observed with linear LSFs.
+---------------------------------------------------------------------------
 Based on:
 1."Cross entropy-based importance sampling 
    using Gaussian densities revisited"
@@ -37,13 +43,14 @@ beta = 3.5;
 g    = @(x) -sum(x)/sqrt(d) + beta;
 
 %% CE-method
-N  = 1000;         % Total number of samples for each level
-rho = 0.1;         % Probability of each subset, chosen adaptively
+N      = 1000;    % Total number of samples for each level
+rho    = 0.1;     % Cross-correlation coefficient for conditional sampling
+k_init = 3;       % Initial number of distributions in the Mixture Model (GM/vMFNM)
 
 fprintf('CE-based IS stage: \n');
 % [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_SG(N,rho,g,pi_pdf);     % single gaussian 
-[Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_GM(N,rho,g,pi_pdf);    % gaussian mixture
-% [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_vMFNM(N,rho,g,pi_pdf); % adaptive vMFN mixture
+% [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_GM(N,rho,g,pi_pdf,k_init);    % gaussian mixture
+[Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_vMFNM(N,rho,g,pi_pdf,k_init); % adaptive vMFN mixture
 
 
 % exact solution
@@ -68,33 +75,5 @@ if d == 2
       plot(u_j_samples(1,:),u_j_samples(2,:),'.');
    end
 end
-
-% plot samplesX
-if d == 2
-   figure; hold on;
-   xx = 0:0.05:5; nnp = length(xx); [X,Y] = meshgrid(xx);
-   xnod = cat(2,reshape(X',nnp^2,1),reshape(Y',nnp^2,1));
-   Z    = g(xnod'); Z = reshape(Z,nnp,nnp);
-   contour(X,Y,Z,[0,0],'r','LineWidth',3);  % LSF
-   for j = 1:l
-      u_j_samples= samplesX{j};
-      plot(u_j_samples(1,:),u_j_samples(2,:),'.');
-   end
-end
-% % Plot failure probability: Exact
-% figure; 
-% semilogy(gg,Pf_exact(gg),'b-'); axis tight; 
-% title('Failure probability estimate','Interpreter','Latex','FontSize', 20);
-% xlabel('Limit state function, $g$','Interpreter','Latex','FontSize', 18);   
-% ylabel('Failure probability, $P_f$','Interpreter','Latex','FontSize', 18);
-
-% % Plot failure probability: SuS
-% hold on;
-% semilogy(b_sus,pf_sus,'r--');           % curve
-% semilogy(b,Pf,'ko','MarkerSize',5);   % points
-% semilogy(0,Pf_SuS,'b*','MarkerSize',6);
-% semilogy(0,pf_ex,'ro','MarkerSize',8);
-% hl = legend('Exact','SuS','Intermediate levels','Pf SuS','Pf Exact','Location','SE');
-% set(hl,'Interpreter','latex'); set(gca,'FontSize',18);
 
 %%END
