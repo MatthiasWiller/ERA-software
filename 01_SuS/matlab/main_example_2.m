@@ -2,16 +2,15 @@
 %{
 ---------------------------------------------------------------------------
 Created by:
+Matthias Willer (matthias.willer@tum.de)
 Felipe Uribe (felipe.uribe@tum.de)
 Engineering Risk Analysis Group   
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2017-04
-* Minor changes
+Version 2018-03
 ---------------------------------------------------------------------------
 Comments:
-* Compute small failure probabilities in reliability analysis of engineering systems.
 * Express the failure probability as a product of larger conditional failure
  probabilities by introducing intermediate failure events.
 * Use MCMC based on the modified Metropolis-Hastings algorithm for the 

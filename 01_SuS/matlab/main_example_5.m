@@ -1,9 +1,9 @@
-%% Subset Simulation: Ex. 1 Ref. 2 - linear function of independent standard normal
+%% Subset Simulation: Ex. 3 Ref. 3 - parabolic/concave limit-state function
 %{
 ---------------------------------------------------------------------------
 Created by:
-Matthias Willer (matthias.willer@tum.de)
 Felipe Uribe (felipe.uribe@tum.de)
+Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group   
 Technische Universitat Munchen
 www.era.bgu.tum.de
@@ -24,6 +24,9 @@ Based on:
 2."MCMC algorithms for subset simulation"
    Papaioannou et al.
    Probabilistic Engineering Mechanics 41 (2015) 83-103.
+3. "Sequential importance sampling for structural reliability analysis"
+   Papaioannou et al.
+   Structural Safety 62 (2016) 66-75
 ---------------------------------------------------------------------------
 %}
 clear; close all; clc;
@@ -39,8 +42,8 @@ R = eye(d);   % independent case
 pi_pdf = ERANataf(pi_pdf,R);    % if you want to include dependence
 
 %% limit-state function
-beta = 3.5;
-g    = @(x) -sum(x)/sqrt(d) + beta;
+g_fun = @(x) min([0.1.*(x(:,1)-x(:,2)).^2-(x(:,1)+x(:,2))./sqrt(2)+3,0.1.*(x(:,1)-x(:,2)).^2+(x(:,1)+x(:,2))./sqrt(2)+3,x(:,1)-x(:,2)+7./sqrt(2),x(:,2)-x(:,1)+7./sqrt(2)],[],2);
+g = @(x) g_fun(x');
 
 %% subset simulation
 N   = 1000;        % Total number of samples for each level
@@ -50,13 +53,13 @@ alg = 'acs';       % Sampling Algorithm (either 'acs' or 'mma')
 fprintf('SUBSET SIMULATION stage: \n');
 [Pf_SuS,delta_SuS,b,Pf,b_sus,pf_sus,samplesU,samplesX] = SuS(N,p0,g,pi_pdf,alg);
 
-% exact solution
-pf_ex    = normcdf(-beta);
+% reference solution
+pf_ref   = 2.2e-3;
 Pf_exact = @(gg) normcdf(gg,beta,1);
 gg       = 0:0.05:7;
 
 % show p_f results
-fprintf('\n***Exact Pf: %g ***', pf_ex);
+fprintf('\n***Reference Pf: %g ***', pf_ref);
 fprintf('\n***SuS Pf: %g ***\n\n', Pf_SuS);
 
 %% Plots
@@ -64,10 +67,10 @@ fprintf('\n***SuS Pf: %g ***\n\n', Pf_SuS);
 if d == 2
    m = length(Pf);
    figure; hold on;
-   xx = 0:0.05:5; nnp = length(xx); [X,Y] = meshgrid(xx);
+   xx = -7:0.05:7; nnp = length(xx); [X,Y] = meshgrid(xx);
    xnod = cat(2,reshape(X',nnp^2,1),reshape(Y',nnp^2,1));
    Z    = g(xnod'); Z = reshape(Z,nnp,nnp);
-   contour(X,Y,Z,[0,0],'r','LineWidth',3);  % LSF
+   contour(Y,X,Z,[0,0],'r','LineWidth',3);  % LSF
    for j = 1:m+1
       u_j_samples= samplesU.order{j};
       plot(u_j_samples(1,:),u_j_samples(2,:),'.');
@@ -76,7 +79,6 @@ end
 
 % Plot failure probability: Exact
 figure; 
-semilogy(gg,Pf_exact(gg),'b-'); axis tight; 
 title('Failure probability estimate','Interpreter','Latex','FontSize', 20);
 xlabel('Limit state function, $g$','Interpreter','Latex','FontSize', 18);   
 ylabel('Failure probability, $P_f$','Interpreter','Latex','FontSize', 18);
@@ -86,8 +88,8 @@ hold on;
 semilogy(b_sus,pf_sus,'r--');           % curve
 semilogy(b,Pf,'ko','MarkerSize',5);   % points
 semilogy(0,Pf_SuS,'b*','MarkerSize',6);
-semilogy(0,pf_ex,'ro','MarkerSize',8);
-hl = legend('Exact','SuS','Intermediate levels','Pf SuS','Pf Exact','Location','SE');
+semilogy(0,pf_ref,'ro','MarkerSize',8);
+hl = legend('SuS','Intermediate levels','Pf SuS','Pf Ref.','Location','NW');
 set(hl,'Interpreter','latex'); set(gca,'FontSize',18);
 
 %%END
