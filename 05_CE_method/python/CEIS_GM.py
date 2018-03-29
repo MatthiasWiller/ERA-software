@@ -138,7 +138,7 @@ def CEIS_GM(N, rho, g_fun, distr):
                 samplesX.append( distr.U2X(samplesU[i][:,:]) )
 
     else:
-        if distr.Name.lower() == 'standardnormal':
+        if distr[0].Name.lower() == 'standardnormal':
             for i in range(l):
                 samplesX.append( samplesU[i][:,:] )
         else:
