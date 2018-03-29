@@ -44,7 +44,7 @@ g = lambda u: np.amin(np.array([
                     ]), axis=0)
 
 # %% Sequential Importance Sampling
-N   = 5000        # Total number of samples for each level
+N   = 1000        # Total number of samples for each level
 rho = 0.1         # cross-correlation coefficient
 
 print('SIS stage: ')

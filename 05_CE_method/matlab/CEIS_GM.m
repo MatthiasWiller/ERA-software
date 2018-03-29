@@ -23,7 +23,7 @@ Input:
 * g_fun  : limit state function
 * distr  : Nataf distribution object or
            marginal distribution object of the input variables
-* k_init : initial number of Gaussians in the mixture
+* k_init : initial number of Gaussians in the mixture model
 ---------------------------------------------------------------------------
 Output:
 * Pr        : probability of failure
