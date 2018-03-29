@@ -1,9 +1,9 @@
-function [Pr, l_tot, samplesU, samplesX, k_fin] = SIS_GM(N,rho,g_fun,distr)
+function [Pr, l_tot, samplesU, samplesX, k_fin] = SIS_GM(N,rho,g_fun,distr,k_init)
 %% Sequential importance sampling
 %{
 ---------------------------------------------------------------------------
 Created by:
-Sebastian Geyer (s.geyer@tum.de)
+Iason Papaioannou (iason.papaioannou@tum.de)
 Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group
 Technische Universitat Munchen
@@ -11,12 +11,18 @@ www.era.bgu.tum.de
 ---------------------------------------------------------------------------
 Version 2018-03
 ---------------------------------------------------------------------------
+Comments:
+* The SIS-method in combination with a Gaussian Mixture model can only be
+  applied for low-dimensional problems, since its accuracy decreases
+  dramatically in high dimensions.
+---------------------------------------------------------------------------
 Input:
-* N         : Number of samples per level
-* rho       : cross-correlation coefficient for conditional sampling
-* g_fun     : limit state function
-* distr     : Nataf distribution object or
-              marginal distribution object of the input variables
+* N      : Number of samples per level
+* rho    : cross-correlation coefficient for conditional sampling
+* g_fun  : limit state function
+* distr  : Nataf distribution object or
+           marginal distribution object of the input variables
+* k_init : initial number of Gaussians in the mixture model
 ---------------------------------------------------------------------------
 Output:
 * Pr       : probability of failure
@@ -26,7 +32,7 @@ Output:
 * k_fin    : final number of Gaussians in the mixture
 ---------------------------------------------------------------------------
 Based on:
-1. "Sequential importance sampling for structural reliability analysis"
+1."Sequential importance sampling for structural reliability analysis"
    Papaioannou et al.
    Structural Safety 62 (2016) 66-75
 ---------------------------------------------------------------------------
@@ -113,8 +119,7 @@ for m = 1:max_it
   wnork = wk./Sk(m)/nsamlev;
 
   % fit Gaussian Mixture
-  nGM = 2;
-  [mu, si, pi] = EMGM(uk',wnork',nGM);
+  [mu, si, pi] = EMGM(uk',wnork',k_init);
   
   %%% Step 5
   % resample
@@ -204,12 +209,7 @@ k_fin = length(pi); l_tot  = m+1;
 %% Calculation of the Probability of failure
 % accfin = accrate(m);
 const  = prod(Sk);
-tmp1  = (gk < 0);
-tmp2  = -gk/sigmak(m+1);
-tmp3  = normcdf(tmp2);
-tmp4  = tmp1./tmp3;
-Pr    = mean(tmp4)*const;
-% Pr     = mean((gk < 0)./normcdf(-gk/sigmak(m+1)))*const;
+Pr     = mean((gk < 0)./normcdf(-gk/sigmak(m+1)))*const;
 
 %% transform the samples to the physical/original space
 samplesX = cell(l_tot,1);

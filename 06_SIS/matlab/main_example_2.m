@@ -1,27 +1,24 @@
-%% Subset Simulation: Ex. 2 Ref. 2 - linear function of independent exponential
+%% Sequential importance sampling method: Ex. 2 Ref. 2 - linear function of independent exponential
 %{
 ---------------------------------------------------------------------------
 Created by:
-Felipe Uribe (felipe.uribe@tum.de)
+Sebastian Geyer (s.geyer@tum.de)
+Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group   
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2017-04
-* Minor changes
+Version 2018-03
 ---------------------------------------------------------------------------
 Comments:
-* Compute small failure probabilities in reliability analysis of engineering systems.
-* Express the failure probability as a product of larger conditional failure
- probabilities by introducing intermediate failure events.
-* Use MCMC based on the modified Metropolis-Hastings algorithm for the 
- estimation of conditional probabilities.
-* p0, the prob of each subset, is chosen 'adaptively' to be in [0.1,0.3]
+* The SIS-method in combination with a Gaussian Mixture model can only be
+  applied for low-dimensional problems, since its accuracy decreases
+  dramatically in high dimensions.
 ---------------------------------------------------------------------------
 Based on:
-1."Estimation of small failure probabilities in high dimentions by SuS"
-   Siu-Kui Au & James L. Beck.
-   Probabilistic Engineering Mechanics 16 (2001) 263-277.
+1."Sequential importance sampling for structural reliability analysis"
+   Papaioannou et al.
+   Structural Safety 62 (2016) 66-75
 2."MCMC algorithms for subset simulation"
    Papaioannou et al.
    Probabilistic Engineering Mechanics 41 (2015) 83-103.
@@ -43,12 +40,13 @@ pi_pdf = repmat(ERADist('exponential','PAR',1),d,1);   % n independent rv
 Ca = 140;
 g  = @(x) Ca - sum(x);
 
-%% Subset simulation
-N  = 1000;         % Total number of samples for each level
-rho = 0.1;         % Probability of each subset, chosen adaptively
+%% Sequential Importance Sampling
+N      = 1000;    % Total number of samples for each level
+rho    = 0.1;     % Cross-correlation coefficient for conditional sampling
+k_init = 3;       % Initial number of Gaussians in the Mixture Model (GM)
 
 fprintf('SIS stage: \n');
-[Pr, l, samplesU, samplesX, k_fin] = SIS_GM(N,rho,g,pi_pdf);  % gaussian mixture 
+[Pr, l, samplesU, samplesX, k_fin] = SIS_GM(N,rho,g,pi_pdf,k_init); 
 
 % exact solution
 lambda   = 1;
