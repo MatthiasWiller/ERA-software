@@ -6,7 +6,7 @@ from ERADist import ERADist
 from SIS_GM import SIS_GM
 """
 ---------------------------------------------------------------------------
-Sequential importance sampling method: Ex. 1 Ref. 1 - convex limit-state function
+Sequential importance sampling method: Ex. 2 Ref. 1 - parabolic/concave limit-state function
 ---------------------------------------------------------------------------
 Created by:
 Felipe Uribe (felipe.uribe@tum.de)
@@ -36,7 +36,10 @@ R = np.eye(d)   # independent case
 pi_pdf = ERANataf(pi_pdf, R)    # if you want to include dependence
 
 # %% limit-state function
-g    = lambda x: 0.1*(x[0,:]-x[1,:])**2 - (x[0,:]+x[1,:])/np.sqrt(2) + 2.5
+b     = 5.0
+kappa = 0.5
+e     = 0.1
+g     = lambda u: b - u[1,:] - kappa*(u[0,:]-e)**2
 
 # %% Sequential Importance Sampling
 N   = 1000        # Total number of samples for each level
@@ -46,7 +49,7 @@ print('SIS stage: ')
 [Pr, l, samplesU, samplesX, k_fin] = SIS_GM(N, rho, g, pi_pdf)
 
 # reference solution
-pf_ref = 4.21e-3
+pf_ref = 3.01e-3
 
 
 # show p_f results
@@ -63,12 +66,13 @@ plt.rc('axes', labelsize=18)    # fontsize of the x and y labels
 plt.rc('figure', titlesize=20)  # fontsize of the figure title
 # Plot samples
 if d == 2:
+    m = l
     plt.figure() 
     xx = np.linspace(-6,6,240)
     nnp = len(xx) 
     [X,Y] = np.meshgrid(xx,xx)
     xnod = np.array([X,Y])
-    Z    = g(xnod) 
+    Z    = g(xnod)
     plt.contour(X,Y,Z,[0],colors='r')  # LSF
     for j in range(l+1):
         u_j_samples = samplesU[j]

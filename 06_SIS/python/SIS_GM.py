@@ -85,7 +85,7 @@ def SIS_GM(N, rho, g_fun, distr):
     for k in range(nsamlev):
         u       = sp.stats.norm.rvs(size=[dim])
         uk[k,:] = u
-        gk[k]   = g(u.T)
+        gk[k]   = g(u.reshape(dim,-1))
 
     # save samples 
     samplesU.append(uk.T)
@@ -159,7 +159,7 @@ def SIS_GM(N, rho, g_fun, distr):
               ucand = sp.stats.multivariate_normal.rvs(mean=mu[:,indw], cov=si[:,:,indw])
                     
               # Evaluate limit-state function              
-              gcand = g(ucand)             
+              gcand = g(ucand.reshape(dim,-1))             
 
               # compute acceptance probability
               pdfn = 0

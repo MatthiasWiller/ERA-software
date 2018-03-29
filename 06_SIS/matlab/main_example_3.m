@@ -29,7 +29,7 @@ pi_pdf = repmat(ERADist('standardnormal','PAR'),d,1);   % n independent rv
 g_fun = @(x) 0.1*(x(1,:)-x(2,:)).^2 - (x(1,:)+x(2,:))./sqrt(2) + 2.5;
 g     = @(x) g_fun(x');
 
-%% Subset simulation
+%% Sequential Importance Sampling
 N  = 1000;         % Total number of samples for each level
 rho = 0.1;         % Probability of each subset, chosen adaptively
 
@@ -37,7 +37,7 @@ fprintf('SIS stage: \n');
 [Pr, l, samplesU, samplesX, k_fin] = SIS_GM(N,rho,g,pi_pdf);  % gaussian mixture 
 
 % reference solution
-pf_ref   = 4.21e-3;
+pf_ref = 4.21e-3;
 
 % show p_f results
 fprintf('\n***Reference Pf: %g ***', pf_ref);

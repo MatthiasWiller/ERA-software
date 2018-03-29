@@ -28,7 +28,7 @@ pi_pdf = repmat(ERADist('standardnormal','PAR'),d,1);   % n independent rv
 %% limit-state function
 g = @(x) min([0.1.*(x(:,1)-x(:,2)).^2-(x(:,1)+x(:,2))./sqrt(2)+3,0.1.*(x(:,1)-x(:,2)).^2+(x(:,1)+x(:,2))./sqrt(2)+3,x(:,1)-x(:,2)+7./sqrt(2),x(:,2)-x(:,1)+7./sqrt(2)],[],2);
 
-%% Subset simulation
+%% Sequential Importance Sampling
 N  = 5000;         % Total number of samples for each level
 rho = 0.1;         % Probability of each subset, chosen adaptively
 
@@ -36,7 +36,7 @@ fprintf('SIS stage: \n');
 [Pr, l, samplesU, samplesX, k_fin] = SIS_GM(N,rho,g,pi_pdf);  % gaussian mixture 
 
 % reference solution
-pf_ref   = 2.2e-3;
+pf_ref = 2.2e-3;
 
 % show p_f results
 fprintf('\n***Reference Pf: %g ***', pf_ref);

@@ -30,7 +30,7 @@ b=5; kappa=0.5; e=0.1;
 g_fun = @(u) b - u(2,:) - kappa*(u(1,:)-e).^2;
 g     = @(x) g_fun(x');
 
-%% Subset simulation
+%% Sequential Importance Sampling
 N  = 5000;         % Total number of samples for each level
 rho = 0.1;         % Probability of each subset, chosen adaptively
 
