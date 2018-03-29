@@ -36,13 +36,15 @@ R = np.eye(d)   # independent case
 pi_pdf = ERANataf(pi_pdf, R)    # if you want to include dependence
 
 # %% limit-state function
-g = lambda u: np.min(np.array([ 0.1*(u[0,:]-u[1,:])**2-(u[0,:]+u[1,:])/np.sqrt(2)+3 , 
-                       0.1*(u[0,:]-u[1,:])**2+(u[0,:]+u[1,:])/np.sqrt(2)+3 , 
-                       u[0,:]-u[1,:]+7/np.sqrt(2) , 
-                       u[1,:]-u[0,:]+7/np.sqrt(2) ]))
+g = lambda u: np.amin(np.array([ 
+                    0.1*(u[0,:]-u[1,:])**2-(u[0,:]+u[1,:])/np.sqrt(2)+3 , 
+                    0.1*(u[0,:]-u[1,:])**2+(u[0,:]+u[1,:])/np.sqrt(2)+3 , 
+                    u[0,:]-u[1,:]+7/np.sqrt(2) , 
+                    u[1,:]-u[0,:]+7/np.sqrt(2) 
+                    ]), axis=0)
 
 # %% Sequential Importance Sampling
-N   = 1000        # Total number of samples for each level
+N   = 5000        # Total number of samples for each level
 rho = 0.1         # cross-correlation coefficient
 
 print('SIS stage: ')
