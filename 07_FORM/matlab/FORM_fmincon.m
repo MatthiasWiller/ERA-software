@@ -1,4 +1,4 @@
-function [u_star,x_star,beta,Pf] = FORM_fmincon(G, distr)
+function [u_star,x_star,beta,Pf] = FORM_fmincon(g, distr)
 %% optimization using the fmincon function
 %{
 ---------------------------------------------------------------------------
@@ -10,8 +10,12 @@ www.era.bgu.tum.de
 ---------------------------------------------------------------------------
 Version 2018-03
 ---------------------------------------------------------------------------
+Comment:
+* The FORM method uses a first order approximation of the LSF and is 
+  therefore not accurate for non-linear LSF's
+---------------------------------------------------------------------------
 Input:
-* G     : limit state function in the original space
+* g     : limit state function in the original space
 * distr : ERANataf-Object containing the distribution
 ---------------------------------------------------------------------------
 Output:
@@ -27,21 +31,28 @@ References:
 ---------------------------------------------------------------------------
 %}
 
+%% initial check if there exists a Nataf object
+if ~(any(strcmp('Marginals',fieldnames(distr))) == 1)   % use Nataf transform (dependence)
+	return;
+end
+
+d =  length(distr.Marginals); 
+
 %% objective function
 dist_fun = @(u) norm(u);
 
 %% parameters of the fmincon function
-u0  = [0.1,0.1];  % initial search point
+u0  = repmat([0.01],d,1);  % initial search point
 A   = [];         % linear equality constraints
 b   = [];         % linear equality constraints
 Aeq = [];         % linear inequality constraints
 beq = [];         % linear inequality constraints
-lb  = [-5,-5];    % lower bound constraints
-ub  = [5,5];      % upper bound constraints
+lb  = [];         % lower bound constraints
+ub  = [];         % upper bound constraints
 
 % nonlinear constraint: H(u) <= 0
-H      = @(u) G(distr.U2X(u));
-lsfcon = @(u) deal([], H(u));
+H      = @(u) g(distr.U2X(u));
+lsfcon = @(u) deal([], H(u'));
 
 %% use fmincon
 options = optimoptions('fmincon','Display','off','Algorithm','sqp');

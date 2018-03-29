@@ -1,4 +1,4 @@
-function [u_star,x_star,beta,Pf] = FORM_HLRF(G,DG,distr)
+function [u_star,x_star,beta,Pf] = FORM_HLRF(g,dg,distr)
 %% HLRF function
 %{
 ---------------------------------------------------------------------------
@@ -10,9 +10,13 @@ www.era.bgu.tum.de
 ---------------------------------------------------------------------------
 Version 2018-03
 ---------------------------------------------------------------------------
+Comment:
+* The FORM method uses a first order approximation of the LSF and is 
+  therefore not accurate for non-linear LSF's
+---------------------------------------------------------------------------
 Input:
-* G     : limit state function in the original space
-* DG    : gradient of the limit state function in the standard space
+* g     : limit state function in the original space
+* dg    : gradient of the limit state function in the standard space
 * distr : ERANataf-Object containing the distribution
 ---------------------------------------------------------------------------
 Output:
@@ -48,11 +52,11 @@ while true
    [xk, J] = distr.U2X(u(:,k), 'Jac');
    
    % 1. evaluate LSF at point u_k
-   H_uk = G(xk);
+   H_uk = g(xk);
    
    % 2. evaluate LSF gradient at point u_k and direction cosines
-   DH_uk      = J\DG(xk);
-   norm_DH_uk = norm(DH_uk)
+   DH_uk      = J\dg(xk);
+   norm_DH_uk = norm(DH_uk);
    alpha      = DH_uk/norm_DH_uk;
    
    % 3. calculate beta
