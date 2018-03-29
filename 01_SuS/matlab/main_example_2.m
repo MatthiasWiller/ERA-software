@@ -34,7 +34,7 @@ d      = 100;         % number of dimensions
 pi_pdf = repmat(ERADist('exponential','PAR',1),d,1);   % n independent rv
 
 % correlation matrix
-% R = eye(n);   % independent case
+% R = eye(d);   % independent case
 
 % object with distribution information
 % pi_pdf = ERANataf(pi_pdf,R);    % if you want to include dependence
@@ -46,9 +46,11 @@ g  = @(x) Ca - sum(x);
 %% Subset simulation
 N  = 1000;         % Total number of samples for each level
 p0 = 0.1;          % Probability of each subset, chosen adaptively
+alg = 'acs';       % Sampling Algorithm (either 'acs' or 'mma')
+
 
 fprintf('SUBSET SIMULATION stage: \n');
-[Pf_SuS,delta_SuS,b,Pf,b_sus,pf_sus,u_samples] = SuS(N,p0,g,pi_pdf);
+[Pf_SuS,delta_SuS,b,Pf,b_sus,pf_sus,samplesU,samplesX] = SuS(N,p0,g,pi_pdf,alg);
 
 % exact solution
 lambda   = 1;
@@ -70,7 +72,7 @@ ylabel('Failure probability, $P_f$','Interpreter','Latex','FontSize', 18);
 
 % Plot failure probability: SuS
 hold on;
-semilogy(b_sus,pf_sus,'r--');           % curve
+semilogy(b_sus,pf_sus,'r--');         % curve
 semilogy(b,Pf,'ko','MarkerSize',5);   % points
 semilogy(0,Pf_SuS,'b*','MarkerSize',6);
 semilogy(0,pf_ex,'ro','MarkerSize',8);

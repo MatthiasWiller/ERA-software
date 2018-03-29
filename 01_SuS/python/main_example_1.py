@@ -52,11 +52,12 @@ beta = 3.5
 g    = lambda x: -x.sum(axis=0)/np.sqrt(d) + beta
 
 # %% subset simulation
-N  = 1000         # Total number of samples for each level
-p0 = 0.1          # Probability of each subset, chosen adaptively
+N   = 1000        # Total number of samples for each level
+p0  = 0.1         # Probability of each subset, chosen adaptively
+alg = 'acs'       # Sampling Algorithm (either 'acs' or 'mma')
 
 print('SUBSET SIMULATION stage: ')
-[Pf_SuS,delta_SuS,b,Pf,b_sus,pf_sus,u_samples] = SuS(N,p0,g,pi_pdf)
+[Pf_SuS,delta_SuS,b,Pf,b_sus,pf_sus,samplesU,samplesX] = SuS(N,p0,g,pi_pdf,alg)
 
 # exact solution
 pf_ex    = sp.stats.norm.cdf(-beta)
@@ -86,7 +87,7 @@ if d == 2:
     Z    = g(xnod) 
     plt.contour(X,Y,Z,[0],colors='r')  # LSF
     for j in range(m+1):
-        u_j_samples = u_samples['order'][j]
+        u_j_samples = samplesU['order'][j]
         plt.scatter(u_j_samples[0,:],u_j_samples[1,:],marker='.')
     
     plt.tight_layout()

@@ -45,11 +45,12 @@ beta = 3.5;
 g    = @(x) -sum(x)/sqrt(d) + beta;
 
 %% subset simulation
-N  = 1000;         % Total number of samples for each level
-p0 = 0.1;          % Probability of each subset, chosen adaptively
+N   = 1000;        % Total number of samples for each level
+p0  = 0.1;         % Probability of each subset, chosen adaptively
+alg = 'acs';       % Sampling Algorithm (either 'acs' or 'mma')
 
 fprintf('SUBSET SIMULATION stage: \n');
-[Pf_SuS,delta_SuS,b,Pf,b_sus,pf_sus,u_samples] = SuS(N,p0,g,pi_pdf);
+[Pf_SuS,delta_SuS,b,Pf,b_sus,pf_sus,samplesU,samplesX] = SuS(N,p0,g,pi_pdf,alg);
 
 % exact solution
 pf_ex    = normcdf(-beta);
@@ -70,7 +71,7 @@ if d == 2
    Z    = g(xnod'); Z = reshape(Z,nnp,nnp);
    contour(X,Y,Z,[0,0],'r','LineWidth',3);  % LSF
    for j = 1:m+1
-      u_j_samples= u_samples.order{j};
+      u_j_samples= samplesU.order{j};
       plot(u_j_samples(1,:),u_j_samples(2,:),'.');
    end
 end

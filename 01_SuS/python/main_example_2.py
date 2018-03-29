@@ -43,7 +43,7 @@ for i in range(d):
     pi_pdf.append(ERADist('exponential', 'PAR',1)) # n independent rv
 
 # correlation matrix
-# R = eye(n)   # independent case
+# R = eye(d)   # independent case
 
 # object with distribution information
 # pi_pdf = ERANataf(pi_pdf,R)    # if you want to include dependence
@@ -55,9 +55,10 @@ g  = lambda x: Ca - np.sum(x)
 # %% Subset simulation
 N  = 1000         # Total number of samples for each level
 p0 = 0.1          # Probability of each subset, chosen adaptively
+alg = 'acs'       # Sampling Algorithm (either 'acs' or 'mma')
 
 print('SUBSET SIMULATION stage: ')
-[Pf_SuS,delta_SuS,b,Pf,b_sus,pf_sus,u_samples] = SuS(N,p0,g,pi_pdf)
+[Pf_SuS,delta_SuS,b,Pf,b_sus,pf_sus,samplesU,samplesX] = SuS(N,p0,g,pi_pdf,alg)
 
 # exact solution
 lam      = 1

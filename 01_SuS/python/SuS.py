@@ -20,11 +20,14 @@ www.era.bgu.tum.de
 Version 2018-01
 ---------------------------------------------------------------------------
 Input:
-* N         : Number of samples per level
-* p0        : Conditional probability of each subset
-* g_fun     : limit state function
-* distr     : Nataf distribution object or
-              marginal distribution object of the input variables
+* N     : Number of samples per level
+* p0    : Conditional probability of each subset
+* g_fun : limit state function
+* distr : Nataf distribution object or
+          marginal distribution object of the input variables
+* alg   : Sampling algorithm
+          - 'acs' : Adaptive Conditional Sampling
+          - 'mma' : Component-wise Metropolis Algorithm
 ---------------------------------------------------------------------------
 Output:
 * Pf_SuS    : failure probability estimate of subset simulation
@@ -34,6 +37,7 @@ Output:
 * b_line    : limit state function values
 * Pf_line   : failure probabilities corresponding to b_line
 * samplesU  : samples in the Gaussian standard space for each level
+* samplesX  : samples in the physical/original space for each level
 ---------------------------------------------------------------------------
 Based on:
 1."Estimation of small failure probabilities in high dimentions by SubSim"
@@ -44,7 +48,7 @@ Based on:
    Probabilistic Engineering Mechanics 41 (2015) 83-103.
 ---------------------------------------------------------------------------
 """
-def SuS(N,p0,g_fun,distr):
+def SuS(N,p0,g_fun,distr,alg):
     # %% initial check if there exists a Nataf object
     if isinstance(distr, ERANataf):   # use Nataf transform (dependence)
         n = len(distr.Marginals)    # number of random variables (dimension)
@@ -130,8 +134,12 @@ def SuS(N,p0,g_fun,distr):
         rnd_seeds = samplesU['seeds'][j][:,idx_rnd]     # non-ordered seeds
         
         # sampling process using adaptive conditional sampling
-        # [u_j,geval,lam,accrate] = aCS(N,lam,b[j],rnd_seeds,g)
-        [u_j,geval,] = MMA(rnd_seeds,g,b[j],N)
+        if alg == 'acs':
+            [u_j,geval,lam,accrate] = aCS(N,lam,b[j],rnd_seeds,g)
+        elif alg == 'mma':
+            [u_j,geval,] = MMA(rnd_seeds,g,b[j],N)
+        else:
+            raise ValueError('Invalid sampling algorithm:',alg,'\nPlease choose either "acs" or "mma"!')
         
         # next level
         j = j+1   
@@ -171,5 +179,25 @@ def SuS(N,p0,g_fun,distr):
     Pf_line = np.sort(Pf_line.reshape(-1))
     b_line  = np.sort(b_line.reshape(-1))
 
-    return [Pf_SuS,delta_SuS,b,Pf,b_line,Pf_line,samplesU]
+
+    # %% transform the samples to the physical/original space
+    samplesX = list()
+    if isinstance(distr, ERANataf):   # use Nataf transform (dependence)
+        if distr.Marginals[0].Name.lower() == 'standardnormal':
+            for i in range(m+1):
+                samplesX.append( samplesU['order'][i][:,:] )
+        
+        else:
+            for i in range(m+1):
+                samplesX.append( distr.U2X(samplesU['order'][i][:,:]) )
+
+    else:
+        if distr[0].Name.lower() == 'standardnormal':
+            for i in range(m+1):
+                samplesX.append( samplesU['order'][i][:,:] )
+        else:
+            for i in range(m+1):
+                samplesX.append( u2x(samplesU['order'][i][:,:]) )
+
+    return [Pf_SuS,delta_SuS,b,Pf,b_line,Pf_line,samplesU,samplesX]
 # %%END

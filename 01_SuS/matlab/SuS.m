@@ -1,4 +1,4 @@
-function [Pf_SuS,delta_SuS,b,Pf,b_line,Pf_line,samplesU] = SuS(N,p0,g_fun,distr)
+function [Pf_SuS,delta_SuS,b,Pf,b_line,Pf_line,samplesU,samplesX] = SuS(N,p0,g_fun,distr,alg)
 %% Subset Simulation function (standard Gaussian space)
 %{
 ---------------------------------------------------------------------------
@@ -8,17 +8,16 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2017-10
-* Computing the correct failure samples
-Version 2017-04
-* Minor changes
 ---------------------------------------------------------------------------
 Input:
-* N         : Number of samples per level
-* p0        : Conditional probability of each subset
-* g_fun     : limit state function
-* distr     : Nataf distribution object or
-              marginal distribution object of the input variables
+* N     : Number of samples per level
+* p0    : Conditional probability of each subset
+* g_fun : limit state function
+* distr : Nataf distribution object or
+          marginal distribution object of the input variables
+* alg   : Sampling algorithm
+          - 'acs' : Adaptive Conditional Sampling
+          - 'mma' : Component-wise Metropolis Algorithm
 ---------------------------------------------------------------------------
 Output:
 * Pf_SuS    : failure probability estimate of subset simulation
@@ -28,6 +27,7 @@ Output:
 * b_line    : limit state function values
 * Pf_line   : failure probabilities corresponding to b_line
 * samplesU  : samples in the Gaussian standard space for each level
+* samplesX  : samples in the physical/original space for each level
 ---------------------------------------------------------------------------
 Based on:
 1."Estimation of small failure probabilities in high dimentions by SubSim"
@@ -126,9 +126,14 @@ while true
    idx_rnd   = randperm(nF);
    rnd_seeds = samplesU.seeds{j}(:,idx_rnd);   % non-ordered seeds
    
-   % sampling process using adaptive conditional sampling
-   %[u_j,geval,lambda,~] = aCS(N,lambda,b(j),rnd_seeds,g);
-   [u_j,geval,] = MMA(rnd_seeds,g,b(j),N);
+   % sampling process 
+   if strcmp(alg,'acs')
+      [u_j,geval,lambda,~] = aCS(N,lambda,b(j),rnd_seeds,g);
+   elseif strcmp(alg,'mma')
+      [u_j,geval,] = MMA(rnd_seeds,g,b(j),N);
+   else
+     error('Invalid sampling algorithm: %s \nPlease choose either "acs" or "mma"!',alg);
+   end
    
    % next level
    j = j+1;   
@@ -167,6 +172,30 @@ for i = 2:m
 end
 Pf_line = sort(Pf_line(:));
 b_line  = sort(b_line(:));
+
+%% transform the samples to the physical/original space
+samplesX = cell(m,1);
+if any(strcmp('Marginals',fieldnames(distr))) == 1   % use Nataf transform (dependence)
+   if strcmp(distr.Marginals(1).Name,'standardnormal')
+       for i = 1:m+1
+         samplesX{i} = samplesU.order{i}(:,:);
+       end
+   else
+      for i = 1:m+1
+         samplesX{i} = distr.U2X(samplesU.order{i}(:,:));
+      end
+   end
+else
+   if strcmp(distr(1).Name,'standardnormal')
+       for i = 1:m+1
+         samplesX{i} = samplesU.order{i}(:,:);
+      end
+   else
+      for i = 1:m+1
+         samplesX{i} = u2x(samplesU.order{i}(:,:));
+      end
+   end
+end
 
 return;
 %%END
