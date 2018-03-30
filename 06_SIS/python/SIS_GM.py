@@ -16,6 +16,11 @@ www.era.bgu.tum.de
 ---------------------------------------------------------------------------
 Version 2018-03
 ---------------------------------------------------------------------------
+Comments:
+* The SIS-method in combination with a Gaussian Mixture model can only be
+  applied for low-dimensional problems, since its accuracy decreases
+  dramatically in high dimensions.
+---------------------------------------------------------------------------
 Input:
 * N         : Number of samples per level
 * rho       : cross-correlation coefficient for conditional sampling
