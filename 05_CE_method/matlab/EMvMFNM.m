@@ -1,4 +1,4 @@
-function [model] = EMvMFNM(X,W,k)
+function [mu,kappa,m,omega,alpha] = EMvMFNM(X,W,k)
 %% Perform soft EM algorithm for fitting the von Mises-Fisher-Nakagami mixture model.
 %{
 ---------------------------------------------------------------------------
@@ -53,8 +53,8 @@ while ~converged && t < maxiter
         con2=abs(llh(2,t-1)-llh(2,t-2))<tol*100*abs(llh(2,t-1));
         converged=min(con1,con2);
     end
-    model = maximization(X_norm,W,R,M);
-    [M,llh(:,t)] = expectation(X_norm,W,model,R);
+    [mu,kappa,m,omega,alpha] = maximization(X_norm,W,R,M);
+    [M,llh(:,t)] = expectation(X_norm,W,mu,kappa,m,omega,alpha,R);
 end
 if converged    
     fprintf('Converged in %d steps.\n',t-1);
@@ -62,20 +62,30 @@ else
     fprintf('Not converged in %d steps.\n',maxiter);
 end
 
+
+% -------------------------------------------------------------------------
+% Initialization
+% -------------------------------------------------------------------------
 function M = initialization(X,k)
 % Initialization with k-means algorithm 
-idx = kmeans(X',k,'MaxIter',10000,'Replicates',10,'Distance','cosine');
-M = dummyvar(idx);
+% idx = kmeans(X',k,'MaxIter',10000,'Replicates',10,'Distance','cosine');
+% M = dummyvar(idx);
+
+% Random initialization
+[~,n] = size(X);
+label = ceil(k*rand(1,n));
+[u,~,label] = unique(label);
+while k ~= length(u)
+    label = ceil(init.k*rand(1,n));
+    [u,~,label] = unique(label);
+end
+M = full(sparse(1:n,label,1,n,k,n));
 return; 
 
-
-function [M,llh] = expectation(X,W,model,R)
-mu = model.mu;
-kappa = model.kappa;
-m=model.m;
-omega=model.omega;
-alpha=model.alpha;
-
+% -------------------------------------------------------------------------
+% Expectation
+% -------------------------------------------------------------------------
+function [M,llh] = expectation(X,W,mu,kappa,m,omega,alpha,R)
 n = size(X,2);
 k = size(mu,2);
 logvMF = zeros(n,k);
@@ -105,7 +115,10 @@ llh1 = [sum(W.*T_vMF)/sum(W);sum(W.*T_nakagami)/sum(W)];
 llh=llh1;
 return;
 
-function model = maximization(X,W,R,M)
+% -------------------------------------------------------------------------
+% Maximization
+% -------------------------------------------------------------------------
+function [mu,kappa,m,omega,alpha] = maximization(X,W,R,M)
 M = repmat(W,1,size(M,2)).*M;
 [d,~] = size(X);
 nk=sum(M,1);
@@ -130,15 +143,11 @@ mu4=(M'*R.^4)'./sum(M);
 m=omega.^2./(mu4-omega.^2);
 m(m<0)=d/2;
 m(m>20*d)=d/2;
-
-% assigning model
-model.mu = mu;
-model.kappa= kappa;
-model.m=m;
-model.omega=omega;
-model.alpha=alpha;
 return;
 
+% -------------------------------------------------------------------------
+% logvMFpdf
+% -------------------------------------------------------------------------
 function y = logvMFpdf(X, mu, kappa)
 
 d = size(X,1);
@@ -155,15 +164,20 @@ else
 end
 return;
 
+% -------------------------------------------------------------------------
+% lognakagamipdf
+% -------------------------------------------------------------------------
 function y = lognakagamipdf(X,m,om)
 
 y=log(2)+m*(log(m)-log(om)-X.^2./om)+log(X).*(2*m-1)-gammaln(m);
 return;
 
-function [logb] = logbesseli(nu,x)
+% -------------------------------------------------------------------------
 % log of the Bessel function, extended for large nu and x
 % approximation from Eqn 9.7.7 of Abramowitz and Stegun
 % http://www.math.sfu.ca/~cbm/aands/page_378.htm
+% -------------------------------------------------------------------------
+function [logb] = logbesseli(nu,x)
 
 if nu==0 % special case when nu=0
     logb=log(besseli(nu,x));
@@ -178,10 +192,13 @@ else % normal case
 end
 return;
 
-function s = logsumexp(x, dim)
+% -------------------------------------------------------------------------
 % Compute log(sum(exp(x),dim)) while avoiding numerical underflow.
 %   By default dim = 1 (columns).
 % Written by Michael Chen (sth4nth@gmail.com).
+% -------------------------------------------------------------------------
+function s = logsumexp(x, dim)
+
 if nargin == 1
     % Determine which dimension sum will use
     dim = find(size(x)~=1,1);
@@ -197,3 +214,5 @@ if ~isempty(i)
     s(i) = y(i);
 end
 return;
+
+%% END FILE

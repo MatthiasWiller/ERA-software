@@ -117,6 +117,7 @@ for j=1:max_it
 
   % obtaining estimator gamma
   gamma_hat(j+1) = max(0,prctile(geval,rho*100));
+  disp(num2str(gamma_hat(j+1)));
 
   % Indicator function
   I = geval<=gamma_hat(j+1);
