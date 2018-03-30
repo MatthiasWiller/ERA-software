@@ -85,9 +85,8 @@ xlabel('Limit state function, $g$','Interpreter','Latex','FontSize', 18);
 ylabel('Failure probability, $P_f$','Interpreter','Latex','FontSize', 18);
 
 % Plot failure probability: SuS
-hold on;
-semilogy(b_sus,pf_sus,'r--');           % curve
-semilogy(b,Pf,'ko','MarkerSize',5);   % points
+semilogy(b_sus,pf_sus,'r--'); hold on; % curve
+semilogy(b,Pf,'ko','MarkerSize',5);    % points
 semilogy(0,Pf_SuS,'b*','MarkerSize',6);
 semilogy(0,pf_ref,'ro','MarkerSize',8);
 hl = legend('SuS','Intermediate levels','Pf SuS','Pf Ref.','Location','NW');

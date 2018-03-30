@@ -8,6 +8,14 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
+Version 2018-03
+---------------------------------------------------------------------------
+Comments:
+*Express the failure probability as a product of larger conditional failure
+ probabilities by introducing intermediate failure events.
+*Use MCMC based on the modified Metropolis-Hastings algorithm for the 
+ estimation of conditional probabilities.
+*p0, the prob of each subset, is chosen 'adaptively' to be in [0.1,0.3]
 ---------------------------------------------------------------------------
 Input:
 * N     : Number of samples per level

@@ -24,7 +24,7 @@ Based on:
 2."MCMC algorithms for subset simulation"
    Papaioannou et al.
    Probabilistic Engineering Mechanics 41 (2015) 83-103.
-3. "Sequential importance sampling for structural reliability analysis"
+3."Sequential importance sampling for structural reliability analysis"
    Papaioannou et al.
    Structural Safety 62 (2016) 66-75
 ---------------------------------------------------------------------------
@@ -55,8 +55,6 @@ fprintf('SUBSET SIMULATION stage: \n');
 
 % reference solution
 pf_ref = 4.21e-3;
-Pf_exact = @(gg) normcdf(gg,beta,1);
-gg       = 0:0.05:7;
 
 % show p_f results
 fprintf('\n***Reference Pf: %g ***', pf_ref);
@@ -84,9 +82,8 @@ xlabel('Limit state function, $g$','Interpreter','Latex','FontSize', 18);
 ylabel('Failure probability, $P_f$','Interpreter','Latex','FontSize', 18);
 
 % Plot failure probability: SuS
-hold on;
-semilogy(b_sus,pf_sus,'r--');           % curve
-semilogy(b,Pf,'ko','MarkerSize',5);   % points
+semilogy(b_sus,pf_sus,'r--'); hold on;  % curve
+semilogy(b,Pf,'ko','MarkerSize',5);     % points
 semilogy(0,Pf_SuS,'b*','MarkerSize',6);
 semilogy(0,pf_ref,'ro','MarkerSize',8);
 hl = legend('SuS','Intermediate levels','Pf SuS','Pf Ref.','Location','NW');

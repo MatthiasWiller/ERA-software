@@ -17,7 +17,15 @@ Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2018-01
+Version 2018-03
+---------------------------------------------------------------------------
+Comments:
+*Express the failure probability as a product of larger conditional failure
+ probabilities by introducing intermediate failure events.
+*Use MCMC based on the modified Metropolis-Hastings algorithm for the 
+ estimation of conditional probabilities.
+*p0, the prob of each subset, is chosen 'adaptively' to be in [0.1,0.3]
+
 ---------------------------------------------------------------------------
 Input:
 * N     : Number of samples per level
@@ -88,7 +96,7 @@ def SuS(N,p0,g_fun,distr,alg):
     print('Evaluating performance function:\t', end='')
     u_j = sp.stats.norm.rvs(size=(n,N))     # samples in the standard space
     for i in range(N):
-        geval[i] = g(u_j[:,i])
+        geval[i] = g(u_j[:,i].reshape(n,-1))
         if geval[i] <= 0:
             Nf[j] = Nf[j]+1    # number of failure points
     print('OK!')
@@ -135,9 +143,11 @@ def SuS(N,p0,g_fun,distr,alg):
         
         # sampling process using adaptive conditional sampling
         if alg == 'acs':
-            [u_j,geval,lam,accrate] = aCS(N,lam,b[j],rnd_seeds,g)
+            gg = lambda u: g(u.reshape(n,-1))
+            [u_j,geval,lam,accrate] = aCS(N,lam,b[j],rnd_seeds,gg)
         elif alg == 'mma':
-            [u_j,geval,] = MMA(rnd_seeds,g,b[j],N)
+            gg = lambda u: g(u.reshape(n,-1))
+            [u_j,geval,] = MMA(rnd_seeds,gg,b[j],N)
         else:
             raise ValueError('Invalid sampling algorithm:',alg,'\nPlease choose either "acs" or "mma"!')
         

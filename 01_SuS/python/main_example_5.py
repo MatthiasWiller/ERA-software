@@ -6,11 +6,11 @@ from ERADist import ERADist
 from SuS import SuS
 """
 ---------------------------------------------------------------------------
-Subset Simulation: Ex. 1 Ref. 2 - linear function of independent standard normal
+Subset Simulation: Ex. 3 Ref. 3 - parabolic/concave limit-state function
 ---------------------------------------------------------------------------
 Created by:
-Matthias Willer (matthias.willer@tum.de)
 Felipe Uribe (felipe.uribe@tum.de)
+Matthias Willer (matthias.willer@tum.de)
 implemented in Python by:
 Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group
@@ -33,6 +33,9 @@ Based on:
 2."MCMC algorithms for subset simulation"
    Papaioannou et al.
    Probabilistic Engineering Mechanics 41 (2015) 83-103.
+3."Sequential importance sampling for structural reliability analysis"
+   Papaioannou et al.
+   Structural Safety 62 (2016) 66-75
 ---------------------------------------------------------------------------
 """
 
@@ -49,8 +52,12 @@ R = np.eye(d)   # independent case
 pi_pdf = ERANataf(pi_pdf, R)    # if you want to include dependence
 
 # %% limit-state function
-beta = 3.5
-g    = lambda x: -x.sum(axis=0)/np.sqrt(d) + beta
+g = lambda u: np.amin(np.array([ 
+                    0.1*(u[0,:]-u[1,:])**2-(u[0,:]+u[1,:])/np.sqrt(2)+3 , 
+                    0.1*(u[0,:]-u[1,:])**2+(u[0,:]+u[1,:])/np.sqrt(2)+3 , 
+                    u[0,:]-u[1,:]+7/np.sqrt(2) , 
+                    u[1,:]-u[0,:]+7/np.sqrt(2) 
+                    ]), axis=0)
 
 # %% subset simulation
 N   = 1000        # Total number of samples for each level
@@ -58,15 +65,13 @@ p0  = 0.1         # Probability of each subset, chosen adaptively
 alg = 'acs'       # Sampling Algorithm (either 'acs' or 'mma')
 
 print('SUBSET SIMULATION stage: ')
-[Pf_SuS,delta_SuS,b,Pf,b_sus,pf_sus,samplesU,samplesX] = SuS(N,p0,g,pi_pdf,alg)
+[Pf_SuS,delta_SuS,h,Pf,h_sus,pf_sus,samplesU,samplesX] = SuS(N,p0,g,pi_pdf,alg)
 
-# exact solution
-pf_ex    = sp.stats.norm.cdf(-beta)
-Pf_exact = lambda gg: sp.stats.norm.cdf(gg,beta,1)
-gg       = np.linspace(0,7,140)
+# reference solution
+pf_ref   = 2.2e-3
 
 # show p_f results
-print('\n***Exact Pf: ', pf_ex, ' ***')
+print('\n***Reference Pf: ', pf_ref, ' ***')
 print('***SuS Pf: ', Pf_SuS, ' ***\n\n')
 
 # %% Plots
@@ -81,7 +86,7 @@ plt.rc('figure', titlesize=20)  # fontsize of the figure title
 if d == 2:
     m = len(Pf)
     plt.figure() 
-    xx = np.linspace(0,5,100)
+    xx = np.linspace(-7,7,240)
     nnp = len(xx) 
     [X,Y] = np.meshgrid(xx,xx)
     xnod = np.array([X,Y])
@@ -97,20 +102,19 @@ if d == 2:
 # Plot failure probability: Exact
 plt.figure()
 plt.yscale('log')
-plt.plot(gg,Pf_exact(gg),'b-', label='Exact')
 plt.title('Failure probability estimate')
 plt.xlabel('Limit state function, $g$')
 plt.ylabel('Failure probability, $P_f$')
 
 # Plot failure probability: SuS
-plt.plot(b_sus,pf_sus,'r--', label='SuS')           # curve
-plt.plot(b,Pf,'ko', label='Intermediate levels', 
+plt.plot(h_sus,pf_sus,'r--', label='SuS')           # curve
+plt.plot(h,Pf,'ko', label='Intermediate levels', 
                     markersize=8, 
                     markerfacecolor='none')         # points
 plt.plot(0,Pf_SuS,'b+', label='Pf SuS', 
                         markersize=10, 
                         markerfacecolor='none')
-plt.plot(0,pf_ex,'ro', label='Pf Exact', 
+plt.plot(0,pf_ref,'ro', label='Pf Ref.', 
                        markersize=10, 
                        markerfacecolor='none')
 plt.legend()

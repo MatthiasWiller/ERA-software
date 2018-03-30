@@ -9,6 +9,7 @@ from SuS import SuS
 Subset Simulation: Ex. 2 Ref. 2 - linear function of independent exponential
 ---------------------------------------------------------------------------
 Created by:
+Matthias Willer (matthias.willer@tum.de)
 Felipe Uribe (felipe.uribe@tum.de)
 implemented in Python by:
 Matthias Willer (matthias.willer@tum.de)
@@ -90,6 +91,7 @@ plt.plot(0,Pf_SuS,'b+', label='Pf SuS',
 plt.plot(0,pf_ex,'ro', label='Pf Exact', 
                        markersize=10, 
                        markerfacecolor='none')
+plt.legend()
 plt.tight_layout()
 
 plt.show()
