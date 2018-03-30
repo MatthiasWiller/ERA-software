@@ -7,7 +7,7 @@ from GM_sample import GM_sample
 from EMGM import EMGM
 """
 ---------------------------------------------------------------------------
-Cross entropy-based importance sampling
+Cross entropy-based importance sampling with Gaussian Mixture
 ---------------------------------------------------------------------------
 Created by:
 Sebastian Geyer (s.geyer@tum.de)
@@ -18,12 +18,19 @@ www.era.bgu.tum.de
 ---------------------------------------------------------------------------
 Version 2018-03
 ---------------------------------------------------------------------------
+Comments:
+* The CE-method in combination with a Gaussian Mixture model can only be
+  applied for low-dimensional problems, since its accuracy decreases
+  dramatically in high dimensions.
+* General convergence issues can be observed with linear LSFs.
+---------------------------------------------------------------------------
 Input:
-* N     : Number of samples per level
-* rho   : cross-correlation coefficient for conditional sampling
-* g_fun : limit state function
-* distr : Nataf distribution object or
-          marginal distribution object of the input variables
+* N      : Number of samples per level
+* rho    : cross-correlation coefficient for conditional sampling
+* g_fun  : limit state function
+* distr  : Nataf distribution object or
+           marginal distribution object of the input variables
+* k_init : initial number of Gaussians in the mixture model
 ---------------------------------------------------------------------------
 Output:
 * Pr        : probability of failure
@@ -41,7 +48,7 @@ Based on:
    Engineering Risk Analysis Group, TUM (Sep 2017)
 ---------------------------------------------------------------------------
 """
-def CEIS_GM(N, rho, g_fun, distr):
+def CEIS_GM(N, rho, g_fun, distr, k_init):
     # %% initial check if there exists a Nataf object
     if isinstance(distr, ERANataf):   # use Nataf transform (dependence)
         dim = len(distr.Marginals)    # number of random variables (dimension)
@@ -66,14 +73,14 @@ def CEIS_GM(N, rho, g_fun, distr):
     j      = 0         # initial level
     max_it = 100       # estimated number of iterations
     N_tot  = 0         # total number of samples
-    k      = 1         # number of Gaussians in mixture
+    k      = k_init    # number of Gaussians in mixture
     
     # Definition of parameters of the random variables (uncorrelated standard normal)
-    mu_init = np.zeros([dim,1])   # ...
-    Si_init = np.eye(dim)         # ...
-    Pi_init = np.array([1.0])     # ...
+    mu_init = np.zeros([dim,1])   
+    Si_init = np.eye(dim)
+    Pi_init = np.array([1.0])
     #
-    gamma_hat = np.zeros([max_it+1]) # space for ...
+    gamma_hat = np.zeros([max_it+1]) # space for gamma
     samplesU  = list()
 
     # %% CE Procedure
@@ -114,12 +121,12 @@ def CEIS_GM(N, rho, g_fun, distr):
         W = sp.stats.multivariate_normal.pdf(X, mean=np.zeros((dim)), cov=np.eye((dim)))/h
 
         # Parameter update: EM algorithm
-        nGM = 2
-        [mu_hat, Si_hat, Pi_hat] = EMGM(X[I,:].T, W[I], nGM)
+        [mu_hat, Si_hat, Pi_hat] = EMGM(X[I,:].T, W[I], k_init)
         k = len(Pi_hat)
 
     # store the needed steps
-    l = j
+    l     = j
+    k_fin = k
     
     # %% Calculation of the Probability of failure
     W_final = sp.stats.multivariate_normal.pdf(X, mean=np.zeros(dim), cov=np.eye((dim)))/h

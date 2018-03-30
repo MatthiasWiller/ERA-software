@@ -63,11 +63,7 @@ max_it = 100;              % estimated number of iterations
 N_tot  = 0;                % total number of samples
 
 % Definition of parameters of the random variables (uncorrelated standard normal)
-mu_init = zeros(1,dim);   % ...
-Si_init = eye(dim);       % ...
-Pi_init = 1;              % ...
-%
-gamma_hat = zeros(max_it+1,1); % space for ...
+gamma_hat = zeros(max_it+1,1); % space for gamma
 samplesU = {};
 
 %% CE procedure
@@ -126,24 +122,24 @@ for j=1:max_it
   I = geval<=gamma_hat(j+1);
        
   % EM algorithm
-  dist = EMvMFNM(X(I,:)',exp(W_log(I,:)),k_init);
+  [mu,kappa,m,omega,alpha] = EMvMFNM(X(I,:)',exp(W_log(I,:)),k_init);
 
   % remove unnecessary components
-  if min(dist.alpha)<=0.01 
-      ind=find(dist.alpha>0.01);
-      dist.mu=dist.mu(:,ind);
-      dist.kappa=dist.kappa(ind);
-      dist.m=dist.m(ind);
-      dist.omega=dist.omega(ind);
-      dist.alpha=dist.alpha(ind);
+  if min(alpha)<=0.01 
+      ind   = find(alpha>0.01);
+      mu    = mu(:,ind);
+      kappa = kappa(ind);
+      m     = m(ind);
+      omega = omega(ind);
+      alpha = alpha(ind);
   end
 
   % Assigning updated parameters            
-  mu_hat    = dist.mu';
-  kappa_hat = dist.kappa;
-  m_hat     = dist.m;
-  omega_hat = dist.omega;
-  alpha_hat = dist.alpha;
+  mu_hat    = mu';
+  kappa_hat = kappa;
+  m_hat     = m;
+  omega_hat = omega;
+  alpha_hat = alpha;
 end
     
 % store the needed steps

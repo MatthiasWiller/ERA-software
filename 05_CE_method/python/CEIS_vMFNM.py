@@ -18,11 +18,12 @@ www.era.bgu.tum.de
 Version 2018-03
 ---------------------------------------------------------------------------
 Input:
-* N     : Number of samples per level
-* rho   : cross-correlation coefficient for conditional sampling
-* g_fun : limit state function
-* distr : Nataf distribution object or
+* N      : Number of samples per level
+* rho    : cross-correlation coefficient for conditional sampling
+* g_fun  : limit state function
+* distr  : Nataf distribution object or
           marginal distribution object of the input variables
+* k_init : initial number of distributions in the mixture model
 ---------------------------------------------------------------------------
 Output:
 * Pr        : probability of failure
@@ -67,11 +68,7 @@ def CEIS_vMFNM(N, rho, g_fun, distr):
     N_tot  = 0                # total number of samples
 
     # Definition of parameters of the random variables (uncorrelated standard normal)
-    mu_init = np.zeros([dim,1]) # ...
-    Si_init = np.eye(dim)       # ...
-    Pi_init = np.asarray([1])   # ...
-    #
-    gamma_hat = np.zeros([max_it+1]) # space for ...
+    gamma_hat = np.zeros([max_it+1]) # space for gamma
     samplesU = list()
 
     # %% CE procedure
@@ -128,10 +125,8 @@ def CEIS_vMFNM(N, rho, g_fun, distr):
         # Indicator function
         I = (geval<=gamma_hat[j+1])
             
-        # EM initialization with kmeans algorithm
-        k = 4
         # EM algorithm
-        [mu, kappa, m, omega, alpha] = EMvMFNM(X[I,:].T, np.exp(W_log[I,:]), k)
+        [mu, kappa, m, omega, alpha] = EMvMFNM(X[I,:].T, np.exp(W_log[I,:]), k_init)
 
         # remove unnecessary components
         if min(alpha)<=0.01:

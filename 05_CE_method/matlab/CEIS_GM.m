@@ -66,14 +66,14 @@ end
 j      = 0;                % initial level
 max_it = 100;              % estimated number of iterations
 N_tot  = 0;                % total number of samples
-k      = k_init;                % number of Gaussians in mixture
+k      = k_init;           % number of Gaussians in mixture
 
 % Definition of parameters of the random variables (uncorrelated standard normal)
-mu_init = zeros(1,dim);   % ...
-Si_init = eye(dim);       % ...
-Pi_init = 1;              % ...
+mu_init = zeros(1,dim);
+Si_init = eye(dim);
+Pi_init = 1;
 %
-gamma_hat = zeros(max_it+1,1); % space for ...
+gamma_hat = zeros(max_it+1,1); % space for gamma
 samplesU = cell(1,1);
 
 %% CE procedure

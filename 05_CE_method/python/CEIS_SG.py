@@ -5,7 +5,7 @@ from ERADist import ERADist
 from h_calc import h_calc
 """
 ---------------------------------------------------------------------------
-Cross entropy-based importance sampling
+Cross entropy-based importance sampling with Single Gaussian distribution
 ---------------------------------------------------------------------------
 Created by:
 Sebastian Geyer (s.geyer@tum.de)
@@ -15,6 +15,12 @@ Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
 Version 2018-03
+---------------------------------------------------------------------------
+Comments:
+* The CE-method in combination with a Gaussian Mixture model can only be
+  applied for low-dimensional problems, since its accuracy decreases
+  dramatically in high dimensions.
+* General convergence issues can be observed with linear LSFs.
 ---------------------------------------------------------------------------
 Input:
 * N     : Number of samples per level
@@ -138,7 +144,7 @@ def CEIS_SG(N, rho, g_fun, distr):
                 samplesX.append( distr.U2X(samplesU[i][:,:]) )
 
     else:
-        if distr.Name.lower() == 'standardnormal':
+        if distr[0].Name.lower() == 'standardnormal':
             for i in range(l):
                 samplesX.append( samplesU[i][:,:] )
         else:
