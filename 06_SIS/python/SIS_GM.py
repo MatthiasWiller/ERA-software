@@ -8,7 +8,7 @@ from EMGM import EMGM
 Sequential importance sampling
 ---------------------------------------------------------------------------
 Created by:
-Sebastian Geyer (s.geyer@tum.de)
+Iason Papaioannou (iason.papaioannou@tum.de)
 Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group
 Technische Universitat Munchen
@@ -22,6 +22,7 @@ Input:
 * g_fun     : limit state function
 * distr     : Nataf distribution object or
               marginal distribution object of the input variables
+* k_init    : initial number of Gaussians in the mixture model
 ---------------------------------------------------------------------------
 Output:
 * Pr       : probability of failure
@@ -36,7 +37,7 @@ Based on:
    Structural Safety 62 (2016) 66-75
 ---------------------------------------------------------------------------
 """
-def SIS_GM(N, rho, g_fun, distr):
+def SIS_GM(N, rho, g_fun, distr, k_init):
 
     # %% initial check if there exists a Nataf object
     if isinstance(distr, ERANataf):   # use Nataf transform (dependence)
@@ -122,8 +123,7 @@ def SIS_GM(N, rho, g_fun, distr):
         wnork = wk/Sk[m]/nsamlev
 
         # fit Gaussian Mixture
-        nGM = 2
-        [mu, si, pi] = EMGM(uk.T,wnork.T,nGM)
+        [mu, si, pi] = EMGM(uk.T,wnork.T,k_init)
         
         # %% Step 5
         # resample

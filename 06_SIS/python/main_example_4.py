@@ -9,12 +9,18 @@ from SIS_GM import SIS_GM
 Sequential importance sampling method: Ex. 2 Ref. 1 - parabolic/concave limit-state function
 ---------------------------------------------------------------------------
 Created by:
-Felipe Uribe (felipe.uribe@tum.de)
+Sebastian Geyer (s.geyer@tum.de)
+Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
 Version 2018-03
+---------------------------------------------------------------------------
+Comments:
+* The SIS-method in combination with a Gaussian Mixture model can only be
+  applied for low-dimensional problems, since its accuracy decreases
+  dramatically in high dimensions.
 ---------------------------------------------------------------------------
 Based on:
 1. "Sequential importance sampling for structural reliability analysis"
@@ -42,11 +48,12 @@ e     = 0.1
 g     = lambda u: b - u[1,:] - kappa*(u[0,:]-e)**2
 
 # %% Sequential Importance Sampling
-N   = 1000        # Total number of samples for each level
-rho = 0.1         # cross-correlation coefficient
+N      = 1000        # Total number of samples for each level
+rho    = 0.1         # Cross-correlation coefficient for conditional sampling
+k_init = 3           # Initial number of Gaussians in the Mixture Model (GM)
 
 print('SIS stage: ')
-[Pr, l, samplesU, samplesX, k_fin] = SIS_GM(N, rho, g, pi_pdf)
+[Pr, l, samplesU, samplesX, k_fin] = SIS_GM(N, rho, g, pi_pdf, k_init)
 
 # reference solution
 pf_ref = 3.01e-3

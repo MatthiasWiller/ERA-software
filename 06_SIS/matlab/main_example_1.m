@@ -1,4 +1,4 @@
-%% Sequential importance sampling method: Ex. 1 Ref. 3 - linear function of independent standard normal
+%% Sequential importance sampling method: Ex. 1 Ref. 2 - linear function of independent standard normal
 %{
 ---------------------------------------------------------------------------
 Created by:
@@ -19,7 +19,7 @@ Based on:
 1."Sequential importance sampling for structural reliability analysis"
    Papaioannou et al.
    Structural Safety 62 (2016) 66-75
-3."MCMC algorithms for subset simulation"
+2."MCMC algorithms for subset simulation"
    Papaioannou et al.
    Probabilistic Engineering Mechanics 41 (2015) 83-103.
 ---------------------------------------------------------------------------

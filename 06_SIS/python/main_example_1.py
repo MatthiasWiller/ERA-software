@@ -6,8 +6,7 @@ from ERADist import ERADist
 from SIS_GM import SIS_GM
 """
 ---------------------------------------------------------------------------
-Sequential importance sampling method: 
-Ex. 1 Ref. 2- linear function of independent standard normal
+Sequential importance sampling method: Ex. 1 Ref. 2 - linear function of independent standard normal
 ---------------------------------------------------------------------------
 Created by:
 Sebastian Geyer (s.geyer@tum.de)
@@ -17,6 +16,11 @@ Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
 Version 2018-03
+---------------------------------------------------------------------------
+Comments:
+* The SIS-method in combination with a Gaussian Mixture model can only be
+  applied for low-dimensional problems, since its accuracy decreases
+  dramatically in high dimensions.
 ---------------------------------------------------------------------------
 Based on:
 1. "Sequential importance sampling for structural reliability analysis"
@@ -44,12 +48,13 @@ pi_pdf = ERANataf(pi_pdf, R)    # if you want to include dependence
 beta = 3.5
 g    = lambda x: -x.sum(axis=0)/np.sqrt(d) + beta
 
-# %% cross entropy-based IS
-N   = 1000        # Total number of samples for each level
-rho = 0.1         # ...
+# %% Sequential Importance Sampling
+N      = 1000        # Total number of samples for each level
+rho    = 0.1         # Cross-correlation coefficient for conditional sampling
+k_init = 3           # Initial number of Gaussians in the Mixture Model (GM)
 
 print('SIS stage: ')
-[Pr, l, samplesU, samplesX, k_fin] = SIS_GM(N, rho, g, pi_pdf)
+[Pr, l, samplesU, samplesX, k_fin] = SIS_GM(N, rho, g, pi_pdf, k_init)
 
 # exact solution
 pf_ex    = sp.stats.norm.cdf(-beta)
