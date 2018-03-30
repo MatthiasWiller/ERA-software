@@ -1,5 +1,5 @@
 function [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_vMFNM(N,rho,g_fun,distr,k_init)
-%% Cross entropy-based importance sampling with vMFNM-distribution
+%% Cross entropy-based importance sampling with vMFN-mixture model
 %{
 ---------------------------------------------------------------------------
 Created by:

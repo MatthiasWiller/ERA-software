@@ -12,14 +12,16 @@ www.era.bgu.tum.de
 Version 2018-03
 ---------------------------------------------------------------------------
 Input:
-* X   : data matrix (dimensions x Number of samples)
-* W   : vector of likelihood ratios for weighted samples
-* nGM : number of vMFN-distributions in the mixture
+* X : data matrix (dimensions x Number of samples)
+* W : vector of likelihood ratios for weighted samples
+* k : number of vMFN-distributions in the mixture
 ---------------------------------------------------------------------------
 Output:
-* mu : [npi x d]-array of means of vMFN-distributions in the Mixture
-* si : [d x d x npi]-array of cov-matrices of vMFN-distributions in the Mixture
-* pi : [npi]-array of weights of vMFN-distributions in the Mixture (sum(Pi) = 1) 
+* mu    : mean directions
+* kappa : approximated concentration parameter 
+* m     : approximated shape parameter
+* omega : spread parameter 
+* alpha : distribution weights
 ---------------------------------------------------------------------------
 Based on:
 1. "EM Demystified: An Expectation-Maximization Tutorial"
@@ -100,49 +102,49 @@ for i = 1:k
 end
 
 % Matrix of posterior probabilities
-T = logsumexp(logpdf,2);
-logM = bsxfun(@minus,logpdf,T);
-M=exp(logM);
-M(M<1e-3)=0;
-M=bsxfun(@times,M,1./sum(M,2));
+T         = logsumexp(logpdf,2);
+logM      = bsxfun(@minus,logpdf,T);
+M         = exp(logM);
+M(M<1e-3) = 0;
+M         = bsxfun(@times,M,1./sum(M,2));
 
 % loglikelihood as tolerance criterion
-logvMF_weighted=bsxfun(@plus,logvMF,log(alpha));
-lognakagami_weighted=bsxfun(@plus,lognakagami,log(alpha));
-T_vMF=logsumexp(logvMF_weighted,2);
-T_nakagami=logsumexp(lognakagami_weighted,2);
-llh1 = [sum(W.*T_vMF)/sum(W);sum(W.*T_nakagami)/sum(W)];
-llh=llh1;
+logvMF_weighted      = bsxfun(@plus,logvMF,log(alpha));
+lognakagami_weighted = bsxfun(@plus,lognakagami,log(alpha));
+T_vMF                = logsumexp(logvMF_weighted,2);
+T_nakagami           = logsumexp(lognakagami_weighted,2);
+llh1                 = [sum(W.*T_vMF)/sum(W);sum(W.*T_nakagami)/sum(W)];
+llh                  = llh1;
 return;
 
 % -------------------------------------------------------------------------
 % Maximization
 % -------------------------------------------------------------------------
 function [mu,kappa,m,omega,alpha] = maximization(X,W,R,M)
-M = repmat(W,1,size(M,2)).*M;
+M     = repmat(W,1,size(M,2)).*M;
 [d,~] = size(X);
-nk=sum(M,1);
+nk    = sum(M,1);
 
 %  distribution weights
-alpha=nk/sum(W);
+alpha = nk/sum(W);
   
 % mean directions
-mu_unnormed=X*M;
-norm_mu=sqrt(sum(mu_unnormed.^2,1));
-mu=bsxfun(@times,mu_unnormed,1./norm_mu);
+mu_unnormed = X*M;
+norm_mu     = sqrt(sum(mu_unnormed.^2,1));
+mu          = bsxfun(@times,mu_unnormed,1./norm_mu);
 
 % approximated concentration parameter 
-xi=min(norm_mu./nk,0.95);
-kappa=(xi.*d-xi.^3)./(1-xi.^2);
+xi    = min(norm_mu./nk,0.95);
+kappa = (xi.*d-xi.^3)./(1-xi.^2);
 
 % spread parameter 
-omega=(M'*R.^2)'./sum(M);
+omega = (M'*R.^2)'./sum(M);
 
 % approximated shape parameter
-mu4=(M'*R.^4)'./sum(M);
-m=omega.^2./(mu4-omega.^2);
-m(m<0)=d/2;
-m(m>20*d)=d/2;
+mu4       = (M'*R.^4)'./sum(M);
+m         = omega.^2./(mu4-omega.^2);
+m(m<0)    = d/2;
+m(m>20*d) = d/2;
 return;
 
 % -------------------------------------------------------------------------
@@ -153,8 +155,8 @@ function y = logvMFpdf(X, mu, kappa)
 d = size(X,1);
 if kappa==0 
     % unit hypersphere uniform log pdf
-    A=log(d)+log(pi^(d/2))-gammaln(d/2+1);
-    y=-A;
+    A = log(d)+log(pi^(d/2))-gammaln(d/2+1);
+    y = -A;
 elseif kappa>0
     c = (d/2-1)*log(kappa)-(d/2)*log(2*pi)-logbesseli(d/2-1,kappa);
     q = bsxfun(@times,mu,kappa)'*X;
@@ -169,7 +171,7 @@ return;
 % -------------------------------------------------------------------------
 function y = lognakagamipdf(X,m,om)
 
-y=log(2)+m*(log(m)-log(om)-X.^2./om)+log(X).*(2*m-1)-gammaln(m);
+y = log(2)+m*(log(m)-log(om)-X.^2./om)+log(X).*(2*m-1)-gammaln(m);
 return;
 
 % -------------------------------------------------------------------------
@@ -180,15 +182,15 @@ return;
 function [logb] = logbesseli(nu,x)
 
 if nu==0 % special case when nu=0
-    logb=log(besseli(nu,x));
+    logb = log(besseli(nu,x));
 else % normal case
-    n=size(x,1);
+    n    = size(x,1);
     frac = x./nu;
     
     square = ones(n,1) + frac.^2;
-    root = sqrt(square);
-    eta = root + log(frac) - log(ones(n,1)+root);
-    logb = - log(sqrt(2*pi*nu)) + nu.*eta - 0.25*log(square);
+    root   = sqrt(square);
+    eta    = root + log(frac) - log(ones(n,1)+root);
+    logb   = - log(sqrt(2*pi*nu)) + nu.*eta - 0.25*log(square);
 end
 return;
 
