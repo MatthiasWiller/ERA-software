@@ -4,18 +4,25 @@ from ERANataf import ERANataf
 from ERADist import ERADist
 """
 ---------------------------------------------------------------------------
-Optimization using the fmincon function
+Optimization using the fmincon function (scipy.optimize.minimize() in Python)
 ---------------------------------------------------------------------------
 Created by: 
 Felipe Uribe (felipe.uribe@tum.de)
+Matthias Willer (matthias.willer@tum.de)
+implemented in Python by:
+Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group   
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
 Version 2018-03
 ---------------------------------------------------------------------------
+Comment:
+* The FORM method uses a first order approximation of the LSF and is 
+  therefore not accurate for non-linear LSF's
+---------------------------------------------------------------------------
 Input:
-* G     : limit state function in the original space
+* g     : limit state function in the original space
 * distr : ERANataf-Object containing the distribution
 ---------------------------------------------------------------------------
 Output:
@@ -30,26 +37,29 @@ References:
    Wiley-ISTE.
 ---------------------------------------------------------------------------
 """
-def FORM_fmincon(G, distr):
+def FORM_fmincon(g, distr):
+    
+    # %% initial check if there exists a Nataf object
+    if not(isinstance(distr, ERANataf)): 
+        raise RuntimeError('Incorrect distribution. Please create an ERANataf object!')
+
+    d = len(distr.Marginals)
 
     # %% objective function
     dist_fun = lambda u: np.linalg.norm(u)
 
     # %% parameters of the minimize function
-    u0  = [0.1,0.1]  # initial search point
+    u0  = np.tile([0.01],[d,1])  # initial search point
 
     # nonlinear constraint: H(u) <= 0
-    H      = lambda u: G(distr.U2X(u.reshape(-1,1)))
+    H    = lambda u: g(distr.U2X(u.reshape(-1,1)))
     cons = ({'type': 'ineq', 'fun': lambda u: -H(u)})
-
-    # boundaries of the optimization
-    bnds = ((-5, 5), (-5, 5))
 
     # method for minimization
     alg = 'SLSQP'
     
     # %% use constraint minimization
-    res = sp.optimize.minimize(dist_fun, u0, bounds=bnds, constraints=cons, method=alg)
+    res = sp.optimize.minimize(dist_fun, u0, constraints=cons, method=alg)
 
     # unpack results
     u_star = res.x

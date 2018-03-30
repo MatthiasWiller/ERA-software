@@ -55,20 +55,21 @@ fprintf('\n***Reference Pf: %g ***', pf_ref);
 fprintf('\n***FORM fmincon Pf: %g ***\n\n', Pf_fmc);
 
 %% Plot
-% grid points
-uu      = -6:0.05:6;
-[U1,U2] = meshgrid(uu,uu);
-nnu     = length(uu);
-unod    = cat(2, reshape(U1,nnu^2,1),reshape(U2,nnu^2,1));
-ZU      = g(unod);
-ZU      = reshape(ZU,nnu,nnu);
+if d == 2
+  % grid points
+  uu      = -7:0.05:7;
+  [U1,U2] = meshgrid(uu,uu);
+  nnu     = length(uu);
+  unod    = cat(2, reshape(U1,nnu^2,1),reshape(U2,nnu^2,1));
+  ZU      = g(unod);
+  ZU      = reshape(ZU,nnu,nnu);
 
-figure;
-%
-hold on; pcolor(U1,U2,ZU); shading interp;
-contour(U1,U2,ZU,[0 0],'r'); axis equal tight;
-plot(0,0,'ro',u_star_fmc(1),u_star_fmc(2),'r*');   % design point in standard
-line([0, u_star_fmc(1)],[0, u_star_fmc(2)]);       % reliability index beta
-title('Standard space');
-
+  figure;
+  %
+  hold on; pcolor(U1,U2,ZU); shading interp;
+  contour(U1,U2,ZU,[0 0],'r'); axis equal tight;
+  plot(0,0,'ro',u_star_fmc(1),u_star_fmc(2),'r*');   % design point in standard
+  line([0, u_star_fmc(1)],[0, u_star_fmc(2)]);       % reliability index beta
+  title('Standard space');
+end
 %%END

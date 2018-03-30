@@ -51,36 +51,36 @@ DH = @(u) [ 2/5, (2^(1/2)*exp(-u(2)^2/2))/(10*pi^(1/2)*(erf((2^(1/2)*u(2))/2)/2 
 % OPC 2. FORM using MATLAB fmincon
 [u_star_fmc, x_star_fmc, beta_fmc, Pf_fmc] = FORM_fmincon(G, pi_pdf);
 
-%% plot HLRF results
+%% Plot HLRF results
+if d == 2
+  % grid points
+  xx      = -1:0.1:3;
+  [X1,X2] = meshgrid(xx);
+  nnp     = length(xx);
+  xnod    = cat(2,reshape(X1,nnp^2,1),reshape(X2,nnp^2,1));
+  ZX       = G(xnod')';
+  ZX       = reshape(ZX,nnp,nnp);
 
-% grid points
-xx      = -1:0.1:3;
-[X1,X2] = meshgrid(xx);
-nnp     = length(xx);
-xnod    = cat(2,reshape(X1,nnp^2,1),reshape(X2,nnp^2,1));
-ZX       = G(xnod')'; 
-ZX       = reshape(ZX,nnp,nnp);
-
-uu1     = -3:0.1:1;
-uu2     = -1:0.1:3;
-[U1,U2] = meshgrid(uu1,uu2);
-nnu1    = length(uu1);
-nnu2    = length(uu2);
-unod    = cat(2, reshape(U1,nnu1*nnu2,1),reshape(U2,nnu1*nnu2,1));
-ZU      = H(unod');
-ZU      = reshape(ZU,nnu1,nnu2);
+  uu1     = -3:0.1:1;
+  uu2     = -1:0.1:3;
+  [U1,U2] = meshgrid(uu1,uu2);
+  nnu1    = length(uu1);
+  nnu2    = length(uu2);
+  unod    = cat(2, reshape(U1,nnu1*nnu2,1),reshape(U2,nnu1*nnu2,1));
+  ZU      = H(unod');
+  ZU      = reshape(ZU,nnu1,nnu2);
 
 
-figure;
-subplot(121); hold on; pcolor(X1,X2,ZX); shading interp;
-contour(X1,X2,ZX,[0 0],'r'); axis equal tight;
-plot(x_star_hlrf(1),x_star_hlrf(2),'r*');   % design point in original
-title('Physical space');
-%
-subplot(122); hold on; pcolor(U1,U2,ZU); shading interp;
-contour(U1,U2,ZU,[0 0],'r'); axis equal tight;
-plot(0,0,'ro',u_star_hlrf(1),u_star_hlrf(2),'r*');   % design point in standard
-line([0, u_star_hlrf(1)],[0, u_star_hlrf(2)]);       % reliability index beta
-title('Standard space');
-
+  figure;
+  subplot(121); hold on; pcolor(X1,X2,ZX); shading interp;
+  contour(X1,X2,ZX,[0 0],'r'); axis equal tight;
+  plot(x_star_hlrf(1),x_star_hlrf(2),'r*');   % design point in original
+  title('Physical space');
+  %
+  subplot(122); hold on; pcolor(U1,U2,ZU); shading interp;
+  contour(U1,U2,ZU,[0 0],'r'); axis equal tight;
+  plot(0,0,'ro',u_star_hlrf(1),u_star_hlrf(2),'r*');   % design point in standard
+  line([0, u_star_hlrf(1)],[0, u_star_hlrf(2)]);       % reliability index beta
+  title('Standard space');
+end
 %%END

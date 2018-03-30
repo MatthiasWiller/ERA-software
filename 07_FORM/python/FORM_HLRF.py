@@ -8,15 +8,22 @@ HLRF function
 ---------------------------------------------------------------------------
 Created by: 
 Felipe Uribe (felipe.uribe@tum.de)
+Matthias Willer (matthias.willer@tum.de)
+implemented in Python by:
+Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group   
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
 Version 2018-03
 ---------------------------------------------------------------------------
+Comment:
+* The FORM method uses a first order approximation of the LSF and is 
+  therefore not accurate for non-linear LSF's
+---------------------------------------------------------------------------
 Input:
-* G     : limit state function in the original space
-* DG    : gradient of the limit state function in the standard space
+* g     : limit state function in the original space
+* dg    : gradient of the limit state function in the standard space
 * distr : ERANataf-Object containing the distribution
 ---------------------------------------------------------------------------
 Output:
@@ -31,7 +38,7 @@ References:
    Wiley-ISTE.
 ---------------------------------------------------------------------------
 """
-def FORM_HLRF(G,DG,distr):
+def FORM_HLRF(g,dg,distr):
 
     # %% initial check if there exists a Nataf object
     if not(isinstance(distr, ERANataf)): 
@@ -51,12 +58,13 @@ def FORM_HLRF(G,DG,distr):
         [xk, J] = distr.U2X(u[:,k].reshape(-1,1), Jacobian=True)
         
         # 1. evaluate LSF at point u_k
-        H_uk = G(xk)
+        H_uk = g(xk.reshape(n,-1))
         
         # 2. evaluate LSF gradient at point u_k and direction cosines
-        DH_uk      = sp.linalg.solve(J,DG(xk))
+        DH_uk      = sp.linalg.solve(J,dg(xk))
         norm_DH_uk = np.linalg.norm(DH_uk)
         alpha      = DH_uk/norm_DH_uk
+        alpha      = alpha.squeeze()
         
         # 3. calculate beta
         beta[k] = -np.inner(u[:,k].T, alpha) + H_uk/norm_DH_uk
