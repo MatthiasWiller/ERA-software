@@ -5,7 +5,7 @@ from ERANataf import ERANataf
 from ERADist import ERADist
 from CEIS_SG import CEIS_SG
 from CEIS_GM import CEIS_GM
-# from CEIS_vMFNM import CEIS_vMFNM
+from CEIS_vMFNM import CEIS_vMFNM
 """
 ---------------------------------------------------------------------------
 Cross entropy method: Ex. 1 Ref. 2 - linear function of independent standard normal
@@ -13,11 +13,19 @@ Cross entropy method: Ex. 1 Ref. 2 - linear function of independent standard nor
 Created by:
 Sebastian Geyer (s.geyer@tum.de)
 Matthias Willer (matthias.willer@tum.de)
+Implemented in Python by:
+Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
 Version 2018-03
+---------------------------------------------------------------------------
+Comments:
+* The CE-method in combination with a Gaussian Mixture model can only be
+  applied for low-dimensional problems, since its accuracy decreases
+  dramatically in high dimensions.
+* General convergence issues can be observed with linear LSFs.
 ---------------------------------------------------------------------------
 Based on:
 1."Cross entropy-based importance sampling 
@@ -30,7 +38,7 @@ Based on:
 ---------------------------------------------------------------------------
 """
 
-## definition of the random variables
+# %% definition of the random variables
 d      = 2          # number of dimensions
 pi_pdf = list()
 for i in range(d):
@@ -42,20 +50,19 @@ R = np.eye(d)   # independent case
 # object with distribution information
 pi_pdf = ERANataf(pi_pdf, R)    # if you want to include dependence
 
-## limit-state function
+# %% limit-state function
 beta = 3.5
-g    = lambda x: -x.sum(axis=0)/np.sqrt(d) + beta
+g    = lambda x: -np.sum(x, axis=0)/np.sqrt(d) + beta
 
-## cross entropy-based IS
-N   = 1000        # Total number of samples for each level
-rho = 0.1         # ...
+# %% CE-method
+N      = 1000        # Total number of samples for each level
+rho    = 0.1         # Cross-correlation coefficient for conditional sampling
+k_init = 3           # Initial number of distributions in the Mixture Model (GM/vMFNM)
 
 print('CE-based IS stage: ')
-# [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_SG(N, rho, g, pi_pdf)       # single gaussian
-[Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_GM(N, rho, g, pi_pdf)       # gaussian mixture
-# [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_vMFNM(N, rho, g, pi_pdf)    # adaptive vMFN mixture
-
-
+# [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_SG(N, rho, g, pi_pdf)               # single gaussian
+[Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_GM(N, rho, g, pi_pdf, k_init)       # gaussian mixture
+# [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_vMFNM(N, rho, g, pi_pdf, k_init)    # adaptive vMFN mixture
 
 # exact solution
 pf_ex    = sp.stats.norm.cdf(-beta)
@@ -66,7 +73,7 @@ gg       = np.linspace(0,7,140)
 print('***Exact Pf: ', pf_ex, ' ***')
 print('***CEIS Pf: ', Pr, ' ***\n\n')
 
-## Plots
+# %% Plots
 # Options for font-family and font-size
 plt.rc('text', usetex=True)
 plt.rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
@@ -93,4 +100,4 @@ if d == 2:
 
 plt.show()
 
-##END
+# %%END

@@ -5,13 +5,16 @@ from ERANataf import ERANataf
 from ERADist import ERADist
 from CEIS_SG import CEIS_SG
 from CEIS_GM import CEIS_GM
-# from CEIS_vMFNM import CEIS_vMFNM
+from CEIS_vMFNM import CEIS_vMFNM
 """
 ---------------------------------------------------------------------------
-Cross entropy method: Ex. 3 Ref. 1 - series system reliability problem
+Cross entropy method: Ex. 3 Ref. 2 - series system reliability problem
 ---------------------------------------------------------------------------
 Created by:
-Felipe Uribe (felipe.uribe@tum.de)
+Sebastian Geyer (s.geyer@tum.de)
+Matthias Willer (matthias.willer@tum.de)
+Implemented in Python by:
+Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de
@@ -49,14 +52,15 @@ g = lambda u: np.amin(np.array([
                     u[1,:]-u[0,:]+7/np.sqrt(2) 
                     ]), axis=0)
 
-# %% Cross entropy-based IS
-N   = 5000        # Total number of samples for each level
-rho = 0.1         # cross-correlation coefficient
+# %% CE-method
+N      = 1000        # Total number of samples for each level
+rho    = 0.1         # Cross-correlation coefficient for conditional sampling
+k_init = 3           # Initial number of distributions in the Mixture Model (GM/vMFNM)
 
 print('CE-based IS stage: ')
-# [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_SG(N, rho, g, pi_pdf)       # single gaussian
-[Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_GM(N, rho, g, pi_pdf)       # gaussian mixture
-# [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_vMFNM(N, rho, g, pi_pdf)    # adaptive vMFN mixture
+# [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_SG(N, rho, g, pi_pdf)               # single gaussian
+[Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_GM(N, rho, g, pi_pdf, k_init)       # gaussian mixture
+# [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_vMFNM(N, rho, g, pi_pdf, k_init)    # adaptive vMFN mixture
 
 # reference solution
 pf_ref = 2.2e-3
