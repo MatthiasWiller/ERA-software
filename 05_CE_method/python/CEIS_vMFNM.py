@@ -41,7 +41,7 @@ Based on:
    Engineering Risk Analysis Group, TUM (Sep 2017)
 ---------------------------------------------------------------------------
 """
-def CEIS_vMFNM(N, rho, g_fun, distr):
+def CEIS_vMFNM(N, rho, g_fun, distr, k_init):
     # %% initial check if there exists a Nataf object
     if isinstance(distr, ERANataf):   # use Nataf transform (dependence)
         dim = len(distr.Marginals)    # number of random variables (dimension)
@@ -78,10 +78,10 @@ def CEIS_vMFNM(N, rho, g_fun, distr):
 
     # initial von Mises-Fisher parameters
     kappa_init = 0                   # Concentration parameter (zero for uniform distribution)
-    mu_init    = hs_sample(1, dim,1) # Initial mean sampled on unit hypersphere
+    mu_init    = hs_sample(1,dim,1) # Initial mean sampled on unit hypersphere
 
     # initial disribution weight
-    alpha_init = 1
+    alpha_init = np.array([1.0])
 
     # %% Initializing parameters
     mu_hat       = mu_init
@@ -124,7 +124,7 @@ def CEIS_vMFNM(N, rho, g_fun, distr):
 
         # Indicator function
         I = (geval<=gamma_hat[j+1])
-            
+
         # EM algorithm
         [mu, kappa, m, omega, alpha] = EMvMFNM(X[I,:].T, np.exp(W_log[I,:]), k_init)
 
@@ -149,7 +149,7 @@ def CEIS_vMFNM(N, rho, g_fun, distr):
 
     # %% Calculation of Probability of failure
     I  = (geval<=gamma_hat[j])
-    Pr = 1/N*sum(np.exp(W_log[I,:])) 
+    Pr = 1/N*np.sum(np.exp(W_log[I,:])) 
 
     # %% transform the samples to the physical/original space
     samplesX = list()
@@ -163,7 +163,7 @@ def CEIS_vMFNM(N, rho, g_fun, distr):
                 samplesX.append( distr.U2X(samplesU[i][:,:]) )
 
     else:
-        if distr.Name.lower() == 'standardnormal':
+        if distr[0].Name.lower() == 'standardnormal':
             for i in range(l):
                 samplesX.append( samplesU[i][:,:] )
         else:
@@ -187,7 +187,8 @@ def hs_sample(N,n,R):
 
     norm = np.tile(np.sqrt(np.sum(Y**2,axis=1)),[1,n])
 
-    X = np.matmul(Y/norm,R)
+    # X = np.matmul(Y/norm,R)
+    X = Y/norm*R
     return X
 
 # --------------------------------------------------------------------------
@@ -195,32 +196,32 @@ def hs_sample(N,n,R):
 # --------------------------------------------------------------------------
 def vMFNM_sample(mu,kappa,omega,m,alpha,N):
 
-    [k, dim] = np.size(mu)
+    [k, dim] = np.shape(mu)
 
     if k==1:
         # sampling the radius
         #     pd=makedist('Nakagami','mu',m,'omega',omega)
         #     R=pd.random(N,1)
-        R = np.sqrt(gamrnd(m,omega/m,N,1))
+        R = np.sqrt(sp.stats.gamma.rvs(a=m,scale=omega/m,size=[N,1]))
         
         # sampling on unit hypersphere
         X_norm = vsamp(mu.T,kappa,N)
         
     else:
         # Determine number of samples from each distribution
-        z = sum(dummyvar(randsample(k,N,True,alpha)))
+        z = np.sum(dummyvar(np.random.choice(range(k),N,True,alpha)),axis=0)
         k = len(z)
         
         # Generation of samples
-        R = np.zeros(N)
+        R = np.zeros([N,1])
         R_last = 0
         X_norm = np.zeros([N,dim])
         X_last = 0
         
         for p in range(k):
             # sampling the radius
-            R[R_last:R_last+z[p]] = np.sqrt(gamrnd(m[p],omega[p]/m[p],z[p],1))
-            R_last = R_last + z(p)
+            R[R_last:R_last+z[p],:] = np.sqrt(sp.stats.gamma.rvs(a=m[:,p],scale=omega[:,p]/m[:,p],size=[z[p],1]))
+            R_last = R_last + z[p]
             
             # sampling on unit hypersphere
             X_norm[X_last:X_last+z[p],:] = vsamp(mu[p,:].T,kappa[p],z[p])
@@ -238,7 +239,7 @@ def vMFNM_sample(mu,kappa,omega,m,alpha,N):
 def vsamp(center, kappa, n):
 
     # d > 1 of course
-    d  = np.size(center,size=0)			# Dimensionality
+    d  = np.size(center,axis=0)			# Dimensionality
     l  = kappa				# shorthand
     t1 = np.sqrt(4*l*l + (d-1)*(d-1))
     b  = (-2*l + t1 )/(d-1)
@@ -255,14 +256,15 @@ def vsamp(center, kappa, n):
         u = 1
 
         while t < np.log(u):
-            z = betarnd(m , m)			# z is a beta rand var
+            z = sp.stats.beta.rvs(m,m)			# z is a beta rand var
             u = sp.stats.uniform.rvs()	# u is unif rand var
             w = (1 - (1+b)*z)/(1 - (1-b)*z)
             t = l*w + (d-1)*np.log(1-x0*w) - c
         
         v         = hs_sample(1,d-1,1)                                      
-        X[i,:d-1] = np.matmul(np.sqrt(1-w*w),v.T)
-        X[i,d]    = w
+        # X[i,:d-1] = np.matmul(np.sqrt(1-w*w),v.T)
+        X[i,:d-1] = np.sqrt(1-w*w)*v
+        X[i,d-1]    = w
 
     [v,b] = house(center)
     Q = np.eye(d) - b*np.matmul(v,v.T)
@@ -283,7 +285,7 @@ def vMF_logpdf(X,mu,kappa):
     n = np.size(X, axis=1)
 
     if kappa == 0:
-        A = np.log(d) + np.log(np.pi**(d/2)) - gammaln(d/2+1)
+        A = np.log(d) + np.log(np.pi**(d/2)) - sp.special.gammaln(d/2+1)
         y = -A*np.ones([1,n])
     elif kappa > 0:
         c = (d/2-1)*np.log(kappa)-(d/2)*np.log(2*np.pi)-logbesseli(d/2-1,kappa)
@@ -299,7 +301,7 @@ def vMF_logpdf(X,mu,kappa):
 # --------------------------------------------------------------------------
 def nakagami_logpdf(X,m,om):
 
-    y = np.log(2) + m*(np.log(m)-np.log(om)-X**2/om) + np.log(X)*(2*m-1) - gammaln(m)
+    y = np.log(2) + m*(np.log(m)-np.log(om)-X**2/om) + np.log(X)*(2*m-1) - sp.special.gammaln(m)
     return y
 
 # --------------------------------------------------------------------------
@@ -307,8 +309,8 @@ def nakagami_logpdf(X,m,om):
 # --------------------------------------------------------------------------
 def likelihood_ratio_log(X,mu,kappa,omega,m,alpha):
     k       = len(alpha)
-    [N,dim] = np.size(X)
-    R       = np.sqrt(np.sum(X*X,axis=1))
+    [N,dim] = np.shape(X)
+    R       = np.sqrt(np.sum(X*X,axis=1)).reshape(-1,1)
 
     if k==1:
         
@@ -330,19 +332,19 @@ def likelihood_ratio_log(X,mu,kappa,omega,m,alpha):
             # log pdf of vMF distribution
             logpdf_vMF[:,p] = vMF_logpdf((X/R).T, mu[p,:].T,kappa[p]).T
             # log pdf of Nakagami distribution
-            logpdf_N[:,p]   = nakagami_logpdf(R,m[p],omega[p])
+            logpdf_N[:,p]   = nakagami_logpdf(R,m[:,p],omega[:,p]).squeeze()
             # log pdf of weighted combined distribution
             h_log[:,p]      = logpdf_vMF[:,p] + logpdf_N[:,p] + np.log(alpha[p])
         
         # mixture log pdf
-        h_log = logsumexp(h_log,2)
+        h_log = logsumexp(h_log,1)
 
     # unit hypersphere uniform log pdf
-    A   = np.log(dim) + np.log(np.pi**(dim/2)) - gammaln(dim/2+1)
+    A   = np.log(dim) + np.log(np.pi**(dim/2)) - sp.special.gammaln(dim/2+1)
     f_u = -A
 
     # chi log pdf
-    f_chi=np.log(2)*(1-dim/2) + np.log(R)*(dim-1) - 0.5*R**2 - gammaln(dim/2)
+    f_chi=np.log(2)*(1-dim/2) + np.log(R)*(dim-1) - 0.5*R**2 - sp.special.gammaln(dim/2)
 
     # logpdf of the standard distribution (uniform combined with chi
     # distribution)
@@ -360,24 +362,26 @@ def likelihood_ratio_log(X,mu,kappa,omega,m,alpha):
 # Hx ==> [0 0 0 ... ||x||], where  is a constant.
 # --------------------------------------------------------------------------
 def house(x):
+    x = x.squeeze()
     n = len(x)
 
     s = np.matmul(x[:n-1].T,x[:n-1])
-    v = np.asarray([x[:n-1].T, 1]).T
+    v = np.concatenate([x[:n-1], np.array([1.0])]).squeeze()
 
     if s == 0:
         b = 0
     else:
-        m = np.sqrt(x[n]*x[n] + s)
+        m = np.sqrt(x[n-1]*x[n-1] + s)
     
-        if x[n] <= 0:
-            v[n] = x[n]-m
+        if x[n-1] <= 0:
+            v[n-1] = x[n-1]-m
         else:
-            v[n] = -s/(x[n]+m)
+            v[n-1] = -s/(x[n-1]+m)
 
-        b = 2*v[n]*v[n]/(s + v[n]*v[n])
-        v = v/v[n]
-
+        b = 2*v[n-1]*v[n-1]/(s + v[n-1]*v[n-1])
+        v = v/v[n-1]
+    
+    v = v.reshape(-1,1)
     return [v,b]
 
 # --------------------------------------------------------------------------
@@ -388,7 +392,7 @@ def house(x):
 def logbesseli(nu,x):
 
     if nu == 0: # special case when nu=0
-        logb = np.log(besseli(nu,x))
+        logb = np.log(sp.special.iv(nu,x)) # besseli
     else: # normal case
         n    = np.size(x, axis=0)
         frac = x/nu

@@ -46,17 +46,21 @@ t = 1;
 
 while ~converged && t < maxiter
     t = t+1;
+
     [~,label(:)] = max(M,[],2);
     u = unique(label);   % non-empty components
     if size(M,2) ~= size(u,2)
         M = M(:,u);   % remove empty components
-    elseif t>2
-        con1 = abs(llh(1,t-1)-llh(1,t-2)) < tol*abs(llh(1,t-1));
-        con2=abs(llh(2,t-1)-llh(2,t-2))<tol*100*abs(llh(2,t-1));
-        converged=min(con1,con2);
     end
+    
     [mu,kappa,m,omega,alpha] = maximization(X_norm,W,R,M);
     [M,llh(:,t)] = expectation(X_norm,W,mu,kappa,m,omega,alpha,R);
+
+    if t > 2
+        con1      = abs(llh(1,t)-llh(1,t-1)) < tol*abs(llh(1,t));
+        con2      = abs(llh(2,t)-llh(2,t-1)) < tol*100*abs(llh(2,t));
+        converged = min(con1,con2);
+    end
 end
 if converged    
     fprintf('Converged in %d steps.\n',t-1);
@@ -70,18 +74,18 @@ end
 % -------------------------------------------------------------------------
 function M = initialization(X,k)
 % Initialization with k-means algorithm 
-% idx = kmeans(X',k,'MaxIter',10000,'Replicates',10,'Distance','cosine');
-% M = dummyvar(idx);
+idx = kmeans(X',k,'MaxIter',10000,'Replicates',10,'Distance','cosine');
+M = dummyvar(idx);
 
 % Random initialization
-[~,n] = size(X);
-label = ceil(k*rand(1,n));
-[u,~,label] = unique(label);
-while k ~= length(u)
-    label = ceil(init.k*rand(1,n));
-    [u,~,label] = unique(label);
-end
-M = full(sparse(1:n,label,1,n,k,n));
+% [~,n] = size(X);
+% label = ceil(k*rand(1,n));
+% [u,~,label] = unique(label);
+% while k ~= length(u)
+%     label = ceil(init.k*rand(1,n));
+%     [u,~,label] = unique(label);
+% end
+% M = full(sparse(1:n,label,1,n,k,n));
 return; 
 
 % -------------------------------------------------------------------------

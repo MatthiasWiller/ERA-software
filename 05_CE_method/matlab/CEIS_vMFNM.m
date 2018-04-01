@@ -121,7 +121,7 @@ for j=1:max_it
 
   % Indicator function
   I = geval<=gamma_hat(j+1);
-       
+  
   % EM algorithm
   [mu,kappa,m,omega,alpha] = EMvMFNM(X(I,:)',exp(W_log(I,:)),k_init);
 
