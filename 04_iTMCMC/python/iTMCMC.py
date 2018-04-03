@@ -61,8 +61,8 @@ def iTMCMC(Ns, Nb, log_likelihood, T_nataf):
     for i in range(Ns):
         logL_j[i] = log_likelihood(theta_j[i,:])
     
-    samplesU.append(np.copy(u_j))           # store initial level samples
-    samplesX.append(np.copy(theta_j))       # store initial level samples
+    samplesU.append(np.copy(u_j.T))           # store initial level samples
+    samplesX.append(np.copy(theta_j.T))       # store initial level samples
 
     # %% iTMCMC
     while q[j] < 1:   # adaptively choose q
@@ -150,8 +150,8 @@ def iTMCMC(Ns, Nb, log_likelihood, T_nataf):
         # print(np.tile('\b',1,msg))
         
         # store samples
-        samplesU.append(np.copy(u_j))
-        samplesX.append(np.copy(theta_j))
+        samplesU.append(np.copy(u_j.T))
+        samplesX.append(np.copy(theta_j.T))
  
     # delete unnecessary data
     if j < max_it:
