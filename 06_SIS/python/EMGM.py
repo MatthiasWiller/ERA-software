@@ -70,16 +70,33 @@ def EMGM(X, W, nGM):
 # %% END EMGM ----------------------------------------------------------------
 
 # --------------------------------------------------------------------------
-# Initialization with k-means algorithm 
+# Initialization
 # --------------------------------------------------------------------------
 def initialization(X, nGM):
+    # Initialization with k-means algorithm 
+    # [_,idx] = sp.cluster.vq.kmeans2(X.T, nGM, iter=10)
+    # R       = dummyvar(idx)
 
-    [_,idx] = sp.cluster.vq.kmeans2(X.T, nGM, iter=10)
-    R   = dummyvar(idx)
+    # Random initialization
+    n     = np.size(X, axis=1)
+    idx   = np.random.choice(range(n),nGM)
+    m     = X[:,idx]
+    label = np.argmax(np.matmul(m.T,X) - np.sum(m*m,axis=0).reshape(-1,1)/2, axis=0)
+    u     = np.unique(label)
+    while nGM != len(u):
+        idx = np.random.choice(range(n),nGM)
+        m     = X[:,idx]
+        label = np.argmax(np.matmul(m.T,X) - np.sum(m*m,axis=0).reshape(-1,1)/2, axis=0)
+        u     = np.unique(label)
+
+    R = np.zeros([n,nGM], dtype=int)
+    for i in range(n):
+        R[i,label[i]] = 1
+
     return R
 
 # --------------------------------------------------------------------------
-# ...
+# Expectation
 # --------------------------------------------------------------------------
 def expectation(X, W, mu, si, pi):
     n = np.size(X, axis=1)
@@ -99,7 +116,7 @@ def expectation(X, W, mu, si, pi):
 
 
 # --------------------------------------------------------------------------
-# ...
+# Maximization
 # --------------------------------------------------------------------------
 def maximization(X, W, R):
     R = W*R

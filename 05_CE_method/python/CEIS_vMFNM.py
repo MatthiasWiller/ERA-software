@@ -297,7 +297,7 @@ def vMF_logpdf(X,mu,kappa):
     return y
 
 # --------------------------------------------------------------------------
-# ...
+# Returns the value of the log-nakagami-pdf
 # --------------------------------------------------------------------------
 def nakagami_logpdf(X,m,om):
 
@@ -305,7 +305,7 @@ def nakagami_logpdf(X,m,om):
     return y
 
 # --------------------------------------------------------------------------
-# ...
+# likelihood_ratio_log()
 # --------------------------------------------------------------------------
 def likelihood_ratio_log(X,mu,kappa,omega,m,alpha):
     k       = len(alpha)

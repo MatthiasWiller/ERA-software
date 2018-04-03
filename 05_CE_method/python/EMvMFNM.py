@@ -75,16 +75,33 @@ def EMvMFNM(X,W,k):
 
 
 # --------------------------------------------------------------------------
-# Initialization with k-means algorithm 
+# Initialization
 # --------------------------------------------------------------------------
 def initialization(X, k):
+    # Initialization with k-means algorithm 
+    # [_,idx] = sp.cluster.vq.kmeans2(X.T, k, iter=10)
+    # M       = dummyvar(idx)
 
-    [_,idx] = sp.cluster.vq.kmeans2(X.T, k, iter=10)
-    M   = dummyvar(idx)
+    # Random initialization
+    n     = np.size(X, axis=1)
+    idx   = np.random.choice(range(n),k)
+    m     = X[:,idx]
+    label = np.argmax(np.matmul(m.T,X) - np.sum(m*m,axis=0).reshape(-1,1)/2, axis=0)
+    u     = np.unique(label)
+    while k != len(u):
+        idx = np.random.choice(range(n),k)
+        m     = X[:,idx]
+        label = np.argmax(np.matmul(m.T,X) - np.sum(m*m,axis=0).reshape(-1,1)/2, axis=0)
+        u     = np.unique(label)
+
+    M = np.zeros([n,k], dtype=int)
+    for i in range(n):
+        M[i,label[i]] = 1
+    
     return M
 
 # --------------------------------------------------------------------------
-# ...
+# Expectation
 # --------------------------------------------------------------------------
 def expectation(X,W,R,mu,kappa,m,omega,alpha):
     n = np.size(X, axis=1)
@@ -114,13 +131,11 @@ def expectation(X,W,R,mu,kappa,m,omega,alpha):
     T_nakagami           = logsumexp(lognakagami_weighted,1)
     llh1 = np.array([np.sum(W*T_vMF, axis=0)/np.sum(W, axis=0), np.sum(W*T_nakagami, axis=0)/np.sum(W, axis=0)]).squeeze()
     llh  = llh1
-    # print(llh[0])
-    # print(llh[1])
 
     return [M, llh]
 
 # --------------------------------------------------------------------------
-# ...
+# Maximization
 # --------------------------------------------------------------------------
 def maximization(X,W,R,M):
     M  = W*M                   # repmat(W,1,size(M,2)).*M
@@ -151,7 +166,7 @@ def maximization(X,W,R,M):
     return [mu, kappa, m, omega, alpha]
 
 # --------------------------------------------------------------------------
-# ...
+# Returns the log of the vMF-pdf
 # --------------------------------------------------------------------------
 def logvMFpdf(X, mu, kappa):
     d = np.size(X, axis=0)
@@ -171,7 +186,7 @@ def logvMFpdf(X, mu, kappa):
     return y
 
 # --------------------------------------------------------------------------
-# ...
+# Returns the log of the nakagami-pdf
 # --------------------------------------------------------------------------
 def lognakagamipdf(X,m,om):
 
