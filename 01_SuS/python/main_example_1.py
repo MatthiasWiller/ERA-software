@@ -9,9 +9,9 @@ from SuS import SuS
 Subset Simulation: Ex. 1 Ref. 2 - linear function of independent standard normal
 ---------------------------------------------------------------------------
 Created by:
-Matthias Willer (matthias.willer@tum.de)
 Felipe Uribe (felipe.uribe@tum.de)
-implemented in Python by:
+Matthias Willer (matthias.willer@tum.de)
+Implemented in Python by:
 Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group
 Technische Universitat Munchen

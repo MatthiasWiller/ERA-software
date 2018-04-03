@@ -6,6 +6,7 @@ Basic algorithm to calculate h for the likelihood ratio
 ---------------------------------------------------------------------------
 Created by:
 Sebastian Geyer (s.geyer@tum.de)
+Implemented in Python by:
 Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group
 Technische Universitat Munchen
@@ -36,4 +37,4 @@ def h_calc(X, mu, si, Pi):
             h_pre[:,q] = Pi[q] * sp.stats.multivariate_normal.pdf(X,mu[q,:], si[:,:,q])
         h = np.sum(h_pre, axis=1)
     return h
-## END
+# %% END

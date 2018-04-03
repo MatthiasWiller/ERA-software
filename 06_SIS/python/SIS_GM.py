@@ -10,6 +10,8 @@ Sequential importance sampling
 Created by:
 Iason Papaioannou (iason.papaioannou@tum.de)
 Matthias Willer (matthias.willer@tum.de)
+Implemented in Python by:
+Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de

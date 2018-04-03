@@ -11,6 +11,8 @@ Cross entropy-based importance sampling with vMFNM-distribution
 Created by:
 Sebastian Geyer (s.geyer@tum.de)
 Matthias Willer (matthias.willer@tum.de)
+Implemented in Python by:
+Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de

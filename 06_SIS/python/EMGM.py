@@ -7,7 +7,8 @@ Perform soft EM algorithm for fitting the Gaussian mixture model
 ---------------------------------------------------------------------------
 Created by:
 Sebastian Geyer (s.geyer@tum.de)
-implemented in Python by:
+Matthias Willer (matthias.willer@tum.de)
+Implemented in Python by:
 Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group
 Technische Universitat Munchen

@@ -9,11 +9,11 @@ from FORM_fmincon import FORM_fmincon
 ---------------------------------------------------------------------------
 FORM example: using HLRF algorithm and fmincon (Python scipy.optimize.minimize())
 ---------------------------------------------------------------------------
-Created by: 
-Matthias Willer (matthias.willer@tum.de)
-based on MATLAB code developed by:
-Matthias Willer (matthias.willer@tum.de)
+Created by:
 Felipe Uribe (felipe.uribe@tum.de)
+Matthias Willer (matthias.willer@tum.de)
+Implemented in Python by:
+Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group   
 Technische Universitat Munchen
 www.era.bgu.tum.de

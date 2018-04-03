@@ -11,6 +11,8 @@ Sequential importance sampling method: Ex. 2 Ref. 2 - linear function of indepen
 Created by:
 Sebastian Geyer (s.geyer@tum.de)
 Matthias Willer (matthias.willer@tum.de)
+Implemented in Python by:
+Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de

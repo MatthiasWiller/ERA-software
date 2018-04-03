@@ -11,7 +11,7 @@ BUS+SuS: Ex. 1 Ref. 1 - Parameter identification two-DOF shear building
 ---------------------------------------------------------------------------
 Created by:
 Felipe Uribe (felipe.uribe@tum.de)
-implemented in Python by:
+Implemented in Python by:
 Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group
 Technische Universitat Munchen

@@ -8,7 +8,7 @@ Modified Metropolis Algorithm
 ---------------------------------------------------------------------------
 Created by:
 Junyi Jiang (Junyi.Jiang@tum.de)
-implemented in Python by:
+Implemented in Python by:
 Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group
 Technische Universitat Munchen

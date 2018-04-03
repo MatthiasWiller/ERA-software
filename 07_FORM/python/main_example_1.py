@@ -12,7 +12,7 @@ FORM using HLRF algorithm and fmincon: Ex. 1 Ref. 3 - linear function of indepen
 Created by:
 Felipe Uribe (felipe.uribe@tum.de)
 Matthias Willer (matthias.willer@tum.de)
-implemented in Python by:
+Implemented in Python by:
 Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group
 Technische Universitat Munchen

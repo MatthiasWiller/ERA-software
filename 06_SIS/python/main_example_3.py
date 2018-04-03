@@ -11,6 +11,8 @@ Sequential importance sampling method: Ex. 1 Ref. 1 - convex limit-state functio
 Created by:
 Sebastian Geyer (s.geyer@tum.de)
 Matthias Willer (matthias.willer@tum.de)
+Implemented in Python by:
+Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de

@@ -1,6 +1,6 @@
 function idx = resampling_index(w)
 %% basic resampling algorithm
-%{ 
+%{
 ---------------------------------------------------------------------------
 Created by:
 Felipe Uribe (felipe.uribe@tum.de)

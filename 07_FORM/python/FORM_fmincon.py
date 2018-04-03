@@ -9,7 +9,7 @@ Optimization using the fmincon function (scipy.optimize.minimize() in Python)
 Created by: 
 Felipe Uribe (felipe.uribe@tum.de)
 Matthias Willer (matthias.willer@tum.de)
-implemented in Python by:
+Implemented in Python by:
 Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group   
 Technische Universitat Munchen

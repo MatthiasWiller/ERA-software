@@ -3,11 +3,22 @@ function [samples,geval] = MMA(u_j,H,b,N)
 %{
 ---------------------------------------------------------------------------
 Created by:
-Junyi Jiang
-Junyi.Jiang@tum.de
-  
+Junyi Jiang (junyi.jiang@tum.de)
+Engineering Risk Analysis Group
 Technische Universitat Munchen
-2017.10
+www.era.bgu.tum.de
+---------------------------------------------------------------------------
+Version 2018-03
+---------------------------------------------------------------------------
+Input:
+* N       : number of samples to be generated
+* u_j     : seeds used to generate the new samples 100*1 double
+* H       : limit state function in the standard space
+* Ns      : samples generated per chain. 10 in this case
+---------------------------------------------------------------------------
+Output:
+* samples : new samples
+* geval   : limit state function evaluations of the new samples
 ---------------------------------------------------------------------------
 References:
 1."Bayesian post-processor and other enhancements of Subset Simulation for
@@ -17,11 +28,6 @@ References:
 based on code offered by Engineering Risk Analysis Group,TUM
 ---------------------------------------------------------------------------
 %}
-% Input:
-% * N   : number of samples to be generated
-% * u_j : seeds used to generate the new samples 100*1 double
-% * H   : limit state function in the standard space
-% * Ns  : samples generated per chain. 10 in this case
 %% Initialize variables
 d  = size(u_j,1);      % number of uncertain parameters(dimension),100 dimensions
 Ns = size(u_j,2);     

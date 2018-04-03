@@ -1,15 +1,14 @@
-function [w,Phi] = shear_building_2DOF(m1,m2,k1,k2)
+function [w] = shear_building_2DOF(m1,m2,k1,k2)
 %% two-degree-of-freedom shear building model
 %{
 ---------------------------------------------------------------------------
 Created by:
-Felipe Uribe
-felipe.uribe@tum.de
+Felipe Uribe (felipe.uribe@tum.de)
 Engineering Risk Analysis Group   
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2017-04
+Version 2018-03
 ---------------------------------------------------------------------------
 EXAMPLE:
 m1 = 16.531e3;   m2 = 16.131e3;
@@ -33,11 +32,11 @@ K = [ k1 + k2, -k2;
 [V,L]   = eig(M\K);               % eigenvalue solution
 w       = sqrt(diag(L))/(2*pi);   % natural frequencies [Hz]
 [w,idx] = sort(w);                % ordering (ascendent)
-Phi     = V(idx);                 % vibration modes
+% Phi     = V(idx);                 % vibration modes
 
-% Normalizing modes
-q   = Phi'*M*Phi;                 % orthogonality property
-Phi = Phi./repmat(sqrt(diag(q))',2,1);
+% % Normalizing modes
+% q   = Phi'*M*Phi;                 % orthogonality property
+% Phi = Phi./repmat(sqrt(diag(q))',2,1);
 
 return;
 %%END

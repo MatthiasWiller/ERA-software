@@ -1,6 +1,6 @@
 function [u_jk,geval,new_lambda,accrate] = aCS(N,l,b,u_j,H)
 %% Adaptive conditional sampling algorithm
-%{ 
+%{
 ---------------------------------------------------------------------------
 Created by:
 Felipe Uribe (felipe.uribe@tum.de) and 

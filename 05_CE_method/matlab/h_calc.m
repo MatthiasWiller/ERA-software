@@ -4,7 +4,6 @@ function h = h_calc(X, mu, Si, Pi)
 ---------------------------------------------------------------------------
 Created by:
 Sebastian Geyer (s.geyer@tum.de)
-Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de

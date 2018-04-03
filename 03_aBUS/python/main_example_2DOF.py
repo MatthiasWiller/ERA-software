@@ -11,7 +11,7 @@ aBUS+SuS: Ex. 1 Ref. 1 - Parameter identification two-DOF shear building
 ---------------------------------------------------------------------------
 Created by:
 Felipe Uribe (felipe.uribe@tum.de)
-implemented in Python by:
+Implemented in Python by:
 Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group
 Technische Universitat Munchen
@@ -20,7 +20,10 @@ www.era.bgu.tum.de
 Version 2018-03
 ---------------------------------------------------------------------------
 References:
-1."Bayesian updating with structural reliability methods"
+1."Bayesian inference with subset simulation: strategies and improvements"
+   Betz et al.
+   Submitted (2017)
+2."Bayesian updating with structural reliability methods"
    Daniel Straub & Iason Papaioannou.
    Journal of Engineering Mechanics 141.3 (2015) 1-13.
 ---------------------------------------------------------------------------

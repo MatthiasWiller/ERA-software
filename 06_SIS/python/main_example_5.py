@@ -11,6 +11,8 @@ Sequential importance sampling method: Ex. 3 Ref. 1 - series system reliability 
 Created by:
 Sebastian Geyer (s.geyer@tum.de)
 Matthias Willer (matthias.willer@tum.de)
+Implemented in Python by:
+Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group
 Technische Universitat Munchen
 www.era.bgu.tum.de

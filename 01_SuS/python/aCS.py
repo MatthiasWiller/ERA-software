@@ -9,7 +9,7 @@ Adaptive conditional sampling algorithm
 Created by:
 Felipe Uribe (felipe.uribe@tum.de)
 Iason Papaioannou (iason.papaioannou@tum.de)
-implemented in Python by:
+Implemented in Python by:
 Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group
 Technische Universitat Munchen

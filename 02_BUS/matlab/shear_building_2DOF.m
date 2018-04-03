@@ -3,13 +3,12 @@ function [w] = shear_building_2DOF(m1,m2,k1,k2)
 %{
 ---------------------------------------------------------------------------
 Created by:
-Felipe Uribe
-felipe.uribe@tum.de
+Felipe Uribe (felipe.uribe@tum.de)
 Engineering Risk Analysis Group   
 Technische Universitat Munchen
 www.era.bgu.tum.de
 ---------------------------------------------------------------------------
-Version 2017-04
+Version 2018-03
 ---------------------------------------------------------------------------
 EXAMPLE:
 m1 = 16.531e3;   m2 = 16.131e3;

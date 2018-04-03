@@ -4,6 +4,7 @@ function [u_star,x_star,beta,Pf] = FORM_HLRF(g,dg,distr)
 ---------------------------------------------------------------------------
 Created by: 
 Felipe Uribe (felipe.uribe@tum.de)
+Matthias Willer (matthias.willer@tum.de)
 Engineering Risk Analysis Group   
 Technische Universitat Munchen
 www.era.bgu.tum.de
