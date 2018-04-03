@@ -89,7 +89,7 @@ def CEIS_SG(N, rho, g_fun, distr):
     # Iteration
     for j in range(max_it):
         # Generate samples and save them
-        X = sp.stats.multivariate_normal.rvs(mean=mu_hat, cov=Si_hat, size=N)
+        X = sp.stats.multivariate_normal.rvs(mean=mu_hat, cov=Si_hat, size=N).reshape(-1,dim)
         samplesU.append(X.T)
 
         # Count generated samples
