@@ -203,9 +203,10 @@ def logbesseli(nu,x):
     if nu == 0: # special case when nu=0
         logb = np.log(sp.special.iv(nu,x))
     else: # normal case
-        n    = np.size(x, axis=0)
-        frac = x/nu
-        
+        # n    = np.size(x, axis=0)
+        n      = 1      # since x is always scalar here
+        frac   = x/nu
+
         square = np.ones(n) + frac**2
         root   = np.sqrt(square)
         eta    = root + np.log(frac) - np.log(np.ones(n)+root)

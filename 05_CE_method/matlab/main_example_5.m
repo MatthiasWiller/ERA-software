@@ -48,9 +48,9 @@ rho    = 0.1;     % Cross-correlation coefficient for conditional sampling
 k_init = 3;       % Initial number of distributions in the Mixture Model (GM/vMFNM)
 
 fprintf('CE-based IS stage: \n');
-% [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_SG(N,rho,g,pi_pdf);     % single gaussian 
+[Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_SG(N,rho,g,pi_pdf);     % single gaussian 
 % [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_GM(N,rho,g,pi_pdf,k_init);    % gaussian mixture
-[Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_vMFNM(N,rho,g,pi_pdf,k_init); % adaptive vMFN mixture
+% [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_vMFNM(N,rho,g,pi_pdf,k_init); % adaptive vMFN mixture
 
 
 % reference solution

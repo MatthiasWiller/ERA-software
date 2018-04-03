@@ -76,7 +76,7 @@ def CEIS_GM(N, rho, g_fun, distr, k_init):
     k      = k_init    # number of Gaussians in mixture
     
     # Definition of parameters of the random variables (uncorrelated standard normal)
-    mu_init = np.zeros([dim,1])   
+    mu_init = np.zeros([1,dim])   
     Si_init = np.eye(dim)
     Pi_init = np.array([1.0])
     #
@@ -93,7 +93,7 @@ def CEIS_GM(N, rho, g_fun, distr, k_init):
     # Iteration
     for j in range(max_it):
         # Generate samples
-        X = GM_sample(mu_hat, Si_hat, Pi_hat, N)
+        X = GM_sample(mu_hat, Si_hat, Pi_hat, N).reshape(-1,dim)
         samplesU.append(X.T)
 
         # Count generated samples
@@ -122,7 +122,8 @@ def CEIS_GM(N, rho, g_fun, distr, k_init):
 
         # Parameter update: EM algorithm
         [mu_hat, Si_hat, Pi_hat] = EMGM(X[I,:].T, W[I], k_init)
-        k = len(Pi_hat)
+        mu_hat = mu_hat.T
+        k      = len(Pi_hat)
 
     # store the needed steps
     l     = j

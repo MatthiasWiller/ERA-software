@@ -78,14 +78,14 @@ idx = kmeans(X',k,'MaxIter',10000,'Replicates',10,'Distance','cosine');
 M = dummyvar(idx);
 
 % Random initialization
-% [~,n] = size(X);
-% label = ceil(k*rand(1,n));
-% [u,~,label] = unique(label);
-% while k ~= length(u)
-%     label = ceil(init.k*rand(1,n));
-%     [u,~,label] = unique(label);
-% end
-% M = full(sparse(1:n,label,1,n,k,n));
+[~,n] = size(X);
+label = ceil(k*rand(1,n));
+[u,~,label] = unique(label);
+while k ~= length(u)
+    label = ceil(init.k*rand(1,n));
+    [u,~,label] = unique(label);
+end
+M = full(sparse(1:n,label,1,n,k,n));
 return; 
 
 % -------------------------------------------------------------------------

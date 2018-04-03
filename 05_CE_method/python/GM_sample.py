@@ -25,7 +25,7 @@ Output:
 ---------------------------------------------------------------------------
 """
 def GM_sample(mu, si, pi, N):
-    if np.size(mu, axis=1) == 1:
+    if np.size(mu, axis=0) == 1:
         mu = mu.squeeze()
         si = si.squeeze()
         X = sp.stats.multivariate_normal.rvs(mean=mu,
@@ -43,12 +43,13 @@ def GM_sample(mu, si, pi, N):
         z = z.astype(int) # integer conversion
 
         # Generate samples
-        X   = np.zeros([N, np.size(mu, axis=1)])
+        d   = np.size(mu, axis=1)
+        X   = np.zeros([N, d])
         ind = 0
         for p in range(len(pi)):
             X[ind:ind+z[p],:] = sp.stats.multivariate_normal.rvs(mean=mu[p,:], 
                                                                  cov=si[:,:,p], 
-                                                                 size=z[p])
+                                                                 size=z[p]).reshape(-1,d)
             ind               = ind+z[p]
     
     return X

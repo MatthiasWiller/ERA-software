@@ -333,7 +333,7 @@ def likelihood_ratio_log(X,mu,kappa,omega,m,alpha):
         # log pdf of distributions in the mixture 
         for p in range(k):
             # log pdf of vMF distribution
-            logpdf_vMF[:,p] = vMF_logpdf((X/R).T, mu[p,:].T,kappa[p]).T
+            logpdf_vMF[:,p] = vMF_logpdf((X/R).T, mu[p,:].T,kappa[p]).squeeze()
             # log pdf of Nakagami distribution
             logpdf_N[:,p]   = nakagami_logpdf(R,m[:,p],omega[:,p]).squeeze()
             # log pdf of weighted combined distribution
@@ -397,8 +397,9 @@ def logbesseli(nu,x):
     if nu == 0: # special case when nu=0
         logb = np.log(sp.special.iv(nu,x)) # besseli
     else: # normal case
-        n    = np.size(x, axis=0)
-        frac = x/nu
+        # n    = np.size(x, axis=0)
+        n      = 1      # since x is always scalar here
+        frac   = x/nu
         
         square = np.ones(n) + frac**2
         root   = np.sqrt(square)

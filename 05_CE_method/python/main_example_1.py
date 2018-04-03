@@ -65,9 +65,7 @@ print('CE-based IS stage: ')
 # [Pr, l, N_tot, gamma_hat, samplesU, samplesX, k_fin] = CEIS_vMFNM(N, rho, g, pi_pdf, k_init)    # adaptive vMFN mixture
 
 # exact solution
-pf_ex    = sp.stats.norm.cdf(-beta)
-Pf_exact = lambda gg: sp.stats.norm.cdf(gg,beta,1)
-gg       = np.linspace(0,7,140)
+pf_ex = sp.stats.norm.cdf(-beta)
 
 # show p_f results
 print('***Exact Pf: ', pf_ex, ' ***')
