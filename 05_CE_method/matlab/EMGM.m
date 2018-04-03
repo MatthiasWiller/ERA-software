@@ -68,10 +68,6 @@ return;
 % Initialization
 % --------------------------------------------------------------------------
 function R = initialization(X, nGM)
-% Initialization with k-means algorithm 
-% idx = kmeans(X',nGM,'Replicates',10);
-% R   = dummyvar(idx);
-
 % Random initialization
 [~,n] = size(X);
 idx = randsample(n,nGM);

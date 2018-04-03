@@ -73,10 +73,6 @@ end
 % Initialization
 % -------------------------------------------------------------------------
 function M = initialization(X,k)
-% Initialization with k-means algorithm 
-% idx = kmeans(X',k,'MaxIter',10000,'Replicates',10,'Distance','cosine');
-% M = dummyvar(idx);
-
 % Random initialization
 [~,n] = size(X);
 label = ceil(k*rand(1,n));

@@ -80,10 +80,6 @@ def EMvMFNM(X,W,k):
 # Initialization
 # --------------------------------------------------------------------------
 def initialization(X, k):
-    # Initialization with k-means algorithm 
-    # [_,idx] = sp.cluster.vq.kmeans2(X.T, k, iter=10)
-    # M       = dummyvar(idx)
-
     # Random initialization
     n     = np.size(X, axis=1)
     idx   = np.random.choice(range(n),k)

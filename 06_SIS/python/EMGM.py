@@ -74,10 +74,6 @@ def EMGM(X, W, nGM):
 # Initialization
 # --------------------------------------------------------------------------
 def initialization(X, nGM):
-    # Initialization with k-means algorithm 
-    # [_,idx] = sp.cluster.vq.kmeans2(X.T, nGM, iter=10)
-    # R       = dummyvar(idx)
-
     # Random initialization
     n     = np.size(X, axis=1)
     idx   = np.random.choice(range(n),nGM)

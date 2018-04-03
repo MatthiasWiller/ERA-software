@@ -68,23 +68,19 @@ return;
 % Initialization
 % --------------------------------------------------------------------------
 function R = initialization(X, nGM)
-% Initialization with k-means algorithm 
-idx = kmeans(X',nGM,'Replicates',10);
-R   = dummyvar(idx);
-
 % Random initialization
-% [~,n] = size(X);
-% idx = randsample(n,nGM);
-% m = X(:,idx);
-% [~,label] = max(bsxfun(@minus,m'*X,dot(m,m,1)'/2),[],1);
-% [u,~,label] = unique(label);
-% while nGM ~= length(u)
-%     idx = randsample(n,nGM);
-%     m = X(:,idx);
-%     [~,label] = max(bsxfun(@minus,m'*X,dot(m,m,1)'/2),[],1);
-%     [u,~,label] = unique(label);
-% end
-% R = full(sparse(1:n,label,1,n,nGM,n));
+[~,n] = size(X);
+idx = randsample(n,nGM);
+m = X(:,idx);
+[~,label] = max(bsxfun(@minus,m'*X,dot(m,m,1)'/2),[],1);
+[u,~,label] = unique(label);
+while nGM ~= length(u)
+    idx = randsample(n,nGM);
+    m = X(:,idx);
+    [~,label] = max(bsxfun(@minus,m'*X,dot(m,m,1)'/2),[],1);
+    [u,~,label] = unique(label);
+end
+R = full(sparse(1:n,label,1,n,nGM,n));
 return;
 
 % --------------------------------------------------------------------------
