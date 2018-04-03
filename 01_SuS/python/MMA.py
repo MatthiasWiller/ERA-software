@@ -44,8 +44,8 @@ def MMA(u_j,H,b,N):
     g_jp1 = list()
     # %% MMA process
     P = lambda x: sp.stats.norm.pdf(x)                   # Marginal pdf of u_j
-    # S = lambda x: sp.stats.uniform.rvs(loc=x-1,scale=2)  # Proposal pdf
-    S = lambda x: np.random.uniform(low=x-1,high=x+1)       # Proposal pdf
+    S = lambda x: sp.stats.uniform.rvs(loc=x-1,scale=2)  # Proposal pdf
+    # S = lambda x: np.random.uniform(low=x-1,high=x+1)       # Proposal pdf
 
     # generate a candidate state epsilon
     for i in range(Ns):  # 1000
@@ -55,7 +55,8 @@ def MMA(u_j,H,b,N):
         gg[0]    = H(uu[:,0])
         
         for p in range(Nc-1):                               # 9 samples per chain
-            xi_hat = S(uu[:,p])                             # proposal
+            xi_hat    = np.zeros(d)                         # create array for dimension-safety 
+            xi_hat[:] = S(uu[:,p])                          # proposal
             r      = np.minimum(1 ,P(xi_hat)/P(uu[:,p]))
             # print(r)
             xi     = np.zeros(d)                            # candidate

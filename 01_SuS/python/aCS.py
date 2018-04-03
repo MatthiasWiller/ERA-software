@@ -1,4 +1,5 @@
 import numpy as np
+import scipy as sp
 from ERANataf import ERANataf
 from ERADist import ERADist
 """
@@ -89,7 +90,7 @@ def aCS(N,l,b,u_j,H):
         
         for t in range(1, Nchain[k]):    
             # generate candidate sample        
-            v = np.random.normal(loc=rho*u_jk[:,idx+t-1], scale=sigma)
+            v = sp.stats.multivariate_normal.rvs(mean=rho*u_jk[:,idx+t-1], cov=sigma)
             #v = mvnrnd(rho.*u_jk(:,idx+t-1),diag(sigma.^2))   # n-dimensional Gaussian proposal         
             
             # accept or reject sample              
