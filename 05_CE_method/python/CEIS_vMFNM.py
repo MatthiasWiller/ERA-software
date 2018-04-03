@@ -61,6 +61,9 @@ def CEIS_vMFNM(N, rho, g_fun, distr, k_init):
             g = g_fun
     else:
         raise RuntimeError('Incorrect distribution. Please create an ERANataf object!')
+    
+    if dim < 2:
+        raise RuntimeError('Sorry, the vMFN-model can only be applied to d > 1!')
 
     # %% Initialization of variables and storage
     j      = 0                # initial level
