@@ -56,6 +56,10 @@ else   % use distribution information for the transformation (independence)
    end
 end
 
+if dim < 2
+  error('Sorry, the vMFN-model can only be applied to d > 1!')
+end
+
 
 %% Initialization of variables and storage
 j      = 0;                % initial level
