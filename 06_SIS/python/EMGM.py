@@ -1,6 +1,7 @@
 import numpy as np
 import scipy as sp
 from scipy import cluster
+from nearPD import nearestPD
 """
 ---------------------------------------------------------------------------
 Perform soft EM algorithm for fitting the Gaussian mixture model
@@ -140,6 +141,7 @@ def maximization(X, W, R):
 def loggausspdf(X, mu, Sigma):
     d = np.size(X, axis=0)
     X = X-mu.reshape(-1,1)
+    Sigma = nearPD(Sigma) # numerical conditioning
     U = np.linalg.cholesky(Sigma).T.conj()
     Q = np.linalg.solve(U.T, X)
     q = np.sum(Q*Q, axis=0)      # quadratic term (M distance)
