@@ -134,13 +134,13 @@ def CEIS_vMFNM(N, rho, g_fun, distr, k_init):
         [mu, kappa, m, omega, alpha] = EMvMFNM(X[I,:].T, np.exp(W_log[I,:]), k_init)
 
         # remove unnecessary components
-        if min(alpha)<=0.01:
-            ind   = np.where(alpha>0.01)
-            mu    = mu[:,ind]
-            kappa = kappa[ind]
-            m     = m[ind]
-            omega = omega[ind]
-            alpha = alpha[ind]
+        # if min(alpha)<=0.01:
+        #     ind    = np.where(alpha>0.01)
+        #     mu     = mu[:,ind].reshape(dim,-1)
+        #     kappa  = kappa[ind]
+        #     m      = m[:,ind].reshape(1,-1)
+        #     omega  = omega[:,ind].reshape(1,-1)
+        #     alpha  = alpha[ind]
 
         # Assigning updated parameters            
         mu_hat    = mu.T
