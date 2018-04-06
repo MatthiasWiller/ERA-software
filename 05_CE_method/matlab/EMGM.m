@@ -84,7 +84,7 @@ R = full(sparse(1:n,label,1,n,nGM,n));
 return;
 
 % --------------------------------------------------------------------------
-% ...
+% Expectation
 % --------------------------------------------------------------------------
 function [R, llh] = expectation(X, W, mu, si, pi)
 
@@ -104,7 +104,7 @@ R = exp(logR);
 return;
 
 % --------------------------------------------------------------------------
-% ...
+% Maximization
 % --------------------------------------------------------------------------
 function [mu, Sigma, w] = maximization(X,W,R)
 R = repmat(W,1,size(R,2)).*R;
@@ -112,6 +112,9 @@ R = repmat(W,1,size(R,2)).*R;
 k = size(R,2);
 
 nk = sum(R,1);
+if any(nk == 0) % prevent division by zero
+  nk = nk + eps;
+end
 w = nk/sum(W);
 mu = bsxfun(@times, X*R, 1./nk);
 
@@ -140,7 +143,7 @@ y = -(c+q)/2;
 return;
 
 % --------------------------------------------------------------------------
-% ...
+% logsumexp
 % --------------------------------------------------------------------------
 function s = logsumexp(x, dim)
 % Compute log(sum(exp(x),dim)) while avoiding numerical underflow.

@@ -136,7 +136,7 @@ def expectation(X,W,R,mu,kappa,m,omega,alpha):
 # Maximization
 # --------------------------------------------------------------------------
 def maximization(X,W,R,M):
-    M  = W*M                   # repmat(W,1,size(M,2)).*M
+    M  = W*M
     d  = np.size(X, axis=0)
     nk = np.sum(M, axis=0)
 
@@ -146,7 +146,7 @@ def maximization(X,W,R,M):
     # mean directions
     mu_unnormed = np.matmul(X,M)
     norm_mu     = np.sqrt(np.sum(mu_unnormed*mu_unnormed, axis=0))
-    mu          = mu_unnormed/norm_mu # bsxfun(@times,mu_unnormed,1./norm_mu)
+    mu          = mu_unnormed/norm_mu 
 
     # approximated concentration parameter 
     xi    = np.minimum(norm_mu/nk,0.95)
@@ -175,8 +175,8 @@ def logvMFpdf(X, mu, kappa):
         y = -A
     elif kappa > 0:
         c = (d/2-1)*np.log(kappa) - (d/2)*np.log(2*np.pi) - logbesseli(d/2-1,kappa)
-        q = np.matmul((mu*kappa).T,X) # bsxfun(@times,mu,kappa)'*X
-        y = q + c.T # bsxfun(@plus,q,c')
+        q = np.matmul((mu*kappa).T,X)
+        y = q + c.T
         y = y.squeeze()
     else:
         raise ValueError('Concentration parameter kappa must not be negative!')

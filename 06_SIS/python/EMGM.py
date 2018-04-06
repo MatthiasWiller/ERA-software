@@ -82,6 +82,7 @@ def initialization(X, nGM):
     label = np.argmax(np.matmul(m.T,X) - np.sum(m*m,axis=0).reshape(-1,1)/2, axis=0)
     u     = np.unique(label)
     while nGM != len(u):
+        print('while-loop')
         idx = np.random.choice(range(n),nGM)
         m     = X[:,idx]
         label = np.argmax(np.matmul(m.T,X) - np.sum(m*m,axis=0).reshape(-1,1)/2, axis=0)
@@ -122,8 +123,11 @@ def maximization(X, W, R):
     k = np.size(R, axis=1)
 
     nk = np.sum(R, axis=0)
+    if any(nk == 0): # prevent division by zero
+        nk += 1e-6
+
     w  = nk/np.sum(W)
-    mu = np.matmul(X,R)/nk.reshape(1,-1)   # maybe change to reshape(1,-1)?
+    mu = np.matmul(X,R)/nk.reshape(1,-1)
 
     Sigma = np.zeros([d,d,k])
     sqrtR = np.sqrt(R)
@@ -141,7 +145,7 @@ def maximization(X, W, R):
 def loggausspdf(X, mu, Sigma):
     d = np.size(X, axis=0)
     X = X-mu.reshape(-1,1)
-    Sigma = nearPD(Sigma) # numerical conditioning
+    Sigma = nearestPD(Sigma) # numerical conditioning
     U = np.linalg.cholesky(Sigma).T.conj()
     Q = np.linalg.solve(U.T, X)
     q = np.sum(Q*Q, axis=0)      # quadratic term (M distance)

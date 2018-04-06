@@ -121,8 +121,11 @@ def maximization(X, W, R):
     k = np.size(R, axis=1)
 
     nk = np.sum(R, axis=0)
+    if any(nk == 0): # prevent division by zero
+        nk += 1e-6
+
     w  = nk/np.sum(W)
-    mu = np.matmul(X,R)/nk.reshape(1,-1)   # maybe change to reshape(1,-1)?
+    mu = np.matmul(X,R)/nk.reshape(1,-1)
 
     Sigma = np.zeros([d,d,k])
     sqrtR = np.sqrt(R)
